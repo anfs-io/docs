@@ -71,7 +71,8 @@ which the user has to know.
   | owned | `--to <source/package>` | Today's `ppm file claim` |
 
 - `ppm file ...` and `wsm add` stay as the tool's own words for its own kind, calling the same
-  functions. `ppm move` (a package between sources) is a different thing and keeps its name.
+  functions. `ppm move` (a package between sources, today in the `dev` package) goes the same way:
+  `anfs mv <source/package> --to <source>`, with the work in ppm (plan 03).
 
 **3.2 Wrapping `mv` in the shell: an opt-in second step, not the mechanism.**
 

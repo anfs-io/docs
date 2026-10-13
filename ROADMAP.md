@@ -16,15 +16,16 @@ images on targets, and hardware installs from the same image definitions.
 | 3 | `machine-images` / `04-iso-commands` | One `iso` group in `anfs`, `pmm` and `ventoy` | Nothing | built on the branch 2026-10-13 (see `log.md`); no real download, stick or Linux run |
 | 4 | `machine-images` / `02-image-definition` | Everything a build runs is in the image's directory; `show` prints the plan; `image new` | Skim the plan after step 1; it will read differently then | built on the branch 2026-10-13 (see `log.md`); tart, Linux, amd64, Fedora and the round trips not run |
 | 5 | `machine-images` / `03-provisioners` | The provisioner contract; `sh` and `anfs` behind it | Nothing: the step variables are `ANFS_IMAGE_*` | built on the branch 2026-10-13 (see `log.md`); tart, Linux, amd64, Fedora and the round trips not run |
-| 5a | `dev-source` / `01-move`, `02-work` | `core/dev`, the test boxes, the round trips, the fixture and the docs space move to the `anfs-dev` source; bats suites stay in core. Then `~/work/<job>/` and `anfs work` | Merge the `machine-images` branch first (review, Linux checks). Answer the plan's question 2 | plan written |
+| 5a | `dev-source` / `01-move`, `02-work`, `03-boxes` | `core/dev`, the test boxes, the round trips, the fixture and the docs space move to the `anfs-dev` source; bats suites stay in core. Then commands from packages (`anfs <name>`, anfs only), `anfs hooks`, `~/work/<job>/` and `anfs work`. Then `anfs work install\|shell\|reset` replace `ppm container`, `ppm vm`, `ppm user` | Merge the `machine-images` branch first (review, Linux checks). `03-boxes` needs step 2 | plans written |
 | 5b | `machine-images` / `05-pmm-optional` | pmm and qemu leave the default install; pcm stays | Nothing | plan written |
 | 6 | `container-images` / `02-pcm-image` | `pcm image list\|build\|pull\|export\|remove\|prune` | Plan not written yet. Revisit the placeholder on provision steps in container builds | plan to write |
 | 7 | `toolkit-api` / `01`–`05` | `anfs rpc`, the socket, anfs-ui as a container in a default install | The macOS test below, then settle the unit's open questions 2 and 3 | draft unit |
 | 8 | `deploy` / `01-targets`, `02-proxmox-publish` | The deploy tool; a build becomes a template on a PVE host | Read `units/deploy.md` (not read yet). Name the tool (`pdm` is a placeholder) | plans written |
 | 9 | `deploy` / `03-deployments` | Deployments over OpenTofu | Details are written after step 8, against the real host | outline |
 | 10 | `metal` | Network install from an image definition; the old laptop; pcs | Plans are written after steps 5 and 8 | outline |
-| A | `linker` / `01`–`03` | Our own linker replaces GNU stow in ppm, wsm and the bootstrap; per-platform files in `package.yml`; `anfs owner`, `anfs mv`, `anfs status` | Read `units/linker.md` (it answers the three questions on stow) | plans written |
+| A | `linker` / `01`–`03` | Our own linker replaces GNU stow in ppm, wsm and the bootstrap; per-platform files in `package.yml`; `anfs owner`, `anfs mv` (files, and a package between sources: `ppm move` goes), `anfs status` | Read `units/linker.md` (it answers the three questions on stow) | plans written |
 | B | `profiles` / `01-profiles` | Hosts and roles in a source; `anfs profile apply` | Read `units/profiles.md` and its three open questions | plan written |
+| Z | `tutorial` | "From dotfiles to deployment": the whole toolkit as one story in chapters, a team and their agents taking a todo app from idea to deployment | Everything above built | placeholder |
 
 ## For an agent running this list
 

@@ -1,7 +1,7 @@
 ---
 ---
 
-# Plan 02 — `~/work`: a directory per job, and `anfs work`
+# Plan 02 — `~/work`: a directory per job, `anfs work`, and commands from packages
 
 ## Context — read these files first
 
@@ -38,31 +38,68 @@ time without meeting each other or the live install.
     .job.yml                  what the job is: branch, repos, its number, created
 ```
 
-### 2. Commands (`anfs work`, in the `dev` package)
+### 2. Commands from packages (anfs only)
+
+ppm sources every file in `~/.local/lib/ppm/`, and a `cmd_` function there becomes a ppm
+command. That is from when ppm was the only tool; the `dev` package is the one thing that uses
+it for commands. anfs gets a smaller seam and ppm's stops being used for commands:
+
+- `anfs <name>`, when anfs declares no such command, runs the executable `anfs-<name>` found in
+  `~/.local/bin` with the rest of the line. Nothing is sourced into anfs, so a package cannot
+  redefine anything of anfs's.
+- Such an executable is a `cli.sh` tool like any other (`ventoy` is the model) and sets
+  `CLI_TOOL="anfs <name>"`, so its messages and usage lines read `anfs work: ...`.
+- `anfs help` lists them by name under "From packages"; `anfs help <name>` and
+  `anfs <name> --help` are the executable's own. `anfs __complete <name> ...` asks
+  `anfs-<name> __complete ...`; the names themselves complete from the file names (no process).
+- `-d`, `--trace` and `--json` given to anfs are passed on.
+- anfs's own commands win: a package cannot take a name anfs declares. `bash.bats`' list of
+  entry points covers `anfs-*` in the sources.
+- The other tools get no such seam. ppm keeps what is about packages: hook helpers a package
+  stows into `lib/ppm` (`stack/ruby`'s `install_gem`) and `ppm_resource_<key>` handlers.
+
+`ppm hooks` becomes `anfs hooks` this way (`anfs-hooks`; it acts on the sources' repos, not on
+packages), with the same sub-commands. `hooks.sh` leaves `lib/ppm`.
+
+### 2a. `anfs work` (`anfs-work`, in the `dev` package)
 
 ```
-anfs work new <job> [repo...] [--from REF]    worktrees on a new branch <job>, from REF (default: each repo's main)
-anfs work add <job> <repo...>                 another repo joins the job
-anfs work list                                JOB BRANCH REPOS STATE (clean, dirty, ahead N, merged)
-anfs work path <job> [repo]                   and `anfs work cd`, through the shell wrapper ppm cd uses
-anfs work env <job>                           the variables below, as `export` lines
-anfs work run <job> -- <cmd...>               run a command with them set, in the job's directory
-anfs work remove [-f] <job>                   worktrees and branches; refuses unmerged or dirty without -f
+anfs work new <job> [repo...] [--from REF]
+anfs work add <job> <repo...>
+anfs work list
+anfs work show <job>
+anfs work path <job> [repo]
+anfs work cd <job> [repo]
+anfs work env <job>
+anfs work run <job> -- <cmd...>
+anfs work remove [-f] [-y] <job>
 ```
+
+| Command | Does |
+| --- | --- |
+| `new` | Makes `~/work/<job>/`, and in it a git worktree of each named repo on a new branch `<job>`, cut from REF (default: each repo's main). Gives the job its number and writes `.job.yml`. Wires the git hooks. Never pushes. With no repo: `core` |
+| `add` | Another repo joins the job: a worktree on the same branch name |
+| `list` | Every job: `JOB BRANCH REPOS STATE`. State is the worst of its repos: `dirty`, `ahead N`, `clean`, `merged` |
+| `show` | One job: each repo with its path, branch, commits ahead of main and whether it is dirty; the job's number; the variables `env` prints |
+| `path`, `cd` | The job's directory, or one repo's worktree in it. `cd` is through the shell function `sh/anfs.sh` defines, as `ppm cd` is |
+| `env` | The isolation variables (section 3) as `export` lines, for `eval` or a file an agent sources |
+| `run` | Runs a command with those variables set, in the job's directory. The command's exit status is `run`'s |
+| `remove` | `git worktree remove` for each repo, then deletes the branch where it is merged into main, then the directory. Refuses a dirty worktree or an unmerged branch; `-f` goes ahead after `anfs_confirm` lists the commits that would be lost |
 
 - A `repo` is a source's alias (`core`, `stack`, `anfs-dev`, `user`), or the name of a repository
-  some installed space's `space.yml` clones (`docs`). With none given, `new` takes `core`.
+  some installed space's `space.yml` clones (`docs`).
 - A source that is a link to a local path, or has no git, is refused.
-- `new` runs `ppm hooks install` on each worktree's repo (hooks are per repo, so this is a no-op
-  after the first job) and never pushes.
-- `remove` runs `git worktree remove` and deletes the branch when it is merged into the repo's
-  main; with `-f` it deletes an unmerged branch after `anfs_confirm` naming the commits that go.
+- A job's name must be a valid branch name with no `/` (64).
 - `list` goes through `anfs_table`; keys `job`, `branch`, `repos[]`, `state`, `number`.
+- Exit codes are the toolkit's: 73 a job that exists, 1 one that does not.
+
+Trying a job in a box (a fresh Debian, Fedora or macOS, or another user on this host) is plan
+03: it replaces `ppm container`, `ppm vm` and `ppm user`, and needs `pcm run`.
 
 ### 3. Isolation: what a job's tests may share
 
 Each job gets a number at `new` (the lowest free one, from 1, kept in `.job.yml`). `anfs work env`
-derives from it, and the test helpers and e2e scripts use these when they are set:
+and `run` derive from it, and the test helpers and e2e scripts use these when they are set:
 
 | Variable | Value | Why |
 | --- | --- | --- |
@@ -104,6 +141,10 @@ isolation table). core's CLAUDE.md "Testing": two lines and a pointer.
 
 ## Test Spec
 
+core `packages/anfs/tests/registry.bats`: `anfs x` runs a stub `anfs-x` with the line's rest and
+its exit status; a declared command wins over `anfs-<its name>`; help lists it; completion of the
+name starts no process and completion after it asks the executable; an unknown name is still 64.
+
 `anfs-dev` `packages/dev/tests/work.bats` (local bare repos as sources, as the anfs suites do):
 
 - `new` with two repos: two worktrees on branch `<job>`, `.job.yml` written, number 1; a second
@@ -130,9 +171,7 @@ core: the grep test of section 3; `packages/pmm/tests/helper.bash` and `e2e` hon
 
 ## Open Questions
 
-1. **Decided: `anfs work`.** It spans sources, which is anfs's kind of thing. anfs has no way
-   for a package to add a command yet, so this plan waits on that; how it is done is open (see
-   the unit).
-2. **Does a job get its own install to try by hand** (`anfs work shell <job>`: a shell with a
-   temp HOME whose tools are the job's)? The e2e scripts already build one. Recommended: yes,
-   as a follow-up; it is what makes "try my branch" one command.
+1. **Decided: `anfs work`**, through the seam of section 2, which is anfs's only.
+2. **Does a job get its own install to try by hand** (a shell with a temp HOME whose tools are
+   the job's)? The e2e scripts already build one, and `machine-images/README.md` does it by
+   hand. Plan 03 has it as the `home` box.

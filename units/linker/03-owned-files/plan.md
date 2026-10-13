@@ -49,9 +49,20 @@ state `replaced` (an editor wrote over the link).
 | not owned | `--to <source/package>` | `ppm file add` |
 | not owned, inside an installed space's tree | — (`anfs mv --adopt <file>`) | `wsm add` |
 | owned by a package | `--to <source/package>` | `ppm file claim` |
+| a package (`<source>/<package>`) | `--to <source>` | `ppm __package mv` (below) |
 
 It prints what changed in the source (`moved packages/git/home/.gitconfig -> ...; not
 committed`). It never commits. `-n` prints the plan.
+
+### 3a. A whole package
+
+`ppm move` (in the `dev` package, `move.sh`) becomes ppm's own plumbing, `ppm __package mv
+<source/package> <source>`, and `anfs mv stack/rails --to user` is how it is reached. It keeps
+what `ppm move` does and refuses (the tracker and claims follow, hooks are not re-run, a
+dependent that would break and a dirty repo are refused without `-f`, an existing package of
+that name is refused always), with two changes: relinking is `anfs_link_apply` over the
+tracker's list (plan 01), and it does not commit, as nothing else here does. `move.sh` and its
+tests are deleted from the `dev` package; the tests move to `packages/ppm/tests`.
 
 ### 4. `anfs status`
 
