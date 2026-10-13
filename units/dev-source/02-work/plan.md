@@ -111,7 +111,8 @@ and `run` derive from it, and the test helpers and e2e scripts use these when th
 | `TMPDIR` | `/tmp/anfs-work-<uid>-<n>` | temp homes are found and cleaned per job |
 
 - The round trips take a source the job does not hold from the installed sources, by alias.
-- Shared, and read-only to every test: the ISO store (`~/.cache/anfs/isos`). A test that would
+- Shared, and read-only to every test (decided 2026-10-13: an ISO downloads once): the ISO
+  store (`~/.cache/anfs/isos`). A test that would
   write there fails instead (the helpers set `ANFS_ISO_HOME` to a temp dir unless the test is an
   e2e, which only reads).
 - Shared, with a limit: tart allows two macOS guests in all, and the live install may be using
