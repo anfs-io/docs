@@ -12,10 +12,11 @@ images on targets, and hardware installs from the same image definitions.
 | # | Unit / plan | What it does | Needs from you first | Status |
 | --- | --- | --- | --- | --- |
 | 1 | `machine-images` / `01-fold-pim-into-pmm` | pim becomes `pmm image`; `run`, `exec`, the `snapshot` group; `machines/images/` and `machines/networks/` | Read `units/machine-images.md` and plan 01. Agree the command list in **step 1b** | built on branch `machine-images`, awaiting review; round trips, Linux and tart not run (see `log.md`) |
-| 2 | `container-images` / `01-run-exec-snapshot` | pcm gets `run` and the `snapshot` group, so the two tools match | Plan not written yet. Write it once step 1 has landed | plan to write |
+| 2 | `container-images` / `01-run-exec-snapshot` | pcm gets `run` and the `snapshot` group, so the two tools match | Read the plan and its six open questions | plan drafted 2026-10-13, awaiting review |
 | 3 | `machine-images` / `04-iso-commands` | One `iso` group in `anfs`, `pmm` and `ventoy` | Nothing | in progress (workflow, 2026-10-13), taken before step 2 because step 2's plan is not written |
 | 4 | `machine-images` / `02-image-definition` | Everything a build runs is in the image's directory; `show` prints the plan; `image new` | Skim the plan after step 1; it will read differently then | not started |
 | 5 | `machine-images` / `03-provisioners` | The provisioner contract; `sh` and `anfs` behind it | Nothing: the step variables are `ANFS_IMAGE_*` | not started |
+| 5a | `dev-source` / `01-move` | `core/dev`, the test boxes, the round trips and the fixture move to the `anfs-dev` source; bats suites stay in core | Merge the `machine-images` branch first (review, Linux checks). Answer the plan's question 2 | plan written |
 | 6 | `container-images` / `02-pcm-image` | `pcm image list\|build\|pull\|export\|remove\|prune` | Plan not written yet. Revisit the placeholder on provision steps in container builds | plan to write |
 | 7 | `toolkit-api` / `01`–`05` | `anfs rpc`, the socket, anfs-ui as a container in a default install | The macOS test below, then settle the unit's open questions 2 and 3 | draft unit |
 | 8 | `deploy` / `01-targets`, `02-proxmox-publish` | The deploy tool; a build becomes a template on a PVE host | Read `units/deploy.md` (not read yet). Name the tool (`pdm` is a placeholder) | plans written |
@@ -48,6 +49,9 @@ images on targets, and hardware installs from the same image definitions.
 - **Step 3 before 4**: it is small, nearly independent, and step 4 uses catalogue ids for ISOs.
 - **Step 7 can move.** `toolkit-api` depends on nothing. It can run alongside steps 3 to 6, or
   jump ahead if the dashboard matters sooner. Its request examples use step 1's command names.
+- **Step 5a when `machine-images` is merged**: that branch moves the images and rewrites the
+  tests, so the split waits for it. It is the natural point to merge anyway: the unit is done.
+  If step 2 has not run by then, its `ppm container` changes are made in `anfs-dev`.
 - **Deploy and metal last**: they build on finished images, and you have not reviewed them.
 
 ## Small things to do when convenient
@@ -76,6 +80,8 @@ images on targets, and hardware installs from the same image definitions.
 - pmm never creates or changes a host bridge. Installed hosts are born with one (`metal`).
 - What a provision step sees is `ANFS_IMAGE_*` (tool-neutral); pmm's own settings stay `PMM_IMAGE_*`.
 - Packer and UTM are out of stack.
+- Dev and test assets live in the `anfs-dev` source (`user.list`, not a default); each tool's
+  bats suite and e2e stay beside its code in core.
 - No backwards compatibility with pim.
 
 ## Still open
