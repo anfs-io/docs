@@ -125,11 +125,9 @@ Not for an agent; listed in `log.md` for the person who merges:
 
 ## Open Questions
 
-1. **`~/anfs-dev` is two things.** It is the default `ROUNDTRIP_SRC_ROOT` (a directory of
-   checkouts named by alias) and now also a source's alias, so the dev source's checkout there
-   is `~/anfs-dev/anfs-dev`. Recommended: leave the default, since it is only a default.
-2. **`anfs-admin`.** Nothing here moves to it. If it is for the org's own operations (releases,
-   the GitHub org), say so in the unit so the next agent does not guess.
-3. **Does `ppm move` do the package's part?** It moves a package between sources with its
+1. **Does `ppm move` do the package's part?** It moves a package between sources with its
    tracker, on the live install, and commits both repos on whatever branch they are on.
    Recommended: no. The plan works in branch worktrees; step 6 is two commands.
+
+Settled 2026-10-13: `anfs-admin` is anfs.io's private infrastructure and takes nothing from this
+plan. `~/anfs-dev` as a directory of checkouts goes away; where worktrees live is in the unit.

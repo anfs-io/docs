@@ -41,6 +41,24 @@ images under `machines/` and rewrites the tests; splitting before it lands means
 - **No history is carried over.** The first commit in `anfs-dev` names the core commit the files
   came from; `git log` in core still has the rest.
 
+## Worktrees (sketch, not yet a plan)
+
+Parallel jobs each need their own checkout of every repo they touch, on one branch name:
+
+```
+~/work/<job>/            one job, one branch name in every repo it touches
+  core/  stack/  anfs-dev/  docs/     git worktrees of the clones under sources/, named by alias
+```
+
+- The shape is what the round trips already take as `ROUNDTRIP_SRC_ROOT`: a directory of
+  checkouts named by alias. A source the job does not touch falls through to the installed one.
+  `~/anfs-dev` (one agent's leftover) is replaced by this, and so is the default.
+- `ppm work new|list|path|remove <job> [alias...]` in the `dev` package makes and removes them;
+  `remove` refuses a branch that is not merged.
+- **Jobs running at once share the host.** Each needs its own socket directory and ssh port
+  range (`PMM_SOCK_DIR`, `PMM_SSH_PORT_BASE`), derived from the job; the ISO store is shared and
+  read-only to tests; tart allows two macOS guests in all.
+
 ## Plans
 
 1. `01-move` — the move, every path that named the old places, the docs
