@@ -69,8 +69,8 @@ Parallel jobs each need their own checkout of every repo they touch, on one bran
 
 ## Plans
 
-1. `01-move` — the move, every path that named the old places, the docs space, the docs
-2. `02-work` — commands from packages (`anfs <name>` runs `anfs-<name>`; anfs only), `anfs hooks`,
+1. `01-move` (runs second, as the first job under `anfs work`) — the move, every path that named the old places, the docs space, the docs
+2. `02-work` (runs first, in `core/dev`) — commands from packages (`anfs <name>` runs `anfs-<name>`; anfs only), `anfs hooks`,
    `~/work/<job>/`, `anfs work`, and what lets two jobs test at once
 3. `03-boxes` — `anfs work install|shell|reset` replace `ppm container`, `ppm vm` and `ppm user`
    (after `container-images/01`)

@@ -30,13 +30,15 @@ table below it says what each unit is; the plans say how.
 
 ### Then: tooling
 
+- [ ] `dev-source/02-work` — the `anfs <name>` seam, `anfs hooks`, `anfs work`. First, because
+      every job after it is run through it. Built in `core/dev`, the last job done by hand
+- [ ] `dev-source/01-move` — the first job under `anfs work` (four repos). First confirm:
+      `infra` and `website` go to `admin-anfs`'s `space.yml`
 - [ ] CLAUDE.md becomes AGENTS.md in every repo (`BACKLOG.md`; no plan needed)
-- [ ] `dev-source/01-move` — first confirm: `infra` and `website` go to `admin-anfs`'s `space.yml`
 - [ ] `machine-images/05-pmm-optional`
-- [ ] `dev-source/02-work` — the `anfs <name>` seam, `anfs hooks`, `anfs work`
 - [ ] `audit`, first pass: the "first hour" and "why not what exists" lenses
 
-### Alongside, as their own jobs (once `anfs work` exists)
+### Alongside, as their own jobs (any time after `dev-source/02-work`)
 
 - [ ] `linker/01-link-library` — first read `units/linker.md`
 - [ ] `linker/02-platform-files`
@@ -114,8 +116,9 @@ table below it says what each unit is; the plans say how.
 - **Step 5a when `machine-images` is merged**: that branch moves the images and rewrites the
   tests, so the split waits for it. It is the natural point to merge anyway: the unit is done.
   If step 2 has not run by then, its `ppm container` changes are made in `anfs-dev`.
-- **The tooling steps (5a, 5b, the AGENTS.md rename) come before more feature work**: every
-  later job then runs in `~/work` with its own ports and sockets, and can run beside another.
+- **`anfs work` is the first thing after the merge**, ahead of the move it was planned behind:
+  agents do the work, and it is what gives each job its own trees, ports and sockets. The rest
+  of the tooling (the move, the AGENTS.md rename, 5b) follows as jobs run through it.
 - **A and B are lettered, not numbered: they depend on nothing above.** `linker` touches ppm,
   wsm and `install.sh`, which the `machine-images` branch does not, so it can run as its own job
   in parallel. `profiles` is better after `linker` plan 02 and step 5b.

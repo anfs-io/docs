@@ -1,15 +1,16 @@
 ---
 ---
 
-# Plan 02 — `~/work`: a directory per job, `anfs work`, and commands from packages
+# Plan 02 (runs first) — `~/work`: a directory per job, `anfs work`, and commands from packages
 
 ## Context — read these files first
 
-- `units/dev-source.md` — the worktree sketch; plan 01's `log.md` (the `dev` package is in
-  `anfs-dev` by now)
-- `anfs-dev` `packages/dev/home/.local/lib/ppm/{hooks,container,vm}.sh` — how the package adds
+- `units/dev-source.md` — the worktree sketch. **This plan runs before plan 01**: the `dev`
+  package is still `core/dev`, and plan 01 moves it, with what this plan adds, as the first job
+  run under `anfs work`
+- core `packages/dev/home/.local/lib/ppm/{hooks,container,vm}.sh` — how the package adds
   commands to ppm (`cli_group`, `cli_cmd`, `cmd_*`), and how `hooks.sh` finds the sources' repos
-- `anfs-dev` `packages/dev/tests/{harness,roundtrip,roundtrip-macos}` — `ROUNDTRIP_SRC_ROOT`
+- core `packages/anfs/tests/{harness,roundtrip,roundtrip-macos}` — `ROUNDTRIP_SRC_ROOT`
 - core `packages/pmm/tests/{helper.bash,e2e}` — `PMM_SOCK_DIR`, `PMM_SSH_PORT_BASE`, the temp HOME
 - core `packages/pcm/tests/helper.bash` — what a pcm test shares with the host (podman)
 - `ROADMAP.md`, "For an agent running this list"
@@ -136,8 +137,9 @@ default after this plan.
 
 ### 6. Documentation
 
-`anfs-dev`'s CLAUDE.md: a "Working on the toolkit" section (the layout, the commands, the
-isolation table). core's CLAUDE.md "Testing": two lines and a pointer.
+core's CLAUDE.md: a "Working on the toolkit" section under "Development" (the layout, the
+commands, the isolation table), "The Command Line" (commands from packages), and `ppm hooks`
+becomes `anfs hooks` wherever it is named. Plan 01 moves the section to `anfs-dev` with the package.
 
 ## Test Spec
 
@@ -145,7 +147,7 @@ core `packages/anfs/tests/registry.bats`: `anfs x` runs a stub `anfs-x` with the
 its exit status; a declared command wins over `anfs-<its name>`; help lists it; completion of the
 name starts no process and completion after it asks the executable; an unknown name is still 64.
 
-`anfs-dev` `packages/dev/tests/work.bats` (local bare repos as sources, as the anfs suites do):
+core `packages/dev/tests/work.bats` (local bare repos as sources, as the anfs suites do):
 
 - `new` with two repos: two worktrees on branch `<job>`, `.job.yml` written, number 1; a second
   job gets 2; after removing the first, a third job gets 1.
@@ -162,10 +164,10 @@ core: the grep test of section 3; `packages/pmm/tests/helper.bash` and `e2e` hon
 
 ## Verification
 
-- [ ] `bats packages/dev/tests </dev/null` in `anfs-dev`; `bats packages/{anfs,pmm}/tests </dev/null` in core
+- [ ] `bats packages/{dev,anfs,pmm}/tests </dev/null` in core
 - [ ] Two jobs at once on this Mac: `anfs work run a -- packages/pmm/tests/e2e debian` and the
       same for `b`, started together; both pass, and `/tmp/pmm-<uid>` is untouched
-- [ ] `anfs work run <job> -- packages/dev/tests/roundtrip debian` tests the job's trees (a
+- [ ] `anfs work run <job> -- packages/anfs/tests/roundtrip debian` tests the job's trees (a
       marker file in the job's core shows up in the box)
 - [ ] `anfs work remove` of a merged job leaves `git worktree list` clean in every repo
 

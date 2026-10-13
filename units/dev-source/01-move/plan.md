@@ -13,6 +13,11 @@
 - stack `packages/firstmate/tests/roundtrip` — it runs core's harness by path
 - core `CLAUDE.md`: "Git Hooks", "Moving a Package Between Repos", "Testing", "Repository Layout"
 
+> **Runs after plan 02**, as a job made with `anfs work new dev-source core stack anfs-dev docs`.
+> By then `hooks.sh` is gone from `lib/ppm` (`anfs hooks`, the executable `anfs-hooks`) and the
+> package holds `anfs-work` and `tests/work.bats`: they move with it. Where this plan says
+> `ppm hooks`, read `anfs hooks`.
+
 ## Overview
 
 Files move from core to `anfs-dev` with no change in behaviour. The work is in what named the
