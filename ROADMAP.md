@@ -17,11 +17,14 @@ images on targets, and hardware installs from the same image definitions.
 | 4 | `machine-images` / `02-image-definition` | Everything a build runs is in the image's directory; `show` prints the plan; `image new` | Skim the plan after step 1; it will read differently then | in progress (workflow, 2026-10-13) |
 | 5 | `machine-images` / `03-provisioners` | The provisioner contract; `sh` and `anfs` behind it | Nothing: the step variables are `ANFS_IMAGE_*` | in progress (workflow, 2026-10-13) |
 | 5a | `dev-source` / `01-move` | `core/dev`, the test boxes, the round trips and the fixture move to the `anfs-dev` source; bats suites stay in core | Merge the `machine-images` branch first (review, Linux checks). Answer the plan's question 2 | plan written |
+| 5b | `machine-images` / `05-pmm-optional` | pmm and qemu leave the default install; pcm stays | Nothing | plan written |
 | 6 | `container-images` / `02-pcm-image` | `pcm image list\|build\|pull\|export\|remove\|prune` | Plan not written yet. Revisit the placeholder on provision steps in container builds | plan to write |
 | 7 | `toolkit-api` / `01`–`05` | `anfs rpc`, the socket, anfs-ui as a container in a default install | The macOS test below, then settle the unit's open questions 2 and 3 | draft unit |
 | 8 | `deploy` / `01-targets`, `02-proxmox-publish` | The deploy tool; a build becomes a template on a PVE host | Read `units/deploy.md` (not read yet). Name the tool (`pdm` is a placeholder) | plans written |
 | 9 | `deploy` / `03-deployments` | Deployments over OpenTofu | Details are written after step 8, against the real host | outline |
 | 10 | `metal` | Network install from an image definition; the old laptop; pcs | Plans are written after steps 5 and 8 | outline |
+| A | `linker` / `01`–`03` | Our own linker replaces GNU stow in ppm, wsm and the bootstrap; per-platform files in `package.yml`; `anfs owner`, `anfs mv`, `anfs status` | Read `units/linker.md` (it answers the three questions on stow) | plans written |
+| B | `profiles` / `01-profiles` | Hosts and roles in a source; `anfs profile apply` | Read `units/profiles.md` and its three open questions | plan written |
 
 ## For an agent running this list
 
@@ -52,6 +55,9 @@ images on targets, and hardware installs from the same image definitions.
 - **Step 5a when `machine-images` is merged**: that branch moves the images and rewrites the
   tests, so the split waits for it. It is the natural point to merge anyway: the unit is done.
   If step 2 has not run by then, its `ppm container` changes are made in `anfs-dev`.
+- **A and B are lettered, not numbered: they depend on nothing above.** `linker` touches ppm,
+  wsm and `install.sh`, which the `machine-images` branch does not, so it can run as its own job
+  in parallel. `profiles` is better after `linker` plan 02 and step 5b.
 - **Deploy and metal last**: they build on finished images, and you have not reviewed them.
 
 ## Small things to do when convenient

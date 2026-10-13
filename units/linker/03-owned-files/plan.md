@@ -1,0 +1,100 @@
+---
+---
+
+# Plan 03 — `anfs owner`, `anfs mv`, `anfs status`
+
+## Context — read these files first
+
+- `units/linker.md`, section 3; the logs of plans 01 and 02
+- `packages/ppm/home/.local/lib/ppm/file.sh` — `add`, `claim`, `reset`, `protect`; `claims.yml`,
+  `protected.yml`, the trackers
+- `packages/wsm/home/.local/bin/wsm` — `cmd_add`, `cmd_status`, the trackers
+- `packages/anfs/home/.local/bin/anfs`; `packages/anfs/home/.config/sh/anfs.sh`
+
+## Overview
+
+Whether a file under `$HOME` is a package's, a space's or the user's own can be read from the
+file. This plan gives that one command, gives moving such a file one command, and reports where
+the home directory and the sources have drifted apart.
+
+## Implementation
+
+### 1. Plumbing in the tools
+
+anfs dispatches; the tool that owns a kind does the work. Each gets two plumbing commands
+(`cmd_` functions, not in help), with `--json` answers:
+
+```
+ppm __file owner <path>          {tool, source, name, file, tracked}
+ppm __file mv <from> <to>        move within the package; relink; tracker and claims follow
+wsm __file owner <path>
+wsm __file mv <from> <to>
+```
+
+`mv` within a package: the file moves under `home/` to the path that corresponds to `<to>`, the
+link is made there, the old link is removed, and the tracker's entry is renamed. Moving out of
+`$HOME` (or out of the space's tree) is refused: that is `protect`, or a copy.
+
+### 2. `anfs owner <path>...`
+
+A table through `anfs_table`: `path`, `tool`, `source`, `name`, `file` (the path in the source).
+A path nothing owns has a null tool. A real file that a tracker lists is shown as owned with
+state `replaced` (an editor wrote over the link).
+
+### 3. `anfs mv <from> <to>` and `anfs mv <from>... --to <source/package>`
+
+| From | To | Runs |
+| --- | --- | --- |
+| owned | a path with the same owner's reach | the owner's `__file mv` |
+| not owned | `--to <source/package>` | `ppm file add` |
+| not owned, inside an installed space's tree | — (`anfs mv --adopt <file>`) | `wsm add` |
+| owned by a package | `--to <source/package>` | `ppm file claim` |
+
+It prints what changed in the source (`moved packages/git/home/.gitconfig -> ...; not
+committed`). It never commits. `-n` prints the plan.
+
+### 4. `anfs status`
+
+Drift, one row each, with the fix in the last column:
+
+- a tracked file that is now a real file (`replaced`): `anfs mv --adopt` back into the source,
+  or `ppm file protect`
+- a tracked link that is gone, with an untracked link elsewhere pointing at the same file
+  (`moved`): `anfs mv <old> <new>`
+- a dangling link into the sources (`dangling`): reinstall the package
+- a tracked path with nothing there (`missing`): reinstall
+
+It reads the trackers and the links only (no git, no network). `wsm status` stays as wsm's own
+question and supplies the rows for spaces.
+
+### 5. The shell wrapper (opt-in)
+
+`sh/anfs.sh` defines `mv()` only when `ANFS_SHELL_MV=true`. For each non-option argument but the
+last it does one `readlink`; if none is a link into `$ANFS_SOURCES_HOME`, it runs
+`command mv "$@"`. Otherwise it runs `anfs mv` with the same arguments, which refuses option
+combinations it does not understand and says to use `command mv`. Interactive shells only, as
+all of `sh/` is. No `rm`, no `cp`.
+
+### 6. Documentation
+
+CLAUDE.md "Claiming and Protecting Files": `anfs mv` and `anfs owner` as the front door, the
+tool commands as what they call. The key table rows for `anfs owner` and `anfs status`.
+
+## Test Spec
+
+`packages/anfs/tests/files.bats` with a fixture source (a package with layers, a space):
+
+- `owner`: a package's file, a space's file, the user's own, a replaced one; `--json` keys.
+- `mv` within a package to a deeper directory: the source file moved, the link is relative and
+  resolves, the tracker has the new path, `ppm install` afterwards changes nothing.
+- `mv` of an unowned file with `--to`: as `ppm file add`. A protected file is refused.
+- `status`: each of the four states, and empty after the fix it names.
+- The wrapper: an unowned `mv a b` reaches `command mv` with its arguments untouched (including
+  `-n` and a name with spaces); an owned one reaches `anfs mv`.
+
+## Verification
+
+- [ ] `bats packages/{anfs,ppm,wsm}/tests </dev/null`
+- [ ] On an isolated copy of a real install: `anfs status` is empty; save a linked file with an
+      editor that writes by rename, and it shows `replaced`
+- [ ] `anfs owner ~/.zshrc` names `stack/zsh` (or the layer that wins)
