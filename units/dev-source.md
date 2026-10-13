@@ -47,7 +47,7 @@ images under `machines/` and rewrites the tests; splitting before it lands means
 - **No history is carried over.** The first commit in `anfs-dev` names the core commit the files
   came from; `git log` in core still has the rest.
 
-## Worktrees (sketch, not yet a plan)
+## Worktrees (plan 02)
 
 Parallel jobs each need their own checkout of every repo they touch, on one branch name:
 
@@ -69,7 +69,8 @@ Parallel jobs each need their own checkout of every repo they touch, on one bran
 
 ## Plans
 
-1. `01-move` — the move, every path that named the old places, the docs
+1. `01-move` — the move, every path that named the old places, the docs space, the docs
+2. `02-work` — `~/work/<job>/`, `ppm work`, and what lets two jobs test at once
 
 ## Completion Criteria
 
