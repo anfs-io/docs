@@ -1,7 +1,7 @@
 ---
 ---
 
-# Plan 02 — `~/work`: a directory per job, and `ppm work`
+# Plan 02 — `~/work`: a directory per job, and `anfs work`
 
 ## Context — read these files first
 
@@ -38,16 +38,16 @@ time without meeting each other or the live install.
     .job.yml                  what the job is: branch, repos, its number, created
 ```
 
-### 2. Commands (`ppm work`, in the `dev` package)
+### 2. Commands (`anfs work`, in the `dev` package)
 
 ```
-ppm work new <job> [repo...] [--from REF]    worktrees on a new branch <job>, from REF (default: each repo's main)
-ppm work add <job> <repo...>                 another repo joins the job
-ppm work list                                JOB BRANCH REPOS STATE (clean, dirty, ahead N, merged)
-ppm work path <job> [repo]                   and `ppm work cd`, through the shell wrapper ppm cd uses
-ppm work env <job>                           the variables below, as `export` lines
-ppm work run <job> -- <cmd...>               run a command with them set, in the job's directory
-ppm work remove [-f] <job>                   worktrees and branches; refuses unmerged or dirty without -f
+anfs work new <job> [repo...] [--from REF]    worktrees on a new branch <job>, from REF (default: each repo's main)
+anfs work add <job> <repo...>                 another repo joins the job
+anfs work list                                JOB BRANCH REPOS STATE (clean, dirty, ahead N, merged)
+anfs work path <job> [repo]                   and `anfs work cd`, through the shell wrapper ppm cd uses
+anfs work env <job>                           the variables below, as `export` lines
+anfs work run <job> -- <cmd...>               run a command with them set, in the job's directory
+anfs work remove [-f] <job>                   worktrees and branches; refuses unmerged or dirty without -f
 ```
 
 - A `repo` is a source's alias (`core`, `stack`, `anfs-dev`, `user`), or the name of a repository
@@ -61,7 +61,7 @@ ppm work remove [-f] <job>                   worktrees and branches; refuses unm
 
 ### 3. Isolation: what a job's tests may share
 
-Each job gets a number at `new` (the lowest free one, from 1, kept in `.job.yml`). `ppm work env`
+Each job gets a number at `new` (the lowest free one, from 1, kept in `.job.yml`). `anfs work env`
 derives from it, and the test helpers and e2e scripts use these when they are set:
 
 | Variable | Value | Why |
@@ -87,8 +87,8 @@ derives from it, and the test helpers and e2e scripts use these when they are se
 ### 4. The agent section
 
 `ROADMAP.md`'s "For an agent running this list" is rewritten around this: an orchestrator runs
-`ppm work new <job> <repos>` and gives each agent the job's path; agents run tests through
-`ppm work run <job> --`; the list of things never to touch is the same and now enforced by
+`anfs work new <job> <repos>` and gives each agent the job's path; agents run tests through
+`anfs work run <job> --`; the list of things never to touch is the same and now enforced by
 section 3 where it can be.
 
 ### 5. Leaving `~/anfs-dev`
@@ -122,17 +122,17 @@ core: the grep test of section 3; `packages/pmm/tests/helper.bash` and `e2e` hon
 ## Verification
 
 - [ ] `bats packages/dev/tests </dev/null` in `anfs-dev`; `bats packages/{anfs,pmm}/tests </dev/null` in core
-- [ ] Two jobs at once on this Mac: `ppm work run a -- packages/pmm/tests/e2e debian` and the
+- [ ] Two jobs at once on this Mac: `anfs work run a -- packages/pmm/tests/e2e debian` and the
       same for `b`, started together; both pass, and `/tmp/pmm-<uid>` is untouched
-- [ ] `ppm work run <job> -- packages/dev/tests/roundtrip debian` tests the job's trees (a
+- [ ] `anfs work run <job> -- packages/dev/tests/roundtrip debian` tests the job's trees (a
       marker file in the job's core shows up in the box)
-- [ ] `ppm work remove` of a merged job leaves `git worktree list` clean in every repo
+- [ ] `anfs work remove` of a merged job leaves `git worktree list` clean in every repo
 
 ## Open Questions
 
-1. **`ppm work` or `anfs work`?** The `dev` package adds commands to ppm today (`ppm container`,
-   `ppm vm`, `ppm hooks`), so `ppm work` is consistent. It spans sources, which is anfs's kind
-   of thing, but anfs has no extension seam. Recommended: `ppm work` now.
-2. **Does a job get its own install to try by hand** (`ppm work shell <job>`: a shell with a
+1. **Decided: `anfs work`.** It spans sources, which is anfs's kind of thing. anfs has no way
+   for a package to add a command yet, so this plan waits on that; how it is done is open (see
+   the unit).
+2. **Does a job get its own install to try by hand** (`anfs work shell <job>`: a shell with a
    temp HOME whose tools are the job's)? The e2e scripts already build one. Recommended: yes,
    as a follow-up; it is what makes "try my branch" one command.

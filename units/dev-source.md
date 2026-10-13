@@ -60,7 +60,7 @@ Parallel jobs each need their own checkout of every repo they touch, on one bran
 - The shape is what the round trips already take as `ROUNDTRIP_SRC_ROOT`: a directory of
   checkouts named by alias. A source the job does not touch falls through to the installed one.
   `~/anfs-dev` (one agent's leftover) is replaced by this, and so is the default.
-- `ppm work new|list|path|remove <job> [alias...]` in the `dev` package makes and removes them;
+- `anfs work new|list|path|remove <job> [alias...]` in the `dev` package makes and removes them;
   `remove` refuses a branch that is not merged. A repository that is not a source (docs) is
   found through the `space.yml` that clones it.
 - **Jobs running at once share the host.** Each needs its own socket directory and ssh port
@@ -70,7 +70,7 @@ Parallel jobs each need their own checkout of every repo they touch, on one bran
 ## Plans
 
 1. `01-move` — the move, every path that named the old places, the docs space, the docs
-2. `02-work` — `~/work/<job>/`, `ppm work`, and what lets two jobs test at once
+2. `02-work` — `~/work/<job>/`, `anfs work`, and what lets two jobs test at once
 
 ## Completion Criteria
 
