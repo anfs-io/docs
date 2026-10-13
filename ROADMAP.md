@@ -13,9 +13,9 @@ images on targets, and hardware installs from the same image definitions.
 | --- | --- | --- | --- | --- |
 | 1 | `machine-images` / `01-fold-pim-into-pmm` | pim becomes `pmm image`; `run`, `exec`, the `snapshot` group; `machines/images/` and `machines/networks/` | Read `units/machine-images.md` and plan 01. Agree the command list in **step 1b** | built on branch `machine-images`, awaiting review; round trips, Linux and tart not run (see `log.md`) |
 | 2 | `container-images` / `01-run-exec-snapshot` | pcm gets `run` and the `snapshot` group, so the two tools match | Read the plan and its six open questions | plan drafted 2026-10-13, awaiting review |
-| 3 | `machine-images` / `04-iso-commands` | One `iso` group in `anfs`, `pmm` and `ventoy` | Nothing | in progress (workflow, 2026-10-13), taken before step 2 because step 2's plan is not written |
-| 4 | `machine-images` / `02-image-definition` | Everything a build runs is in the image's directory; `show` prints the plan; `image new` | Skim the plan after step 1; it will read differently then | not started |
-| 5 | `machine-images` / `03-provisioners` | The provisioner contract; `sh` and `anfs` behind it | Nothing: the step variables are `ANFS_IMAGE_*` | not started |
+| 3 | `machine-images` / `04-iso-commands` | One `iso` group in `anfs`, `pmm` and `ventoy` | Nothing | built on the branch 2026-10-13 (see `log.md`); no real download, stick or Linux run |
+| 4 | `machine-images` / `02-image-definition` | Everything a build runs is in the image's directory; `show` prints the plan; `image new` | Skim the plan after step 1; it will read differently then | in progress (workflow, 2026-10-13) |
+| 5 | `machine-images` / `03-provisioners` | The provisioner contract; `sh` and `anfs` behind it | Nothing: the step variables are `ANFS_IMAGE_*` | in progress (workflow, 2026-10-13) |
 | 5a | `dev-source` / `01-move` | `core/dev`, the test boxes, the round trips and the fixture move to the `anfs-dev` source; bats suites stay in core | Merge the `machine-images` branch first (review, Linux checks). Answer the plan's question 2 | plan written |
 | 6 | `container-images` / `02-pcm-image` | `pcm image list\|build\|pull\|export\|remove\|prune` | Plan not written yet. Revisit the placeholder on provision steps in container builds | plan to write |
 | 7 | `toolkit-api` / `01`–`05` | `anfs rpc`, the socket, anfs-ui as a container in a default install | The macOS test below, then settle the unit's open questions 2 and 3 | draft unit |
