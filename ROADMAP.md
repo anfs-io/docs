@@ -25,6 +25,7 @@ images on targets, and hardware installs from the same image definitions.
 | 10 | `metal` | Network install from an image definition; the old laptop; pcs | Plans are written after steps 5 and 8 | outline |
 | A | `linker` / `01`–`03` | Our own linker replaces GNU stow in ppm, wsm and the bootstrap; per-platform files in `package.yml`; `anfs owner`, `anfs mv` (files, and a package between sources: `ppm move` goes), `anfs status` | Read `units/linker.md` (it answers the three questions on stow) | plans written |
 | B | `profiles` / `01-profiles` | Hosts and roles in a source; `anfs profile apply` | Read `units/profiles.md` and its three open questions | plan written |
+| Y | `audit` | Clean agents with none of our context judge the toolkit through seven lenses (first hour, why not what exists, architecture, safety, agent as user, ...); we answer each finding | A first pass (two lenses) can run once `machine-images` is merged; the full one before Z | placeholder |
 | Z | `tutorial` | "From dotfiles to deployment": the whole toolkit as one story in chapters, a team and their agents taking a todo app from idea to deployment | Everything above built | placeholder |
 
 ## For an agent running this list
