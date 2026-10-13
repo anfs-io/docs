@@ -83,6 +83,23 @@ pcm or pmm (`pcm path`, `pmm image path`).
   claim core provides containers.
 - Core's README and any `ppm container` mention in a tool's help text.
 
+### 4a. The docs space
+
+core's `spaces/space.yml` (source level) lists three repositories: `anfs-io/docs`,
+`anfs-io/infra`, `anfs-io/website`.
+
+- `anfs-dev/spaces/space.yml` lists `anfs-io/docs`. core's `spaces/` is deleted, and
+  `anfs src list` no longer shows `spaces` for core.
+- `infra` and `website` go to `admin-anfs`'s `spaces/space.yml`. That source is private and not
+  in the worktrees an agent has: write the file's content into `log.md` for a person to commit.
+- The clone moves from `~/spaces/anfs/docs` to `~/spaces/anfs-dev/docs` (wsm installs under the
+  source's alias). For step 6: `wsm remove anfs/` leaves clones in place by design, so the
+  person moves the three directories and then runs `wsm install anfs-dev/`, which finds the
+  clone there and does not clone again. Check that wsm treats an existing clone at the path as
+  installed rather than as in the way.
+- Every path that says `~/spaces/anfs/docs`: core and stack CLAUDE.md ("the `anfs` wsm space"),
+  `ROADMAP.md`, the plans' own "Context" lines where they give an absolute path.
+
 ### 5. Documentation
 
 - Core `CLAUDE.md`: "Git Hooks" and "Moving a Package Between Repos" move out whole. "Testing"

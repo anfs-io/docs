@@ -23,6 +23,7 @@ images under `machines/` and rewrites the tests; splitting before it lands means
 | `machines/anfs-test-macos` | The base images `machines/images/debian-13`, `fedora-44` |
 | `machines/images/anfs-test-macos`, `machines/images/anfs-dev` | `isos/`, `skills/`, `install.sh` |
 | `packages/anfs/tests/{harness,roundtrip,roundtrip-macos}` and `fixtures/acme` | |
+| `spaces/space.yml`'s `anfs-io/docs` (the plans and logs: the history of core and stack) | |
 
 ## Decisions
 
@@ -38,6 +39,11 @@ images under `machines/` and rewrites the tests; splitting before it lands means
   git@github.com:anfs-io/dev-anfs anfs-dev` and `ppm install anfs-dev/dev`.
 - **Nothing in core may need the dev source**: not `install.sh`, not `core/anfs`'s `depends:`,
   not a bats suite. The dependency is one way.
+- **`dev-anfs` is public**: it is what a contributor or a fork pulls to run the tests and read
+  the plans. The docs stay their own repo (`anfs-io/docs`); the dev source's `spaces/space.yml`
+  is what clones it, so wsm only clones and never links a file of it. core has no `spaces/`.
+  `anfs-io/infra` and `anfs-io/website`, which core's `space.yml` also lists, go to the private
+  `admin-anfs` source's.
 - **No history is carried over.** The first commit in `anfs-dev` names the core commit the files
   came from; `git log` in core still has the rest.
 
@@ -47,14 +53,16 @@ Parallel jobs each need their own checkout of every repo they touch, on one bran
 
 ```
 ~/work/<job>/            one job, one branch name in every repo it touches
-  core/  stack/  anfs-dev/  docs/     git worktrees of the clones under sources/, named by alias
+  core/  stack/  anfs-dev/           git worktrees of the clones under sources/, named by alias
+  docs/                              a worktree of the docs clone (a repository of a space, not a source)
 ```
 
 - The shape is what the round trips already take as `ROUNDTRIP_SRC_ROOT`: a directory of
   checkouts named by alias. A source the job does not touch falls through to the installed one.
   `~/anfs-dev` (one agent's leftover) is replaced by this, and so is the default.
 - `ppm work new|list|path|remove <job> [alias...]` in the `dev` package makes and removes them;
-  `remove` refuses a branch that is not merged.
+  `remove` refuses a branch that is not merged. A repository that is not a source (docs) is
+  found through the `space.yml` that clones it.
 - **Jobs running at once share the host.** Each needs its own socket directory and ssh port
   range (`PMM_SOCK_DIR`, `PMM_SSH_PORT_BASE`), derived from the job; the ISO store is shared and
   read-only to tests; tart allows two macOS guests in all.
