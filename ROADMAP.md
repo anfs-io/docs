@@ -7,7 +7,64 @@ The direction in one paragraph: `pmm` owns machines and their images (pim goes a
 the same commands, the toolkit gets one API so apps ship as containers, a deploy tool puts
 images on targets, and hardware installs from the same image definitions.
 
-## The order
+## The checklist
+
+The master list: what is next, in the order it will be done. Tick a line when it is done. The
+table below it says what each unit is; the plans say how.
+
+### Now: test and merge `machine-images` (you)
+
+- [ ] Push the branch from core and stack: `git push -u origin machine-images` in
+      `~/anfs-dev/machine-images` and `~/anfs-dev/machine-images-stack`
+- [ ] Mac: the walk in `units/machine-images/README.md`, sections 1 to 6
+- [ ] Mac: `pmm image build --test anfs-test-macos` (no tart build has run on the branch)
+- [ ] Debian box: `bats packages/{anfs,pmm,pcm,ppm,psm,wsm}/tests </dev/null`
+- [ ] Debian box: `packages/pmm/tests/e2e debian`
+- [ ] Debian box: `ROUNDTRIP_SRC_ROOT=<dir holding core/ and stack/> packages/anfs/tests/roundtrip debian`
+- [ ] amd64 PC: does a build print the `(tcg)` warning (kvm not in use)?
+- [ ] Report what failed or felt wrong; fixes go on the branch
+- [ ] Merge `machine-images` into main: core, stack, docs
+- [ ] This Mac, before pulling main: `pim implode -y`, delete tart's `pim-*` VMs,
+      `ppm remove core/pim`; `umount ~/mnt/debian-13`
+- [ ] Remove the worktrees under `~/anfs-dev` and the directory
+
+### Then: tooling
+
+- [ ] CLAUDE.md becomes AGENTS.md in every repo (`BACKLOG.md`; no plan needed)
+- [ ] `dev-source/01-move` — first confirm: `infra` and `website` go to `admin-anfs`'s `space.yml`
+- [ ] `machine-images/05-pmm-optional`
+- [ ] `dev-source/02-work` — the `anfs <name>` seam, `anfs hooks`, `anfs work`
+- [ ] `audit`, first pass: the "first hour" and "why not what exists" lenses
+
+### Alongside, as their own jobs (once `anfs work` exists)
+
+- [ ] `linker/01-link-library` — first read `units/linker.md`
+- [ ] `linker/02-platform-files`
+- [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; `ppm move` goes
+- [ ] `profiles/01-profiles` — first answer its three questions, and confirm `profiles/hosts|roles`,
+      `anfs profile` (singular) and no Brewfile format
+
+### Then: features
+
+- [ ] `container-images/01-run-exec-snapshot` — first read the plan and its six questions
+- [ ] `dev-source/03-boxes` — `anfs work install|shell|reset`; `ppm container`, `vm`, `user` go
+- [ ] `container-images/02-pcm-image` — plan to write
+- [ ] `toolkit-api` — first settle its questions 2 and 3; plans to write
+- [ ] `deploy/01-targets`, `02-proxmox-publish` — first read `units/deploy.md` and name the tool
+- [ ] `deploy/03-deployments` — details written against the real host
+- [ ] `metal` — plans to write
+
+### Last
+
+- [ ] `audit`, in full
+- [ ] `tutorial` — "From dotfiles to deployment"
+
+### Done
+
+- [x] `machine-images/01-fold-pim-into-pmm`, `04-iso-commands`, `02-image-definition`,
+      `03-provisioners`: built on the branch 2026-10-13, Mac only
+
+## The units
 
 | # | Unit / plan | What it does | Needs from you first | Status |
 | --- | --- | --- | --- | --- |
@@ -37,7 +94,7 @@ images on targets, and hardware installs from the same image definitions.
 - **Never touch real state.** `~/.local/share/{pim,pmm}`, `~/.local/state/{pim,pmm}` and tart's
   store hold a running machine. The bats suites and `tests/e2e` isolate themselves; anything run
   by hand gets its `*_HOME` variables pointed at a temp dir.
-- **One plan per agent, in the order above.** Read the unit file and the plan first. Commit on
+- **One plan per agent, in the checklist's order.** Read the unit file and the plan first. Commit on
   the branch as you go; do not push. Write `log.md` beside the plan when it is done.
 - **The gate for the next step** is the plan's Verification list: `bats packages/<tool>/tests
   </dev/null` for every suite touched, and `packages/pmm/tests/e2e debian` where the plan
@@ -63,16 +120,6 @@ images on targets, and hardware installs from the same image definitions.
   wsm and `install.sh`, which the `machine-images` branch does not, so it can run as its own job
   in parallel. `profiles` is better after `linker` plan 02 and step 5b.
 - **Deploy and metal last**: they build on finished images, and you have not reviewed them.
-
-## Small things to do when convenient
-
-- ~~macOS transport test~~ done 2026-10-13: a container reaches the Mac's `127.0.0.1` through
-  `host.containers.internal` (see `toolkit-api`, question 1).
-- **The slow amd64 PC**: check whether its build said `(tcg)`. If so, the user was not in the
-  `kvm` group and the build was emulated. Step 1 adds a warning for this.
-- **Before installing step 1**: run `pim implode -y` and delete tart's `pim-*` VMs. Nothing is
-  migrated.
-- **Commit the docs.** Everything under `units/` from this session, and this file, is uncommitted.
 
 ## Decisions already made (so they are not reopened by accident)
 
