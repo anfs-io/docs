@@ -28,6 +28,12 @@ table below it says what each unit is; the plans say how.
 ### Then: stacks (`units/stacks.md`, decided 2026-10-19)
 
 - [ ] `stacks/01-stacks` and `stacks/03-container-manifest`, as two jobs at once
+- [ ] Small jobs once 01 and 03 are merged (2026-10-19):
+  - [ ] `ppm list`: `PACKAGE STATUS VERSION` (`installed`, `outdated`, `-`), as `anfs list` is
+        for stacks; its `--json` readers (01's stack record) in the same change
+  - [ ] stack's containers: each README keeps only what cannot be derived (why, first run,
+        gotchas); data dirs, ports and image come from `compose.yml` through `pcm show`,
+        description and attribution from `container.yml`
 - [ ] `stacks/02-system` — the toolkit is the `system` stack; implode is `anfs remove system`
 - [ ] `stacks/04-boxes` — a stack onto a container or VM; replaces `dev-source/03-boxes`
 - [ ] `stacks/05-roundtrips`
@@ -36,6 +42,10 @@ table below it says what each unit is; the plans say how.
 
 - [ ] `linker/01-link-library` — first read `units/linker.md`
 - [ ] `linker/02-platform-files`
+- [ ] `wsm` without levels — plan to write, with or right after `linker/01` (both rewrite how wsm
+      links). A space is any directory with a `space.yml` (and a source's `spaces/`), at any
+      depth; ids are paths (`lgat/tech/web`); a space's files are those not inside a child space;
+      no LEVEL, no workspace/space naming, no two-level limit
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; `ppm move` goes
 
 ### Then: features
