@@ -46,6 +46,11 @@ table below it says what each unit is; the plans say how.
 
 ### Last
 
+- [ ] **Review testing together (you and me), before any VM or long-running test is launched.**
+      The test categories (unit bats with stubs, the e2e scripts, the round trips, boxes, tart,
+      Linux hosts, CI), and for each: what it proves, how it runs, when (while working, before a
+      merge, nightly, before a release) and where (this Mac, the Debian box, CI). The outcome
+      decides how the deferred tests below are run
 - [ ] **The deferred VM tests** (decided 2026-10-19: none run until everything above is built,
       they take too long). Every plan's Verification items that boot a VM or a test box: `pmm`'s
       e2e (Debian, Fedora), two jobs' e2e at once, the round trips (Debian, Fedora, macOS), the
@@ -104,9 +109,12 @@ table below it says what each unit is; the plans say how.
   (`~/.cache/anfs/isos`) is shared and read-only. No broad `pkill`.
 - **One plan per agent, in the checklist's order.** Read the unit file and the plan first. Commit on
   the branch as you go; do not push. Write `log.md` beside the plan when it is done.
-- **The gate** is the plan's Verification list: `bats packages/<tool>/tests </dev/null` for every
-  suite touched. **Nothing that boots a VM or a test box runs** (pmm's e2e, the round trips, the
-  harness, tart): those are deferred to the end of the list. The log names each deferred item.
+- **Tests while working: only the suites you touch** (`bats packages/<tool>/tests </dev/null`).
+- **The full run, once, at the end of a plan**: `packages/anfs/tests/all` in core (every bats file,
+  several at once: about two minutes, against ten one suite after another). A reviewer reads the
+  code and runs only what it needs to check a finding; it does not run the full set.
+- **Nothing that boots a VM or a test box runs** (pmm's e2e, the round trips, the harness, tart):
+  those are deferred to the end of the list. The log names each deferred item.
 - **Stops for a person**: before a branch merges; before any step whose "Needs from you first"
   is not done; before anything that needs hardware or a PVE host.
 - bats is Homebrew's `bats-core`. Run it with `</dev/null`.

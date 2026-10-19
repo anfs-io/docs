@@ -10,6 +10,11 @@ gets a unit.
   merged (agents are editing CLAUDE.md on it now). Check first that every agent in use reads
   AGENTS.md on its own; if one does not, leave a CLAUDE.md that only imports it.
 
+- **The pre-commit hook and a pathspec commit** (`git commit -- <path>`): the version bump lands
+  in the commit, but the index keeps the old `package.yml`, so the file shows as staged and
+  modified. Seen 2026-10-19 in core. The hook should `git add` what it changed only when the
+  commit is not pathspec-limited, or re-stage after.
+
 ## Now units
 
 - pmm out of the default install (pcm stays, for the dashboard): `machine-images` plan 05.
