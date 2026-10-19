@@ -49,6 +49,11 @@ table below it says what each unit is; the plans say how.
 
 ### Last
 
+- [ ] **How pmm's and pcm's tests are run from now on (you and me).** Their bats suites are off
+      since 2026-10-19: they took most of the test time and ran on every change. Decide how you
+      run them by hand (`ANFS_TESTS_PMM_PCM=1 packages/anfs/tests/all pmm pcm`) or how CI/CD
+      runs them, and when (before a merge that touches pmm or pcm, nightly, before a release).
+      Until then no agent runs them, and each plan's log says they were not run
 - [ ] **Review testing together (you and me), before any VM or long-running test is launched.**
       The test categories (unit bats with stubs, the e2e scripts, the round trips, boxes, tart,
       Linux hosts, CI), and for each: what it proves, how it runs, when (while working, before a
@@ -123,10 +128,12 @@ table below it says what each unit is; the plans say how.
   read-only. No broad `pkill`; kill only the pids you started.
 - **One plan per agent, in the checklist's order.** Read the unit file and the plan first. Commit on
   the branch as you go; do not push. Write `log.md` beside the plan when it is done.
-- **Tests while working: only the suites you touch.**
+- **pmm's and pcm's tests are off until further notice** (2026-10-19). Their helpers skip
+  every test and `tests/all` leaves them out. Do not set `ANFS_TESTS_PMM_PCM`; a plan that
+  changes pmm or pcm says in its log that their suites were not run. See "Last".
+- **Tests while working: only the file you touch** (`bats <file> -f <name>` for one test).
 - **The full run, once, at the end of a plan**: `anfs work run <job> core --
-  packages/anfs/tests/all` (every bats file, several at once: about two minutes, against ten one suite
-  after another). A reviewer reads the code and runs only what it needs to check a finding; it
+  packages/anfs/tests/all` (every bats file but pmm's and pcm's, several at once: about 30 s). A reviewer reads the code and runs only what it needs to check a finding; it
   does not run the full set.
 - **Nothing that boots a VM or a test box runs** (pmm's e2e, the round trips, the harness, tart):
   those are deferred to the end of the list, after the testing review there. The log names each
