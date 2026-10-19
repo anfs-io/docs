@@ -100,7 +100,7 @@ anfs work show <job>
 anfs work path <job> [repo]
 anfs work cd <job> [repo]
 anfs work env <job>
-anfs work run <job> -- <cmd...>
+anfs work run <job> [repo] -- <cmd...>
 anfs work remove [-f] [-y] <job>
 ```
 
@@ -197,9 +197,9 @@ core: the grep test of section 3; `packages/pmm/tests/helper.bash` and `e2e` hon
 ## Verification
 
 - [ ] `bats packages/{anfs,pmm}/tests </dev/null` in core; `bats packages/dev/tests </dev/null` in `anfs-dev`
-- [ ] Two jobs at once on this Mac: `anfs work run a -- packages/pmm/tests/e2e debian` and the
+- [ ] Two jobs at once on this Mac: `anfs work run a core -- packages/pmm/tests/e2e debian` and the
       same for `b`, started together; both pass, and `/tmp/pmm-<uid>` is untouched
-- [ ] `anfs work run <job> -- packages/anfs/tests/roundtrip debian` tests the job's trees (a
+- [ ] `anfs work run <job> core -- packages/anfs/tests/roundtrip debian` tests the job's trees (a
       marker file in the job's core shows up in the box)
 - [ ] `anfs work remove` of a merged job leaves `git worktree list` clean in every repo
 

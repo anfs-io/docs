@@ -17,8 +17,9 @@ table below it says what each unit is; the plans say how.
 - [ ] `dev-source/02-work` — the `anfs <name>` seam, the tools as `anfs <resource>` commands,
       `anfs hooks`, `anfs work`. First, because every job after it is run through it. Built in
       `anfs-dev/packages/dev` and core, the last job set up by hand (`~/work/anfs-work/`).
-      Built on the branch `anfs-work` 2026-10-19 (see `log.md`): awaiting review and merge, then
-      `ppm install anfs-dev/dev` again here for `anfs-work` and `anfs-hooks`
+      Built on the branch `anfs-work` 2026-10-19, review findings fixed (see `log.md`): awaiting
+      review and merge, then `ppm install anfs-dev/dev` again here for `anfs-work` and
+      `anfs-hooks`. VM and box checks deferred to "Last"
 - [ ] Two jobs at once through `anfs work`, its first real test:
   - [ ] `dev-source/01-move` — the rest of the move (the package and the docs space are done)
   - [ ] `cli/01-one-shape` — psm without `skills`, `wsm repo`, every list in one shape
@@ -108,11 +109,12 @@ table below it says what each unit is; the plans say how.
   are the live install (the tools on PATH are linked from them) and stay on main: never edit them,
   never `git worktree add` by hand, and never run `ppm install`, `anfs install`, `wsm install` or
   any `implode` on this host.
-- **Every test runs through the job**: `anfs work run <job> -- bats packages/<tool>/tests
-  </dev/null`. That sets the job's variables (`anfs work env <job>` prints them): its own
+- **Every test runs through the job**: `anfs work run <job> core -- bats packages/<tool>/tests
+  </dev/null` (the repo after the job is the worktree it runs in; without one, the job's
+  directory, which holds the worktrees and no `packages/`). That sets the job's variables (`anfs work env <job>` prints them): its own
   `PMM_SOCK_DIR`, ssh port range, `TMPDIR` and `ROUNDTRIP_SRC_ROOT`, so two jobs' tests never
-  meet each other or the live install. anfs-dev's suites: `bats packages/dev/tests </dev/null` in
-  the job's `anfs-dev`.
+  meet each other or the live install. anfs-dev's suites: `anfs work run <job> anfs-dev -- bats
+  packages/dev/tests </dev/null`.
 - **Never touch real state.** `~/.local/share/pmm`, `~/.local/state/pmm`, `/tmp/pmm-<uid>` and
   tart's store hold running machines. The bats suites and `tests/e2e` isolate themselves, and
   core's `isolation.bats` fails a suite that names the live socket directory, points a `*_HOME`
@@ -122,8 +124,8 @@ table below it says what each unit is; the plans say how.
 - **One plan per agent, in the checklist's order.** Read the unit file and the plan first. Commit on
   the branch as you go; do not push. Write `log.md` beside the plan when it is done.
 - **Tests while working: only the suites you touch.**
-- **The full run, once, at the end of a plan**: `anfs work run <job> -- packages/anfs/tests/all`
-  from the job's core (every bats file, several at once: about two minutes, against ten one suite
+- **The full run, once, at the end of a plan**: `anfs work run <job> core --
+  packages/anfs/tests/all` (every bats file, several at once: about two minutes, against ten one suite
   after another). A reviewer reads the code and runs only what it needs to check a finding; it
   does not run the full set.
 - **Nothing that boots a VM or a test box runs** (pmm's e2e, the round trips, the harness, tart):
