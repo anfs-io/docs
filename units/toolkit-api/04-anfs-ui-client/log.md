@@ -93,3 +93,66 @@ reads were made, and both pids were killed afterwards.
 2. `pcm up ui` (or `anfs install system`, which now starts it).
 3. Open http://localhost:9292. Packages should list this Mac's packages, and starting a
    container from Containers should work, with its output in Activity.
+
+## Follow-up 1: every kind on the current lists (`d70ecb2`)
+
+The kinds predated several merged changes. This follow-up moves them to core AGENTS.md "Lists
+and --json" and the tools' `anfs_table` calls, with no fallback to old keys.
+
+- `Kind` names its resource key (`id`), and a row's source is the part before the `/` in that
+  key. A plain name has no source, and neither do pvm's lists (rule 5). A source's own row is
+  its own source (`sourced: :self`).
+- `status` is read on every kind. `unset` says what a null status means for that kind.
+- Actions take the qualified resource. `action_command` runs the action in the list's group, so
+  `pmm image list` gives `pmm image build`.
+
+Per kind:
+
+- **sources**: `anfs src list`, key `source` (was `alias`). The overview matrix reads it too.
+- **stacks** (new): `anfs list`, key `stack`, `version`. A null status shows as `not installed`.
+  Read-only.
+- **packages**: `status` (null shows as `available`) and `version`. Remove when status is set,
+  else install.
+- **containers**: key `container` (was `name`/`source`), plus `version` and `description`. A null
+  status shows as `not created`. Up/down on the qualified container, nothing on a shadowed row.
+- **images**: `pmm image list` (was `pim list`), key `image`, plus `arch`, `backend`, `built`.
+  `pmm image build <source/name>` is offered when the status is unbuilt or stale. Nothing is
+  offered for a plain name (its definition is gone).
+- **machines**: key `machine`, `status` (was `state`). Up/down; a plain name has no source.
+- **spaces**: key `space` (was `id`/`note`), `level`, `dir`. A null status shows as installed or
+  not installed, from `dir`.
+- **repos**: `wsm repo list` (was `wsm list -r`), key `repository`, `url`.
+- **skills**: `psm list` (was `psm skills list`), key `skill`, `config`, `repo`. Sync the config
+  unless the status is ok.
+- **vaults** and **links**: `status`. Links' first column is `source`, and neither has a source.
+- Specs: fixtures on the real shapes. `spec/anfs/kinds_spec.rb` is new (commands, sources,
+  statuses, actions). rspec: 60 examples, 0 failures. rubocop: clean.
+- By hand, in host mode (reads only): 9 sources, 67 packages, 4 images, 3 machines (one plain
+  name with no source), 16 spaces, 40 repos and 7 skills, all with the right sources and
+  statuses. Three panels showed problems that come from this Mac's installed toolkit, not from
+  the app:
+  - Stacks and containers show their tool's error: the installed anfs lib lacks `stacks.sh`, and
+    the installed pcm fails on `manifest_fields`.
+  - Vaults and links show an empty status: the installed pvm still prints `state`, while the
+    worktree's pvm prints `status`.
+
+## Follow-up 2: the listen address in `.env.schema` (`6db48db`)
+
+- `containers/ui/.env.schema` follows stack's convention:
+  - `ANFS_UI_BIND` (string, default `127.0.0.1`).
+  - `ANFS_UI_PORT` (port, default `9292`).
+  - `ANFS_UI_HOSTS` (string, empty by default).
+  - `ANFS_UI_REMOTE_ACTIONS` (`enum(0, 1)`, default `0`). This is an enum, not a boolean, because
+    the app checks for `"1"`.
+  - Each variable documents its risk.
+- `compose.yml` publishes `"${ANFS_UI_BIND}:${ANFS_UI_PORT}:9292"` and passes `ANFS_UI_HOSTS` and
+  `ANFS_UI_REMOTE_ACTIONS` into `environment`. Its header comment, the README's Run section
+  (overrides in `~/.config/pcm/env/ui.env`) and the AGENTS.md line are updated.
+- By hand:
+  - `varlock load --path .` resolves all four variables, and `ANFS_UI_REMOTE_ACTIONS=2` fails.
+  - In an isolated `HOME` with podman stubbed, `pcm validate ui` says `valid: local/ui`.
+  - `pcm show ui` lists `reads env ANFS_UI_BIND ANFS_UI_PORT ANFS_UI_HOSTS
+    ANFS_UI_REMOTE_ACTIONS` and the port `127.0.0.1:9292:9292`. With a `ui.env` that sets
+    `0.0.0.0` and `9393`, the port is `0.0.0.0:9393:9292`.
+  - `ANFS_UI_REMOTE_ACTIONS=2` makes validate fail ("env does not pass .env.schema").
+- `packages/anfs/tests/all` after both follow-ups: 374 passed, 0 failed (pmm and pcm off).
