@@ -16,7 +16,9 @@ table below it says what each unit is; the plans say how.
 
 - [ ] `dev-source/02-work` — the `anfs <name>` seam, the tools as `anfs <resource>` commands,
       `anfs hooks`, `anfs work`. First, because every job after it is run through it. Built in
-      `anfs-dev/packages/dev` and core, the last job set up by hand (`~/work/anfs-work/`)
+      `anfs-dev/packages/dev` and core, the last job set up by hand (`~/work/anfs-work/`).
+      Built on the branch `anfs-work` 2026-10-19 (see `log.md`): awaiting review and merge, then
+      `ppm install anfs-dev/dev` again here for `anfs-work` and `anfs-hooks`
 - [ ] Two jobs at once through `anfs work`, its first real test:
   - [ ] `dev-source/01-move` — the rest of the move (the package and the docs space are done)
   - [ ] `cli/01-one-shape` — psm without `skills`, `wsm repo`, every list in one shape
@@ -83,7 +85,7 @@ table below it says what each unit is; the plans say how.
 | 3 | `machine-images` / `04-iso-commands` | One `iso` group in `anfs`, `pmm` and `ventoy` | Nothing | built on the branch 2026-10-13 (see `log.md`); no real download, stick or Linux run |
 | 4 | `machine-images` / `02-image-definition` | Everything a build runs is in the image's directory; `show` prints the plan; `image new` | Skim the plan after step 1; it will read differently then | built on the branch 2026-10-13 (see `log.md`); tart, Linux, amd64, Fedora and the round trips not run |
 | 5 | `machine-images` / `03-provisioners` | The provisioner contract; `sh` and `anfs` behind it | Nothing: the step variables are `ANFS_IMAGE_*` | built on the branch 2026-10-13 (see `log.md`); tart, Linux, amd64, Fedora and the round trips not run |
-| 5a | `dev-source` / `02-work`, `01-move`, `03-boxes` | The `anfs <name>` seam and the tools as `anfs <resource>`, `anfs hooks`, `~/work/<job>/` and `anfs work`; then the rest of the move to `anfs-dev` (bats suites stay in core); then `anfs work install\|shell\|reset` replace `ppm container`, `ppm vm`, `ppm user` | `03-boxes` needs step 2 | `core/dev` and the docs space moved by hand 2026-10-17; plans written |
+| 5a | `dev-source` / `02-work`, `01-move`, `03-boxes` | The `anfs <name>` seam and the tools as `anfs <resource>`, `anfs hooks`, `~/work/<job>/` and `anfs work`; then the rest of the move to `anfs-dev` (bats suites stay in core); then `anfs work install\|shell\|reset` replace `ppm container`, `ppm vm`, `ppm user` | `03-boxes` needs step 2 | `core/dev` and the docs space moved by hand 2026-10-17; `02-work` built on branch `anfs-work` 2026-10-19, awaiting review (VM checks deferred) |
 | 5c | `cli` / `01-one-shape` | psm without its `skills` group; `wsm repo`; every list's first column the resource as `source/name`, `STATUS` everywhere | Nothing | plan written |
 | 5b | `machine-images` / `05-pmm-optional` | pmm and qemu leave the default install; pcm stays | Nothing | plan written |
 | 6 | `container-images` / `02-pcm-image` | `pcm image list\|build\|pull\|export\|remove\|prune` | Plan not written yet. Revisit the placeholder on provision steps in container builds | plan to write |
@@ -98,25 +100,38 @@ table below it says what each unit is; the plans say how.
 
 ## For an agent running this list
 
-- **Work only in the job's worktrees.** Until `anfs work` exists they are made by hand under
-  `~/work/<job>/<alias>/` (`git worktree add`), on a branch named for the job; after it,
-  `anfs work new`. The checkouts under `~/.local/share/anfs/sources/` are the live install (the
-  tools on PATH are linked from them): never edit them, and never run `ppm install`, `anfs
-  install`, or any `implode` on this host.
+- **An orchestrator makes the job; an agent works only in it.** `anfs work new <job> <repo...>`
+  (a source's alias: `core`, `stack`, `anfs-dev`; or a space's repository: `docs`) makes
+  `~/work/<job>/` with a worktree of each repo on the branch `<job>`, and gives the job its number.
+  `anfs work add <job> <repo>` brings in another. The agent is given the job's path (`anfs work
+  path <job>`) and edits nothing outside it. The checkouts under `~/.local/share/anfs/sources/`
+  are the live install (the tools on PATH are linked from them) and stay on main: never edit them,
+  never `git worktree add` by hand, and never run `ppm install`, `anfs install`, `wsm install` or
+  any `implode` on this host.
+- **Every test runs through the job**: `anfs work run <job> -- bats packages/<tool>/tests
+  </dev/null`. That sets the job's variables (`anfs work env <job>` prints them): its own
+  `PMM_SOCK_DIR`, ssh port range, `TMPDIR` and `ROUNDTRIP_SRC_ROOT`, so two jobs' tests never
+  meet each other or the live install. anfs-dev's suites: `bats packages/dev/tests </dev/null` in
+  the job's `anfs-dev`.
 - **Never touch real state.** `~/.local/share/pmm`, `~/.local/state/pmm`, `/tmp/pmm-<uid>` and
-  tart's store hold running machines. The bats suites and `tests/e2e` isolate themselves; anything
-  run by hand gets its `*_HOME` variables pointed at a temp dir. The ISO store
-  (`~/.cache/anfs/isos`) is shared and read-only. No broad `pkill`.
+  tart's store hold running machines. The bats suites and `tests/e2e` isolate themselves, and
+  core's `isolation.bats` fails a suite that names the live socket directory, points a `*_HOME`
+  at a real home, writes under the real `~` or kills by pattern. Anything run by hand gets its
+  `*_HOME` variables pointed at a temp dir. The ISO store (`~/.cache/anfs/isos`) is shared and
+  read-only. No broad `pkill`; kill only the pids you started.
 - **One plan per agent, in the checklist's order.** Read the unit file and the plan first. Commit on
   the branch as you go; do not push. Write `log.md` beside the plan when it is done.
-- **Tests while working: only the suites you touch** (`bats packages/<tool>/tests </dev/null`).
-- **The full run, once, at the end of a plan**: `packages/anfs/tests/all` in core (every bats file,
-  several at once: about two minutes, against ten one suite after another). A reviewer reads the
-  code and runs only what it needs to check a finding; it does not run the full set.
+- **Tests while working: only the suites you touch.**
+- **The full run, once, at the end of a plan**: `anfs work run <job> -- packages/anfs/tests/all`
+  from the job's core (every bats file, several at once: about two minutes, against ten one suite
+  after another). A reviewer reads the code and runs only what it needs to check a finding; it
+  does not run the full set.
 - **Nothing that boots a VM or a test box runs** (pmm's e2e, the round trips, the harness, tart):
-  those are deferred to the end of the list. The log names each deferred item.
-- **Stops for a person**: before a branch merges; before any step whose "Needs from you first"
-  is not done; before anything that needs hardware or a PVE host.
+  those are deferred to the end of the list, after the testing review there. The log names each
+  deferred item.
+- **Stops for a person**: before a branch merges (then `anfs work remove <job>`, which refuses
+  unmerged work); before any step whose "Needs from you first" is not done; before anything that
+  needs hardware or a PVE host.
 - bats is Homebrew's `bats-core`. Run it with `</dev/null`.
 
 ## Why this order
