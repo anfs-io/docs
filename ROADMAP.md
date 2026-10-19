@@ -40,7 +40,8 @@ table below it says what each unit is; the plans say how.
   - [x] `containers/ui` in core (merged 2026-10-19): a Containerfile that builds the gems (`dev`
         target; `release` copies the code), the code mounted read-only from the source so it is
         developed on the host. Not in `system` yet (`pcm install` starts a service): `pcm up ui`
-  - [ ] `toolkit-api/01-rpc` and `02-socket` — `anfs rpc` and the launchd / systemd socket
+  - [x] `toolkit-api/01-rpc` — `anfs rpc` (merged 2026-10-19)
+  - [ ] `toolkit-api/02-socket` — the launchd / systemd socket, the token, pcm's `toolkit:` grant
   - [ ] `toolkit-api/04-anfs-ui-client`, reduced: the app calls the API instead of running the
         tools; then `status: running` in `system`
 - [ ] `stacks/04-boxes` — a stack onto a container or VM; replaces `dev-source/03-boxes`
