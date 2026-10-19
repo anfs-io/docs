@@ -14,17 +14,14 @@ table below it says what each unit is; the plans say how.
 
 ### Then: tooling
 
-- [ ] `dev-source/02-work` — the `anfs <name>` seam, the tools as `anfs <resource>` commands,
-      `anfs hooks`, `anfs work`. First, because every job after it is run through it. Built in
-      `anfs-dev/packages/dev` and core, the last job set up by hand (`~/work/anfs-work/`).
-      Built on the branch `anfs-work` 2026-10-19, review findings fixed (see `log.md`): awaiting
-      review and merge, then `ppm install anfs-dev/dev` again here for `anfs-work` and
-      `anfs-hooks`. VM and box checks deferred to "Last"
+- [x] `dev-source/02-work` — the `anfs <name>` seam, the tools as `anfs <resource>` commands,
+      `anfs hooks`, `anfs work`. Merged into main in core, anfs-dev and docs 2026-10-19 (see
+      `log.md`); `anfs-dev/dev` reinstalled here. VM and box checks deferred to "Last"
 - [ ] Two jobs at once through `anfs work`, its first real test:
   - [ ] `dev-source/01-move` — the rest of the move (the package and the docs space are done)
   - [ ] `cli/01-one-shape` — psm without `skills`, `wsm repo`, every list in one shape
-- [ ] Remove the old worktrees under `~/anfs-dev` (merged) and the directory (you: the rest of it
-      is one agent's leftovers)
+- [x] Remove the old worktrees under `~/anfs-dev` (merged) and the directory (2026-10-19; the
+      leftovers archived in `~/.local/state/anfs-repair-2026-10-19/anfs-dev-leftovers.tgz`)
 - [ ] CLAUDE.md becomes AGENTS.md in every repo (`BACKLOG.md`; no plan needed)
 - [ ] `machine-images/05-pmm-optional`
 - [ ] `audit`, first pass: the "first hour" and "why not what exists" lenses
@@ -70,6 +67,9 @@ table below it says what each unit is; the plans say how.
 
 ### Done
 
+- [x] Testing cut down (2026-10-19): `packages/anfs/tests/all` runs every bats file in parallel;
+      pmm's and pcm's suites are off (core 1066363), so the full run is about 30 s
+
 - [x] `machine-images`: tested (the walk, the tart build, the Debian box, the amd64 PC: most
       checks run, all passed), merged into main in core, stack and docs, pushed (2026-10-19)
 - [x] This Mac repaired after the merge (2026-10-19): pim's VM, disks and links gone; the core
@@ -91,7 +91,7 @@ table below it says what each unit is; the plans say how.
 | 3 | `machine-images` / `04-iso-commands` | One `iso` group in `anfs`, `pmm` and `ventoy` | Nothing | built on the branch 2026-10-13 (see `log.md`); no real download, stick or Linux run |
 | 4 | `machine-images` / `02-image-definition` | Everything a build runs is in the image's directory; `show` prints the plan; `image new` | Skim the plan after step 1; it will read differently then | built on the branch 2026-10-13 (see `log.md`); tart, Linux, amd64, Fedora and the round trips not run |
 | 5 | `machine-images` / `03-provisioners` | The provisioner contract; `sh` and `anfs` behind it | Nothing: the step variables are `ANFS_IMAGE_*` | built on the branch 2026-10-13 (see `log.md`); tart, Linux, amd64, Fedora and the round trips not run |
-| 5a | `dev-source` / `02-work`, `01-move`, `03-boxes` | The `anfs <name>` seam and the tools as `anfs <resource>`, `anfs hooks`, `~/work/<job>/` and `anfs work`; then the rest of the move to `anfs-dev` (bats suites stay in core); then `anfs work install\|shell\|reset` replace `ppm container`, `ppm vm`, `ppm user` | `03-boxes` needs step 2 | `core/dev` and the docs space moved by hand 2026-10-17; `02-work` built on branch `anfs-work` 2026-10-19, awaiting review (VM checks deferred) |
+| 5a | `dev-source` / `02-work`, `01-move`, `03-boxes` | The `anfs <name>` seam and the tools as `anfs <resource>`, `anfs hooks`, `~/work/<job>/` and `anfs work`; then the rest of the move to `anfs-dev` (bats suites stay in core); then `anfs work install\|shell\|reset` replace `ppm container`, `ppm vm`, `ppm user` | `03-boxes` needs step 2 | `core/dev` and the docs space moved by hand 2026-10-17; `02-work` merged 2026-10-19 (VM checks deferred); `01-move` (the rest) next |
 | 5c | `cli` / `01-one-shape` | psm without its `skills` group; `wsm repo`; every list's first column the resource as `source/name`, `STATUS` everywhere | Nothing | plan written |
 | 5b | `machine-images` / `05-pmm-optional` | pmm and qemu leave the default install; pcm stays | Nothing | plan written |
 | 6 | `container-images` / `02-pcm-image` | `pcm image list\|build\|pull\|export\|remove\|prune` | Plan not written yet. Revisit the placeholder on provision steps in container builds | plan to write |
