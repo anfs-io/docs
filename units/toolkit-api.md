@@ -1,6 +1,6 @@
 ---
 objective: The toolkit has one API on a host, so everything built on it ships as a container — anfs-ui first, part of a default install
-status: pending
+status: plans 01-02 written
 ---
 
 Draft. The plans are written once the open questions are settled and the macOS transport has
@@ -73,6 +73,21 @@ One JSON object per line, each way.
   list: `--json` works for lists only (`show`, `validate`, `status` print text), and errors are
   never JSON. The API reports an error as the tool's stderr line for now; making `show --json`
   real is each tool's own work and is listed below.
+
+## Settled 2026-10-19
+
+- **Who may call (question 2)**: a container asks in its `container.yml`, `toolkit: read|write`;
+  pcm gives it the socket (Linux) or the address and that grant's token (macOS). Nothing for a
+  container that does not ask.
+- **What a caller may do (question 3)**: read by default (lists, `show`, `status`, `path`,
+  `validate`, `version`, `watch`); everything else needs `write`. `core/ui` declares `write`.
+- **Commands that ask (question 4)**: a request may carry `"yes": true` (`-y`); a command that
+  needs a person at a terminal (a confirm without `-y`, sudo that cannot run unattended) exits
+  **77**, and the API reports it as `needs: terminal`.
+- The app's code lives in core, `containers/ui/`, for now (not its own repo): the `dev` target
+  builds the gems and the code is mounted from the source; `release` copies it in.
+
+Plans: `toolkit-api/01-rpc`, `02-socket`; then anfs-ui's client (plan 04, reduced).
 
 ## Open Questions
 
