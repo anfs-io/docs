@@ -43,8 +43,9 @@ table below it says what each unit is; the plans say how.
   - [x] `toolkit-api/01-rpc` — `anfs rpc` (merged 2026-10-19)
   - [x] `toolkit-api/02-socket` — the launchd / systemd socket, the token, pcm's `toolkit:` grant
         (merged 2026-10-19; loading it on this Mac is `ppm install core/anfs`, see its `log.md`)
-  - [ ] `toolkit-api/04-anfs-ui-client`, reduced: the app calls the API instead of running the
-        tools; then `status: running` in `system`
+  - [x] `toolkit-api/04-anfs-ui-client`, reduced: the app calls the API instead of running the
+        tools; `status: running` in `system`; every panel on the current lists; `.env.schema` for
+        where it listens (loopback by default). Merged 2026-10-19; for you to try (its `log.md`)
 - [ ] `stacks/04-boxes` — a stack onto a container or VM; replaces `dev-source/03-boxes`
 - [ ] `stacks/05-roundtrips`
 
