@@ -64,8 +64,7 @@ table below it says what each unit is; the plans say how.
 - [ ] `container-images/01-run-exec-snapshot` — first read the plan and its six questions
 - [ ] `container-images/02-pcm-image` — plan to write
 - [ ] `toolkit-api` — first settle its questions 2 and 3; plans to write
-- [ ] `deploy/01-targets`, `02-proxmox-publish` — first read `units/deploy.md` and name the tool
-- [ ] `deploy/03-deployments` — details written against the real host
+- [ ] `deploy` — moved to `ROADMAP-apps.md` section 2 (2026-10-19), as `pim`
 - [ ] `metal` — plans to write
 
 ### Last
