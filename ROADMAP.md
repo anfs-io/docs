@@ -17,9 +17,9 @@ table below it says what each unit is; the plans say how.
 - [x] `dev-source/02-work` — the `anfs <name>` seam, the tools as `anfs <resource>` commands,
       `anfs hooks`, `anfs work`. Merged into main in core, anfs-dev and docs 2026-10-19 (see
       `log.md`); `anfs-dev/dev` reinstalled here. VM and box checks deferred to "Last"
-- [ ] Two jobs at once through `anfs work`, its first real test:
-  - [ ] `dev-source/01-move` — the rest of the move (the package and the docs space are done)
-  - [ ] `cli/01-one-shape` — psm without `skills`, `wsm repo`, every list in one shape
+- [x] Two jobs at once through `anfs work`, its first real test (2026-10-19: 6 and 12 minutes, merged):
+  - [x] `dev-source/01-move` — the rest of the move (the package and the docs space are done)
+  - [x] `cli/01-one-shape` — psm without `skills`, `wsm repo`, every list in one shape
 - [x] Remove the old worktrees under `~/anfs-dev` (merged) and the directory (2026-10-19; the
       leftovers archived in `~/.local/state/anfs-repair-2026-10-19/anfs-dev-leftovers.tgz`)
 - [ ] CLAUDE.md becomes AGENTS.md in every repo (`BACKLOG.md`; no plan needed)
