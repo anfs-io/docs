@@ -1,6 +1,9 @@
 ---
 ---
 
+> **Superseded 2026-10-19 by the `stacks` unit (`units/stacks.md`).** Kept for the record.
+
+
 # Plan 03 — Trying a job in a box: `anfs work install|shell|reset`
 
 ## Context — read these files first

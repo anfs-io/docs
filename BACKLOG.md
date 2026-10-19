@@ -6,6 +6,9 @@ gets a unit.
 
 ## Toolkit
 
+- **Rename the `stack` source** (anfs-io/stack): with `stacks/` a resource, `stack/ruby` and
+  `stacks/` read alike. Later; live with it until then (2026-10-19).
+
 - **CLAUDE.md becomes AGENTS.md** in every repo. Do it when the `machine-images` branch is
   merged (agents are editing CLAUDE.md on it now). Check first that every agent in use reads
   AGENTS.md on its own; if one does not, leave a CLAUDE.md that only imports it.

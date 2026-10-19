@@ -3,6 +3,9 @@ objective: One repo sets up every machine a person has — a profile per host, b
 status: pending
 ---
 
+> **Superseded 2026-10-19 by the `stacks` unit (`units/stacks.md`).** Kept for the record.
+
+
 A user's repo configures one machine well. With a second machine the choices are to install
 everything everywhere or to remember what goes where. The only per-machine mechanism is a
 package's `macos/` directory and a hand-written `Brewfile` run from a hook (the user's `host`

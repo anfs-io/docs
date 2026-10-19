@@ -24,18 +24,22 @@ table below it says what each unit is; the plans say how.
       leftovers archived in `~/.local/state/anfs-repair-2026-10-19/anfs-dev-leftovers.tgz`)
 - [ ] CLAUDE.md becomes AGENTS.md in every repo (`BACKLOG.md`; no plan needed)
 
+### Then: stacks (`units/stacks.md`, decided 2026-10-19)
+
+- [ ] `stacks/01-stacks` and `stacks/03-container-manifest`, as two jobs at once
+- [ ] `stacks/02-system` — the toolkit is the `system` stack; implode is `anfs remove system`
+- [ ] `stacks/04-boxes` — a stack onto a container or VM; replaces `dev-source/03-boxes`
+- [ ] `stacks/05-roundtrips`
+
 ### Alongside, as their own jobs (any time after `dev-source/02-work`)
 
 - [ ] `linker/01-link-library` — first read `units/linker.md`
 - [ ] `linker/02-platform-files`
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; `ppm move` goes
-- [ ] `profiles/01-profiles` — first answer its three questions, and confirm `profiles/hosts|roles`,
-      `anfs profile` (singular) and no Brewfile format
 
 ### Then: features
 
 - [ ] `container-images/01-run-exec-snapshot` — first read the plan and its six questions
-- [ ] `dev-source/03-boxes` — `anfs work install|shell|reset`; `ppm container`, `vm`, `user` go
 - [ ] `container-images/02-pcm-image` — plan to write
 - [ ] `toolkit-api` — first settle its questions 2 and 3; plans to write
 - [ ] `deploy/01-targets`, `02-proxmox-publish` — first read `units/deploy.md` and name the tool
@@ -91,8 +95,9 @@ table below it says what each unit is; the plans say how.
 | 3 | `machine-images` / `04-iso-commands` | One `iso` group in `anfs`, `pmm` and `ventoy` | Nothing | merged 2026-10-19 (see `log.md`; what was not run is listed there) |
 | 4 | `machine-images` / `02-image-definition` | Everything a build runs is in the image's directory; `show` prints the plan; `image new` | Skim the plan after step 1; it will read differently then | merged 2026-10-19 (see `log.md`; what was not run is listed there) |
 | 5 | `machine-images` / `03-provisioners` | The provisioner contract; `sh` and `anfs` behind it | Nothing: the step variables are `ANFS_IMAGE_*` | merged 2026-10-19 (see `log.md`; what was not run is listed there) |
-| 5a | `dev-source` / `02-work`, `01-move`, `03-boxes` | The `anfs <name>` seam and the tools as `anfs <resource>`, `anfs hooks`, `~/work/<job>/` and `anfs work`; then the rest of the move to `anfs-dev` (bats suites stay in core); then `anfs work install\|shell\|reset` replace `ppm container`, `ppm vm`, `ppm user` | `03-boxes` needs step 2 | `core/dev` and the docs space moved by hand 2026-10-17; `02-work` merged 2026-10-19 (VM checks deferred); `01-move` (the rest) next |
-| 5c | `cli` / `01-one-shape` | psm without its `skills` group; `wsm repo`; every list's first column the resource as `source/name`, `STATUS` everywhere | Nothing | plan written |
+| 5a | `dev-source` / `02-work`, `01-move`, `03-boxes` | The `anfs <name>` seam and the tools as `anfs <resource>`, `anfs hooks`, `~/work/<job>/` and `anfs work`; then the rest of the move to `anfs-dev` (bats suites stay in core); then (03, superseded by `stacks/04-boxes`) | `03-boxes` needs step 2 | `core/dev` and the docs space moved by hand 2026-10-17; `02-work` merged 2026-10-19 (VM checks deferred); `01-move` (the rest) next |
+| 5c | `cli` / `01-one-shape` | psm without its `skills` group; `wsm repo`; every list's first column the resource as `source/name`, `STATUS` everywhere | Nothing | merged 2026-10-19 |
+| 5d | `stacks` / `01`–`05` | `stacks/`: manifests of resources applied to a target; `anfs install\|remove\|list\|show -t`; `system` is the toolkit; `container.yml`; boxes; the round trips as stacks | Nothing | plans written 2026-10-19 |
 | 5b | `machine-images` / `05-pmm-optional` | pmm and qemu leave the default install; pcm stays | Nothing | deprecated 2026-10-19: a new install strategy replaces it |
 | 6 | `container-images` / `02-pcm-image` | `pcm image list\|build\|pull\|export\|remove\|prune` | Plan not written yet. Revisit the placeholder on provision steps in container builds | plan to write |
 | 7 | `toolkit-api` / `01`–`05` | `anfs rpc`, the socket, anfs-ui as a container in a default install | The macOS test below, then settle the unit's open questions 2 and 3 | draft unit |

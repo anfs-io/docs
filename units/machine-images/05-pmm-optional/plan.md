@@ -1,6 +1,9 @@
 ---
 ---
 
+> **Superseded 2026-10-19 by the `stacks` unit (`units/stacks.md`).** Kept for the record.
+
+
 # Plan 05 — pmm is not part of the default install
 
 ## Context — read these files first
