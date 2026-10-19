@@ -22,7 +22,8 @@ table below it says what each unit is; the plans say how.
   - [x] `cli/01-one-shape` — psm without `skills`, `wsm repo`, every list in one shape
 - [x] Remove the old worktrees under `~/anfs-dev` (merged) and the directory (2026-10-19; the
       leftovers archived in `~/.local/state/anfs-repair-2026-10-19/anfs-dev-leftovers.tgz`)
-- [ ] CLAUDE.md becomes AGENTS.md in every repo (`BACKLOG.md`; no plan needed)
+- [x] CLAUDE.md becomes AGENTS.md in core, stack and anfs-dev (2026-10-19); each CLAUDE.md is
+      `@AGENTS.md`, since Claude Code reads only CLAUDE.md
 
 ### Then: stacks (`units/stacks.md`, decided 2026-10-19)
 

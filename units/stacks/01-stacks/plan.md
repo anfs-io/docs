@@ -14,7 +14,7 @@
   `catalog.sh`, `table.sh`
 - core `packages/ppm/home/.local/lib/ppm/packages.sh` — dependency resolution and the layering
   rule (a source depends only on same or lower priority): stacks use the same rule
-- core CLAUDE.md: "Lists and --json", "The Command Line", the anfs section
+- core AGENTS.md: "Lists and --json", "The Command Line", the anfs section
 
 ## Implementation
 
@@ -97,7 +97,7 @@ resources:
 
 ### 5. Documentation
 
-Core CLAUDE.md: a "Stacks" section (the manifest, the commands, the record and the remove rule),
+Core AGENTS.md: a "Stacks" section (the manifest, the commands, the record and the remove rule),
 `stacks/` in the resource-directories list and the key table of "Lists and --json"; the anfs
 section's command list. The anfs skill if it lists commands.
 
