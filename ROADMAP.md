@@ -27,7 +27,8 @@ table below it says what each unit is; the plans say how.
 
 ### Then: stacks (`units/stacks.md`, decided 2026-10-19)
 
-- [ ] `stacks/01-stacks` and `stacks/03-container-manifest`, as two jobs at once
+- [x] `stacks/01-stacks` and `stacks/03-container-manifest`, as two jobs at once (merged
+      2026-10-19; see their `log.md`)
 - [ ] Small jobs once 01 and 03 are merged (2026-10-19):
   - [ ] `ppm list`: `PACKAGE STATUS VERSION` (`installed`, `outdated`, `-`), as `anfs list` is
         for stacks; its `--json` readers (01's stack record) in the same change
@@ -38,15 +39,15 @@ table below it says what each unit is; the plans say how.
 - [ ] `stacks/04-boxes` — a stack onto a container or VM; replaces `dev-source/03-boxes`
 - [ ] `stacks/05-roundtrips`
 
-### Alongside, as their own jobs (any time after `dev-source/02-work`)
+### Then: the linker, then wsm on it (no stow)
 
 - [ ] `linker/01-link-library` — first read `units/linker.md`
 - [ ] `linker/02-platform-files`
-- [ ] `wsm` without levels — plan to write, with or right after `linker/01` (both rewrite how wsm
-      links). A space is any directory with a `space.yml` (and a source's `spaces/`), at any
-      depth; ids are paths (`lgat/tech/web`); a space's files are those not inside a child space;
-      no LEVEL, no workspace/space naming, no two-level limit
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; `ppm move` goes
+- [ ] `wsm` without levels — plan to write after the linker, on it: anything spaces need from
+      the linker is added there, not worked around. A space is any directory with a `space.yml`
+      (and a source's `spaces/`), at any depth; ids are paths (`lgat/tech/web`); a space's files
+      are those not inside a child space; no LEVEL, no workspace/space naming, no two-level limit
 
 ### Then: features
 
@@ -59,6 +60,10 @@ table below it says what each unit is; the plans say how.
 
 ### Last
 
+- [ ] **Test `pcm up` and `pcm machine resize` on this Mac** (merged untested 2026-10-19, with
+      `stacks/03`): an idle podman machine too small for what starts is resized, then started;
+      with containers running, `pcm up` refuses with the numbers; `pcm machine resize` by hand
+      (and its confirm). Needs a container with `memory:` in its `container.yml`
 - [ ] `audit`, first pass: the "first hour" and "why not what exists" lenses (moved here
       2026-10-19)
 - [ ] **How pmm's and pcm's tests are run from now on (you and me).** Their bats suites are off
