@@ -36,6 +36,13 @@ table below it says what each unit is; the plans say how.
         gotchas); data dirs, ports and image come from `compose.yml` through `pcm show`,
         description and attribution from `container.yml`
 - [x] `stacks/02-system` — the toolkit is the `system` stack; implode is `anfs remove system`
+- [ ] anfs-ui into core, before boxes (decided 2026-10-19):
+  - [ ] `containers/ui` in core, in the `system` stack (installed, not started): a Containerfile
+        that builds the gems (`dev` target; `release` copies the code), the code mounted read-only
+        from the source so it is developed on the host
+  - [ ] `toolkit-api/01-rpc` and `02-socket` — `anfs rpc` and the launchd / systemd socket
+  - [ ] `toolkit-api/04-anfs-ui-client`, reduced: the app calls the API instead of running the
+        tools; then `status: running` in `system`
 - [ ] `stacks/04-boxes` — a stack onto a container or VM; replaces `dev-source/03-boxes`
 - [ ] `stacks/05-roundtrips`
 
