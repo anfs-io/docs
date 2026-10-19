@@ -1,14 +1,14 @@
 ---
 ---
 
-# Plan 02 (runs first) — `~/work`: a directory per job, `anfs work`, and commands from packages
+# Plan 02 (runs first) — `~/work`, `anfs work`, commands from packages, and the tools as `anfs <resource>`
 
 ## Context — read these files first
 
-- `units/dev-source.md` — the worktree sketch. **This plan runs before plan 01**: the `dev`
-  package is still `core/dev`, and plan 01 moves it, with what this plan adds, as the first job
-  run under `anfs work`
-- core `packages/dev/home/.local/lib/ppm/{hooks,container,vm}.sh` — how the package adds
+- `units/dev-source.md` — the worktree sketch. **This plan runs before the rest of plan 01**.
+  The `dev` package itself is already in the `anfs-dev` source (moved by hand 2026-10-17); the
+  test boxes, round trips and fixture are still in core
+- `anfs-dev` `packages/dev/home/.local/lib/ppm/{hooks,container,vm}.sh` — how the package adds
   commands to ppm (`cli_group`, `cli_cmd`, `cmd_*`), and how `hooks.sh` finds the sources' repos
 - core `packages/anfs/tests/{harness,roundtrip,roundtrip-macos}` — `ROUNDTRIP_SRC_ROOT`
 - core `packages/pmm/tests/{helper.bash,e2e}` — `PMM_SOCK_DIR`, `PMM_SSH_PORT_BASE`, the temp HOME
@@ -21,7 +21,8 @@
 
 Work on the toolkit is done in branch worktrees, so the live install (the checkouts under
 `~/.local/share/anfs/sources/`, which the tools on PATH are linked from) stays on main. So far
-the worktrees were made by hand under `~/anfs-dev`, one job at a time.
+the worktrees were made by hand, one job at a time. This plan's own job is the last: core and
+anfs-dev worktrees under `~/work/anfs-work/`, branch `anfs-work`.
 
 After this plan a job is a directory under `~/work` holding a worktree of every repo it touches,
 all on one branch, made and removed by one command. Two jobs can run their tests at the same
@@ -61,6 +62,33 @@ it for commands. anfs gets a smaller seam and ppm's stops being used for command
 
 `ppm hooks` becomes `anfs hooks` this way (`anfs-hooks`; it acts on the sources' repos, not on
 packages), with the same sub-commands. `hooks.sh` leaves `lib/ppm`.
+
+### 2b. The tools as `anfs <resource>`
+
+anfs declares one command per tool, named for what it manages, singular, with the tool's own
+name as an alias:
+
+| Command | Alias | Runs |
+| --- | --- | --- |
+| `anfs package` | `anfs ppm` | `ppm` |
+| `anfs container` | `anfs pcm` | `pcm` |
+| `anfs machine` | `anfs pmm` | `pmm` |
+| `anfs skill` | `anfs psm` | `psm` |
+| `anfs space` | `anfs wsm` | `wsm` |
+| `anfs vault` | `anfs pvm` | `pvm` |
+
+- Each `exec`s the tool with the rest of the line: `anfs package install git` is `ppm install
+  git`, `anfs machine image build debian-13` is `pmm image build debian-13`, exit status and
+  output and all. `-d`, `--trace` and `--json` given to anfs are passed on.
+- A tool that is not installed (pmm, after `machine-images/05`) is not an error of the line:
+  `anfs machine` says `pmm is not installed (ppm install core/pmm)` and exits 69.
+- `anfs help` lists them under "Tools". `anfs help machine` is `pmm help`. `anfs __complete
+  machine ...` asks `pmm __complete ...`.
+- None of the six names may already be an anfs command (check `anfs help` before choosing the
+  declaration). Declared commands win over the package seam, so no package can ship
+  `anfs-package`.
+- The six links `packages/<tool>/home/.local/bin/anfs-<x>-manager` in core (a trial of this,
+  15d1aaa) are deleted.
 
 ### 2a. `anfs work` (`anfs-work`, in the `dev` package)
 
@@ -138,17 +166,20 @@ default after this plan.
 
 ### 6. Documentation
 
-core's CLAUDE.md: a "Working on the toolkit" section under "Development" (the layout, the
-commands, the isolation table), "The Command Line" (commands from packages), and `ppm hooks`
-becomes `anfs hooks` wherever it is named. Plan 01 moves the section to `anfs-dev` with the package.
+`anfs-dev`'s CLAUDE.md (or README if it has none): a "Working on the toolkit" section (the
+layout, the commands, the isolation table). core's CLAUDE.md: "The Command Line" (commands from
+packages; the tools as `anfs <resource>`), and `ppm hooks` becomes `anfs hooks` wherever it is
+named.
 
 ## Test Spec
 
 core `packages/anfs/tests/registry.bats`: `anfs x` runs a stub `anfs-x` with the line's rest and
-its exit status; a declared command wins over `anfs-<its name>`; help lists it; completion of the
+its exit status; a declared command wins over `anfs-<its name>`; `anfs package --version` and
+`anfs ppm --version` are ppm's; `anfs machine` with no pmm on `PATH` exits 69 with the hint;
+`anfs __complete package ins` asks ppm; help lists it; completion of the
 name starts no process and completion after it asks the executable; an unknown name is still 64.
 
-core `packages/dev/tests/work.bats` (local bare repos as sources, as the anfs suites do):
+`anfs-dev` `packages/dev/tests/work.bats` (local bare repos as sources, as the anfs suites do):
 
 - `new` with two repos: two worktrees on branch `<job>`, `.job.yml` written, number 1; a second
   job gets 2; after removing the first, a third job gets 1.
@@ -165,7 +196,7 @@ core: the grep test of section 3; `packages/pmm/tests/helper.bash` and `e2e` hon
 
 ## Verification
 
-- [ ] `bats packages/{dev,anfs,pmm}/tests </dev/null` in core
+- [ ] `bats packages/{anfs,pmm}/tests </dev/null` in core; `bats packages/dev/tests </dev/null` in `anfs-dev`
 - [ ] Two jobs at once on this Mac: `anfs work run a -- packages/pmm/tests/e2e debian` and the
       same for `b`, started together; both pass, and `/tmp/pmm-<uid>` is untouched
 - [ ] `anfs work run <job> -- packages/anfs/tests/roundtrip debian` tests the job's trees (a

@@ -12,28 +12,16 @@ images on targets, and hardware installs from the same image definitions.
 The master list: what is next, in the order it will be done. Tick a line when it is done. The
 table below it says what each unit is; the plans say how.
 
-### Now: test and merge `machine-images` (you)
-
-- [ ] Push the branch from core and stack: `git push -u origin machine-images` in
-      `~/anfs-dev/machine-images` and `~/anfs-dev/machine-images-stack`
-- [ ] Mac: the walk in `units/machine-images/README.md`, sections 1 to 6
-- [ ] Mac: `pmm image build --test anfs-test-macos` (no tart build has run on the branch)
-- [ ] Debian box: `bats packages/{anfs,pmm,pcm,ppm,psm,wsm}/tests </dev/null`
-- [ ] Debian box: `packages/pmm/tests/e2e debian`
-- [ ] Debian box: `ROUNDTRIP_SRC_ROOT=<dir holding core/ and stack/> packages/anfs/tests/roundtrip debian`
-- [ ] amd64 PC: does a build print the `(tcg)` warning (kvm not in use)?
-- [ ] Report what failed or felt wrong; fixes go on the branch
-- [ ] Merge `machine-images` into main: core, stack, docs
-- [ ] This Mac, before pulling main: `pim implode -y`, delete tart's `pim-*` VMs,
-      `ppm remove core/pim`; `umount ~/mnt/debian-13`
-- [ ] Remove the worktrees under `~/anfs-dev` and the directory
-
 ### Then: tooling
 
-- [ ] `dev-source/02-work` — the `anfs <name>` seam, `anfs hooks`, `anfs work`. First, because
-      every job after it is run through it. Built in `core/dev`, the last job done by hand
-- [ ] `dev-source/01-move` — the first job under `anfs work` (four repos). First confirm:
-      `infra` and `website` go to `admin-anfs`'s `space.yml`
+- [ ] `dev-source/02-work` — the `anfs <name>` seam, the tools as `anfs <resource>` commands,
+      `anfs hooks`, `anfs work`. First, because every job after it is run through it. Built in
+      `anfs-dev/packages/dev` and core, the last job set up by hand (`~/work/anfs-work/`)
+- [ ] Two jobs at once through `anfs work`, its first real test:
+  - [ ] `dev-source/01-move` — the rest of the move (the package and the docs space are done)
+  - [ ] `cli/01-one-shape` — psm without `skills`, `wsm repo`, every list in one shape
+- [ ] Remove the old worktrees under `~/anfs-dev` (merged) and the directory (you: the rest of it
+      is one agent's leftovers)
 - [ ] CLAUDE.md becomes AGENTS.md in every repo (`BACKLOG.md`; no plan needed)
 - [ ] `machine-images/05-pmm-optional`
 - [ ] `audit`, first pass: the "first hour" and "why not what exists" lenses
@@ -63,6 +51,15 @@ table below it says what each unit is; the plans say how.
 
 ### Done
 
+- [x] `machine-images`: tested (the walk, the tart build, the Debian box, the amd64 PC: most
+      checks run, all passed), merged into main in core, stack and docs, pushed (2026-10-19)
+- [x] This Mac repaired after the merge (2026-10-19): pim's VM, disks and links gone; the core
+      source renamed `anfs` → `core` here; `anfs-dev/dev` installed and the git hooks wired
+      again; docs at `~/spaces/anfs-dev/docs`, infra and website at `~/spaces/anfs-admin/`.
+      Kept aside in `~/.local/state/anfs-repair-2026-10-19/`
+- [x] By hand: `core/dev` moved to `anfs-dev` with the docs space (core 15d1aaa); `pvm` moved
+      from the user source to core (450241b)
+
 - [x] `machine-images/01-fold-pim-into-pmm`, `04-iso-commands`, `02-image-definition`,
       `03-provisioners`: built on the branch 2026-10-13, Mac only
 
@@ -75,7 +72,8 @@ table below it says what each unit is; the plans say how.
 | 3 | `machine-images` / `04-iso-commands` | One `iso` group in `anfs`, `pmm` and `ventoy` | Nothing | built on the branch 2026-10-13 (see `log.md`); no real download, stick or Linux run |
 | 4 | `machine-images` / `02-image-definition` | Everything a build runs is in the image's directory; `show` prints the plan; `image new` | Skim the plan after step 1; it will read differently then | built on the branch 2026-10-13 (see `log.md`); tart, Linux, amd64, Fedora and the round trips not run |
 | 5 | `machine-images` / `03-provisioners` | The provisioner contract; `sh` and `anfs` behind it | Nothing: the step variables are `ANFS_IMAGE_*` | built on the branch 2026-10-13 (see `log.md`); tart, Linux, amd64, Fedora and the round trips not run |
-| 5a | `dev-source` / `01-move`, `02-work`, `03-boxes` | `core/dev`, the test boxes, the round trips, the fixture and the docs space move to the `anfs-dev` source; bats suites stay in core. Then commands from packages (`anfs <name>`, anfs only), `anfs hooks`, `~/work/<job>/` and `anfs work`. Then `anfs work install\|shell\|reset` replace `ppm container`, `ppm vm`, `ppm user` | Merge the `machine-images` branch first (review, Linux checks). `03-boxes` needs step 2 | plans written |
+| 5a | `dev-source` / `02-work`, `01-move`, `03-boxes` | The `anfs <name>` seam and the tools as `anfs <resource>`, `anfs hooks`, `~/work/<job>/` and `anfs work`; then the rest of the move to `anfs-dev` (bats suites stay in core); then `anfs work install\|shell\|reset` replace `ppm container`, `ppm vm`, `ppm user` | `03-boxes` needs step 2 | `core/dev` and the docs space moved by hand 2026-10-17; plans written |
+| 5c | `cli` / `01-one-shape` | psm without its `skills` group; `wsm repo`; every list's first column the resource as `source/name`, `STATUS` everywhere | Nothing | plan written |
 | 5b | `machine-images` / `05-pmm-optional` | pmm and qemu leave the default install; pcm stays | Nothing | plan written |
 | 6 | `container-images` / `02-pcm-image` | `pcm image list\|build\|pull\|export\|remove\|prune` | Plan not written yet. Revisit the placeholder on provision steps in container builds | plan to write |
 | 7 | `toolkit-api` / `01`–`05` | `anfs rpc`, the socket, anfs-ui as a container in a default install | The macOS test below, then settle the unit's open questions 2 and 3 | draft unit |
@@ -89,20 +87,21 @@ table below it says what each unit is; the plans say how.
 
 ## For an agent running this list
 
-- **Work only in the branch worktrees.** Core: `~/anfs-dev/machine-images`. Stack:
-  `~/anfs-dev/machine-images-stack`. Both are on branch `machine-images`. The checkouts under
-  `~/.local/share/anfs/sources/` are the live install (the tools on PATH are linked from them):
-  never edit them, and never run `ppm install`, `anfs install`, or any `implode` on this host.
-- **Never touch real state.** `~/.local/share/{pim,pmm}`, `~/.local/state/{pim,pmm}` and tart's
-  store hold a running machine. The bats suites and `tests/e2e` isolate themselves; anything run
-  by hand gets its `*_HOME` variables pointed at a temp dir.
+- **Work only in the job's worktrees.** Until `anfs work` exists they are made by hand under
+  `~/work/<job>/<alias>/` (`git worktree add`), on a branch named for the job; after it,
+  `anfs work new`. The checkouts under `~/.local/share/anfs/sources/` are the live install (the
+  tools on PATH are linked from them): never edit them, and never run `ppm install`, `anfs
+  install`, or any `implode` on this host.
+- **Never touch real state.** `~/.local/share/pmm`, `~/.local/state/pmm`, `/tmp/pmm-<uid>` and
+  tart's store hold running machines. The bats suites and `tests/e2e` isolate themselves; anything
+  run by hand gets its `*_HOME` variables pointed at a temp dir. The ISO store
+  (`~/.cache/anfs/isos`) is shared and read-only. No broad `pkill`.
 - **One plan per agent, in the checklist's order.** Read the unit file and the plan first. Commit on
   the branch as you go; do not push. Write `log.md` beside the plan when it is done.
-- **The gate for the next step** is the plan's Verification list: `bats packages/<tool>/tests
-  </dev/null` for every suite touched, and `packages/pmm/tests/e2e debian` where the plan
-  changes a build or a machine. A step whose gate fails stops the list.
-- **Stops for a person**: after step 1 (review before more is built on it); before any step
-  whose "Needs from you first" is not done; before anything that needs hardware or a PVE host.
+- **The gate** is the plan's Verification list: `bats packages/<tool>/tests </dev/null` for every
+  suite touched, and `packages/pmm/tests/e2e debian` where the plan changes a build or a machine.
+- **Stops for a person**: before a branch merges; before any step whose "Needs from you first"
+  is not done; before anything that needs hardware or a PVE host.
 - bats is Homebrew's `bats-core`. Run it with `</dev/null`.
 
 ## Why this order

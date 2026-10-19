@@ -15,9 +15,13 @@ gets a unit.
 - pmm out of the default install (pcm stays, for the dashboard): `machine-images` plan 05.
 - Our own linker instead of GNU stow; per-platform files under `stow:`; `anfs mv`: `units/linker.md`.
 - Worktrees for parallel jobs (`~/work`, `anfs work`): `dev-source` plans 02 and 03.
+- The tools' command lines alike (psm groups, `wsm repo`, one list shape): `units/cli.md`.
 - Profiles for more than one machine (hosts, roles, software): `units/profiles.md`.
 
 ## Sources
+
+- `pvm` is a core tool now (moved from the user source 2026-10-16): later plans that list the
+  tools (`ANFS_TOOLS`, the bats suites, `anfs <resource>`) include it.
 
 - `anfs-admin` (`anfs-io/admin-anfs`, private): anfs.io's own infrastructure. The website, the
   demo cloud instances, anything not public. Nothing of the toolkit lives there.

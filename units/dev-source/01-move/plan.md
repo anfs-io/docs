@@ -13,10 +13,16 @@
 - stack `packages/firstmate/tests/roundtrip` — it runs core's harness by path
 - core `CLAUDE.md`: "Git Hooks", "Moving a Package Between Repos", "Testing", "Repository Layout"
 
-> **Runs after plan 02**, as a job made with `anfs work new dev-source core stack anfs-dev docs`.
-> By then `hooks.sh` is gone from `lib/ppm` (`anfs hooks`, the executable `anfs-hooks`) and the
-> package holds `anfs-work` and `tests/work.bats`: they move with it. Where this plan says
-> `ppm hooks`, read `anfs hooks`.
+> **Partly done by hand (2026-10-17, core 15d1aaa; `anfs-dev` e570f58):** `packages/dev` is in
+> `anfs-dev` with its hooks and commands; core's `spaces/space.yml` is gone, `anfs-dev`'s clones
+> docs and `anfs-admin`'s clones infra and website (installed on this Mac 2026-10-19). Section 4a
+> and the package half of section 1 are done; section 6 was done by the repair.
+>
+> **What is left runs after plan 02**, as a job: `anfs work new dev-source core stack anfs-dev`.
+> The test boxes (`containers/anfs-test-*`, `machines/anfs-test-macos`,
+> `machines/images/{anfs-dev,anfs-test-macos}`), `packages/anfs/tests/{harness,roundtrip,
+> roundtrip-macos,fixtures}`, the paths of section 2, `anfs hooks` (section 3; by then it is
+> `anfs-hooks`, so read `anfs hooks` for `ppm hooks`), section 4 and the documentation.
 
 ## Overview
 
