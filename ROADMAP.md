@@ -23,8 +23,6 @@ table below it says what each unit is; the plans say how.
 - [x] Remove the old worktrees under `~/anfs-dev` (merged) and the directory (2026-10-19; the
       leftovers archived in `~/.local/state/anfs-repair-2026-10-19/anfs-dev-leftovers.tgz`)
 - [ ] CLAUDE.md becomes AGENTS.md in every repo (`BACKLOG.md`; no plan needed)
-- [ ] `machine-images/05-pmm-optional`
-- [ ] `audit`, first pass: the "first hour" and "why not what exists" lenses
 
 ### Alongside, as their own jobs (any time after `dev-source/02-work`)
 
@@ -46,6 +44,8 @@ table below it says what each unit is; the plans say how.
 
 ### Last
 
+- [ ] `audit`, first pass: the "first hour" and "why not what exists" lenses (moved here
+      2026-10-19)
 - [ ] **How pmm's and pcm's tests are run from now on (you and me).** Their bats suites are off
       since 2026-10-19: they took most of the test time and ran on every change. Decide how you
       run them by hand (`ANFS_TESTS_PMM_PCM=1 packages/anfs/tests/all pmm pcm`) or how CI/CD
@@ -93,7 +93,7 @@ table below it says what each unit is; the plans say how.
 | 5 | `machine-images` / `03-provisioners` | The provisioner contract; `sh` and `anfs` behind it | Nothing: the step variables are `ANFS_IMAGE_*` | merged 2026-10-19 (see `log.md`; what was not run is listed there) |
 | 5a | `dev-source` / `02-work`, `01-move`, `03-boxes` | The `anfs <name>` seam and the tools as `anfs <resource>`, `anfs hooks`, `~/work/<job>/` and `anfs work`; then the rest of the move to `anfs-dev` (bats suites stay in core); then `anfs work install\|shell\|reset` replace `ppm container`, `ppm vm`, `ppm user` | `03-boxes` needs step 2 | `core/dev` and the docs space moved by hand 2026-10-17; `02-work` merged 2026-10-19 (VM checks deferred); `01-move` (the rest) next |
 | 5c | `cli` / `01-one-shape` | psm without its `skills` group; `wsm repo`; every list's first column the resource as `source/name`, `STATUS` everywhere | Nothing | plan written |
-| 5b | `machine-images` / `05-pmm-optional` | pmm and qemu leave the default install; pcm stays | Nothing | plan written |
+| 5b | `machine-images` / `05-pmm-optional` | pmm and qemu leave the default install; pcm stays | Nothing | deprecated 2026-10-19: a new install strategy replaces it |
 | 6 | `container-images` / `02-pcm-image` | `pcm image list\|build\|pull\|export\|remove\|prune` | Plan not written yet. Revisit the placeholder on provision steps in container builds | plan to write |
 | 7 | `toolkit-api` / `01`–`05` | `anfs rpc`, the socket, anfs-ui as a container in a default install | The macOS test below, then settle the unit's open questions 2 and 3 | draft unit |
 | 8 | `deploy` / `01-targets`, `02-proxmox-publish` | The deploy tool; a build becomes a template on a PVE host | Read `units/deploy.md` (not read yet). Name the tool (`pdm` is a placeholder) | plans written |
