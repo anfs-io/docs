@@ -46,6 +46,12 @@ table below it says what each unit is; the plans say how.
   - [x] `toolkit-api/04-anfs-ui-client`, reduced: the app calls the API instead of running the
         tools; `status: running` in `system`; every panel on the current lists; `.env.schema` for
         where it listens (loopback by default). Merged 2026-10-19; for you to try (its `log.md`)
+- [ ] `setup` (`units/setup.md`, decided 2026-10-19): onboarding becomes ordinary commands. `-i`
+      asks for what is missing; a manifest's `setup:` lists what to run; offboarding is its reverse
+  - [ ] `setup/01-interactive` — `-i, --interactive` on every command
+  - [ ] `setup/02-setup` — `setup:` in `stack.yml`, the runner, its record and reverse — plan to write
+  - [ ] `setup/03-steps` — the onboard steps as `add` commands; `anfs onboard` goes — plan to write
+  - [ ] open questions 1 and 2 (a space's setup), then `04-spaces`, `05-forms`
 - [ ] `stacks/04-boxes` — a stack onto a container or VM; replaces `dev-source/03-boxes`
 - [ ] `stacks/05-roundtrips`
 
