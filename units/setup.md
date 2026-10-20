@@ -38,6 +38,44 @@ are ordinary commands, and a manifest at each level says which to run.
   label, its kind's completion as the choices. No wizard code (plan 05).
 - `anfs onboard` and everything under "Replaces" go; no alias.
 
+## Use cases (the person's, 2026-10-19), and the command each becomes
+
+**`anfs install system -i`**: the toolkit's own setup, in this order:
+
+| Question | Command | Notes |
+| --- | --- | --- |
+| Your GitHub / GitLab / other account? | `git account add -i` (`--host`, `--user`) | checks `<host>/<user>.keys` for public keys |
+| Your public key | `ssh key add -i` | "I don't know" → a new key pair. Keys at the host but no private key here → a new key (or one from the password manager) |
+| A password manager? | `secrets add -i` (a provider: 1Password, Bitwarden, KeePassXC, age, the OS keychain) | "I don't know / none" → a no-subscription one: age or KeePassXC (local), Vaultwarden (remote: a pcm container) |
+| Your org's space? Its name? | `wsm new -i` | `wsm add` is taken (moves files into a source) |
+| AI agents and their API keys | `ppm install -i @ai-agents` | a multi-select of the category; what is installed is preselected; API keys go to the password manager |
+| Update anfs automatically? | later | a timer (launchd / systemd) running `anfs src update` |
+| Register for updates (email)? | later | sends data off the machine: opt-in, needs a service |
+
+The password manager comes before the key when the key is kept in it (today's op step does that).
+
+**`wsm install <space> -i`**: onboarding to a space. A space has only `space.yml` (its
+repositories) today; after its setup it also has the space's `fnox.toml`: the secrets it needs (a
+1Password service account token for that space, for one) and where each comes from.
+
+**Rerun.** Every question's default is what the machine has now: the account found, the key
+present, the agents installed (preselected). So a second run asks the same things and changes
+only what you change.
+
+**Web vs terminal.** The dashboard is the better experience (plan 05); the terminal stays for a
+machine with no browser, and is what the dashboard's forms are made from.
+
+## What -i needs beyond plan 01
+
+- **A current value.** `complete_<kind>` may mark a candidate as what the machine has now; `-i`
+  makes it the default (a value) or preselects it (a `...` argument).
+- **Multi-select** for a `...` argument with candidates: the candidates as a checklist, the
+  current ones ticked.
+- **A category as the selector**: `ppm install -i @ai-agents` offers the category's members.
+  (Proposed instead of a package with `installable: no` and an onboarding script, which would
+  bring back the contract this unit removes.)
+- Split `ai` into `ai` (skills and tools) and `ai-agents` (the agents).
+
 ## Open questions
 
 1. **When does a space's `setup:` run?** Proposed: every `wsm install` of it, with `-y`
