@@ -50,6 +50,7 @@ table below it says what each unit is; the plans say how.
       asks for what is missing; a manifest's `setup:` lists what to run; offboarding is its reverse
   - [x] `setup/01-interactive` — `-i, --interactive` on every command (merged 2026-10-19; try
         it at a terminal, see `log.md`)
+  - [ ] `setup/03a-git-account` — the first slice: `git account` and `ssh-key` as commands
   - [ ] `setup/02-setup` — `setup:` in `stack.yml`, the runner, its record and reverse — plan to write
   - [ ] `setup/03-steps` — the onboard steps as `add` commands; `anfs onboard` goes — plan to write
   - [ ] open questions 1 and 2 (a space's setup), then `04-spaces`, `05-forms`
