@@ -19,8 +19,8 @@
    (`CLI_OPT[interactive]`). `-i` with `-y`: usage error (64), "-i and -y: one asks, the other
    does not". `-i` with no terminal on stdin: exit 77 (`CLI_EX_TERMINAL`), "-i needs a terminal".
 2. **What it asks**, in `_cli_parse` after the options are read and before the argument count is
-   checked: each declared **value** option not given (flags are not asked), in declaration order,
-   then each positional argument not given, in order. The question is the option's help (or the
+   checked: each positional argument not given, in order, then each declared **value** option not
+   given (flags are not asked), in declaration order. The question is the option's help (or the
    argument's kind), then its kind in brackets: `The 1Password vault for your GitHub token (VAULT):`.
    - When the tool has `complete_<kind>`, its candidates are shown first (up to 20, then "...");
      with one candidate it is the default.
