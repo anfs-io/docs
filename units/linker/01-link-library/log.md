@@ -84,6 +84,17 @@ core (linker-01):
 anfs-dev (linker-01):
 - `dd89e90` roundtrip's bootstrap snapshot brews no stow; work.bats needs none (dev 0.1.13)
 
+Three fixes the person approved after the first report (stack was added to the job with
+`anfs work add linker-01 stack`):
+
+core:
+- `e9f3dd9` ppm: the tracker quotes each file name, so any name reads back as written
+- `0ef478e` wsm tests: repo ls --json has ahead (as main's src list and repo list do)
+
+stack (linker-01):
+- `10a49e2` nvim: README.md at the package root, not under home/ (nvim 0.1.2; there was no root
+  README to merge with)
+
 ## Decisions and deviations
 
 - **What `replace` covers.** A link into `<from>` that is absolute, points at another of its
@@ -162,6 +173,11 @@ All runs went through the job (`anfs work run linker-01 ...`, `</dev/null`).
   wsm from the job's core).
 - **Once, at the end**: `packages/anfs/tests/all`: 424 passed, 1 failed (the same `manage.bats`
   test), 30 files (pmm and pcm off), 54 s.
+- **After the three fixes**: `backup.bats` gained two cases (a tracker with `[x]`, `-lead`,
+  `*star`, `&amp`, `!bang`, `#hash`, `a: b`, quotes, a backslash, `123`, `true` reads back
+  exactly, and fails without the fix; an old unquoted tracker still reads). `manage.bats` and
+  `backup.bats` 41/41. `packages/anfs/tests/all`, once: **427 passed, 0 failed**, 30 files
+  (pmm and pcm off), 56 s.
 - A by-hand check of `_implode_sweep_links` in a temp HOME: it removed a live link, a dangling
   link and a shortest-form link into the sources, and left a link elsewhere. There is no bats case
   for it.
@@ -181,8 +197,9 @@ All runs went through the job (`anfs work run linker-01 ...`, `</dev/null`).
   - `link ~/.local/bin/git-account` (stack/git), `~/.local/bin/ssh-key` (stack/ssh),
     `~/.local/bin/opm` (stack/op): files added to stack since they were last installed. A real
     install links them, as stow would have.
-  - `link ~/README.md` (stack/nvim ships `home/README.md`): the intended change, `README.*` under
-    `home/` is linked now. **It would put a `README.md` in `$HOME`** (see open questions).
+  - `link ~/README.md` (stack/nvim shipped `home/README.md`): the intended change, `README.*`
+    under `home/` is linked now. It would have put a `README.md` in `$HOME`; fixed in stack
+    (`10a49e2`, the README moved to the package root).
   - `other ~/.config/anfs/anfs.conf` (user/anfs ships one; the live link is core/anfs's) and
     `other ~/.config/git/config` (rws/git ships one; the live link is user/git's). The state on
     this Mac does not follow the layer order today, and stow would have refused these the same
@@ -214,16 +231,12 @@ All runs went through the job (`anfs work run linker-01 ...`, `</dev/null`).
 
 ## Open questions
 
-- **stack/nvim's `home/README.md`** would be linked to `~/README.md` on its next install. Move it
-  out of `home/` in stack (plan 02 has a stack checkout), or decide that a package's `home/`
-  README is not linked after all.
 - **The `other` drift on this Mac** (`anfs.conf`: user/anfs over core/anfs; `.config/git/config`:
   rws/git over user/git). `ppm install anfs git` stops on these, as it would have with stow.
   `-f` relinks them to the higher layer. Is that what you want for rws/git's `config`?
-- ppm's tracker writes each file as `  - <path>` unquoted YAML. A name beginning with `[`, `-`
-  or `*` (the names link.sh now handles as data) would break the tracker. Not changed here.
-- The `manage.bats` "repo ls" failure on main (an `ahead` key) needs a one-line test fix in
-  another job.
+- Fixed after review approval: the tracker now writes each name double-quoted (`e9f3dd9`), and
+  `manage.bats` expects `ahead` (`0ef478e`; yq lists keys in insertion order:
+  `repository status url ahead`).
 
 ## After merge, on this Mac (by hand)
 
