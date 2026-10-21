@@ -34,6 +34,9 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
       `ppm move` (and its tests) to be discussed first
 - [ ] `linker/04-dry-run` — `-n` on every install, add, remove and purge command — plan to write
+- [ ] `ovm/01-pvm-to-ovm` — pvm leaves core as `ovm` in `stack/obsidian`; vaults stop being a
+      resource (`units/ovm.md`). Independent of the linker; runs beside it (2026-10-21)
+- [ ] `ovm/02-items` — stub: `ovm items` for `user/pjm`; open question first
 - [ ] `wsm` without levels — plan to write after the linker, on it: anything spaces need from
       the linker is added there, not worked around. A space is any directory with a `space.yml`
       (and a source's `spaces/`), at any depth; ids are paths (`lgat/tech/web`); a space's files
