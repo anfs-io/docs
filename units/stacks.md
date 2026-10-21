@@ -5,8 +5,9 @@ status: plans written
 
 ANFS is the Agent Native Full Stack: what anfs manages is stacks of resources. Every other
 top-level directory of a source is one tool's resource (`packages/` ppm, `containers/` pcm,
-`machines/` pmm, `skills/` psm, `spaces/` wsm, `vaults/` pvm). This unit adds `stacks/`, anfs's
-own.
+`machines/` pmm, `skills/` psm, `spaces/` wsm). This unit adds `stacks/`, anfs's
+own. (Vaults were a kind here until `ovm/01` took them out: pvm left core as stack's `ovm`, and a
+vault is not a resource; `units/ovm.md`.)
 
 Decided with the person, 2026-10-19.
 
@@ -37,7 +38,7 @@ containers:
   `running|stopped` for containers and machines, `installed|cloned` for spaces. Absent means the
   tool's default after install.
 - **The order is anfs's, not the manifest's**: stacks it depends on, then packages, skills,
-  vaults, spaces, containers, machines. Remove is the reverse.
+  spaces, containers, machines. Remove is the reverse.
 - **A stack may depend on stacks**: `stacks:` lists them, resolved with the same layering rule as
   package dependencies (same or lower-priority source). A cycle is an error.
 - **Use one for anything non-trivial**: an install that is repeated, or that spans more than one
@@ -58,8 +59,7 @@ anfs src install <source>...     what `anfs install <source>` does today
 ```
 
 - `--build` installs only the kinds that belong in an image (packages, skills); the rest (spaces,
-  vaults, containers, machines, statuses) is for when the box starts. A vault is never installed
-  under `--build`: anything written during an image build stays in a layer.
+  containers, machines, statuses) is for when the box starts.
 
 ## Reversible
 

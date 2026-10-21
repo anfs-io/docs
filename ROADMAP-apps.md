@@ -13,7 +13,7 @@ terminal, an agent and the dashboard all do it the same way.
 
 | Layer | What it is |
 | --- | --- |
-| ANFS | The primitives: packages, containers, machines, stacks, skills, spaces, vaults; **apps** (`pxm`) and **infrastructure** (`pim`) from this roadmap |
+| ANFS | The primitives: packages, containers, machines, stacks, skills, spaces; **apps** (`pxm`) and **infrastructure** (`pim`) from this roadmap |
 | The dashboard | `core/ui`: one surface over the toolkit API, for people who do not live in a terminal. It knows every core kind; it is not pluggable (below) |
 | CNFS | Rails engines (ui, tenanted, iam, cognito, telemetry, chatter, support, ...) offered as app templates and as a menu of components |
 | Use cases | Templates and wizards: "a multi-tenant app with IAM and telemetry, run here, online" |
@@ -37,8 +37,7 @@ Cross-cutting, settled in the first section that needs them:
 - **The agent runner.** A toolkit command that runs an agent (`claude -p` or another) in a
   container on a mounted workspace, under a grant, logged like any other command. What makes
   "agents assisting" more than a person with a terminal.
-- **Credentials.** Cloud tokens through `.env.schema` and varlock, as containers' are; where
-  they are kept once `pvm` leaves core.
+- **Credentials.** Cloud tokens through `.env.schema` and varlock, as containers' are.
 
 ## The checklist
 
@@ -99,4 +98,3 @@ start again.
 | The agent runner: tool or `anfs` command; which agents; grant | its own unit | an agent is in a wizard |
 | Approval: the exit status and API answer; who may approve | `units/toolkit-api.md` | section 2 |
 | pim's first providers and their order | `units/deploy.md` | section 2 |
-| Where cloud credentials are kept after `pvm` leaves core | `units/deploy.md` | section 2 |

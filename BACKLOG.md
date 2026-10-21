@@ -28,8 +28,7 @@ gets a unit.
 
 ## Sources
 
-- `pvm` is a core tool now (moved from the user source 2026-10-16): later plans that list the
-  tools (`ANFS_TOOLS`, the bats suites, `anfs <resource>`) include it.
+- pvm left core as stack's `ovm` (`units/ovm.md`).
 
 - `anfs-admin` (`anfs-io/admin-anfs`, private): anfs.io's own infrastructure. The website, the
   demo cloud instances, anything not public. Nothing of the toolkit lives there.
