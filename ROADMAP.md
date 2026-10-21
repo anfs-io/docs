@@ -30,6 +30,12 @@ table below it says what each unit is; the plans say how.
 Moved ahead of the rest of stacks and setup (2026-10-21).
 
 - [x] `linker/01-link-library` — merged 2026-10-21 (see `log.md`; VM checks deferred)
+- [ ] `wsm-spaces` (`units/wsm-spaces.md`, decided 2026-10-21; replaces "wsm without levels"),
+      ahead of linker 02–04:
+  - [ ] `wsm-spaces/01-spaces` — a space is a directory with `space.yml`, ids are paths, no
+        tracker, `wsm status` folded into `wsm list`
+  - [ ] `wsm-spaces/02-repo-lib` — `lib/anfs/repo.sh` shared by `anfs src` and `wsm repo`
+  - [ ] `wsm-spaces/03-skills-and-links` — `lib/anfs/skill.sh` (psm on it), `wsm skill`, `links:`
 - [ ] `linker/02-platform-files`
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
       `ppm move` (and its tests) to be discussed first
@@ -37,10 +43,6 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
 - [x] `ovm/01-pvm-to-ovm` — merged 2026-10-21 (see `log.md`); pvm leaves core as `ovm` in `stack/obsidian`; vaults stop being a
       resource (`units/ovm.md`). Independent of the linker; runs beside it (2026-10-21)
 - [ ] `ovm/02-items` — stub: `ovm items` for `user/pjm`; open question first
-- [ ] `wsm` without levels — plan to write after the linker, on it: anything spaces need from
-      the linker is added there, not worked around. A space is any directory with a `space.yml`
-      (and a source's `spaces/`), at any depth; ids are paths (`lgat/tech/web`); a space's files
-      are those not inside a child space; no LEVEL, no workspace/space naming, no two-level limit
 
 ### Then: stacks (`units/stacks.md`, decided 2026-10-19)
 
