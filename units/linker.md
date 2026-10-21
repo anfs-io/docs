@@ -8,26 +8,32 @@ ppm and wsm put files in place with GNU stow. They use five of its options (`-d`
 This unit replaces stow with `lib/anfs/link.sh`, then uses what that makes possible: files per
 platform declared in `package.yml`, and one answer to "who owns this file, and how do I move it".
 
-Depends on: nothing. It touches ppm, wsm, `install.sh` and `ppm move` (in the `dev` package), none
-of which the `machine-images` branch changes, so it can run as its own job beside it.
+Depends on: nothing. It touches ppm, wsm, `install.sh` and `ppm move` (anfs-dev's `dev` package,
+plan 03), none of which the `machine-images` branch changes, so it can run as its own job beside it.
 
 ## 1. Where stow is used today, and what improves
 
-Every call, from the code (`main`, 2026-10-13). 47 packages and 224 links on this Mac.
+Every call, from the code (`main`, refreshed 2026-10-21). 47 packages and 228 tracked files on
+this Mac.
 
 | # | Where | What stow does there | What is built around it today | With our own linker |
 | --- | --- | --- | --- | --- |
-| 1 | ppm install: `stow_subdir`, `installer.sh:561` | Links `home/` and the `$PPM_GROUP_ID` directory (`macos`, `linux`) into `$HOME`, file by file | Layering is a growing list of `--ignore=^path$` regexes, one per file every higher layer linked (`PPM_IGNORE_ARGS`). Only `.` is escaped (`_stow_ignore_arg`), so a file name with `+`, `(` or `[` is a wrong regex | A set of exact paths to skip. No regex, no argument list that grows with the install |
-| 2 | Before every one of those: `remove_dangling_links`, `force_remove_conflicts`, `meta_cleanup_stale` | Nothing: stow aborts the whole operation at the first conflict, and calls a dangling link into another package "not owned by stow" | Three pre-passes over the package's files that clear what would make stow abort | One plan pass that classifies every target (ours and current, ours and stale, another layer's, the user's) and reports **all** conflicts at once; `-f` is a rule in that pass |
-| 3 | ppm remove: `unstow_package`, `installer.sh:518` | `stow -D`: scans the target for links into the package | The tracker already lists the files | Unlink the tracker's list, checking each still points into the package; walk the package tree as the fallback when a tracker is missing |
-| 4 | Bootstrap: `install.sh:346` | Links `core/anfs` and `core/ppm` before ppm exists | Homebrew must install `stow` (and its Perl) first; a 20-line pre-pass clears links that would abort it | No `stow` formula in the bootstrap. The library is part of the bash 3.2 set |
-| 5 | `ppm file add`, `claim`: `file.sh:200`; `reset`: `file.sh:259` | Re-stows a whole package to link one file; `reset` rebuilds an ignore list of every other file first | — | Link exactly that file |
-| 6 | `ppm move`: `move.sh:212` | Re-stows from the new source | The complement of the tracker as an ignore list, so a higher layer's files are not taken | Link the tracker's list |
-| 7 | wsm install: `wsm:558` | Links one level of `spaces/` into the tree | stow runs with `HOME` pointed at a fake directory, because its built-in ignore list drops `README.*`, `LICENSE.*` and `.gitignore`; `--ignore` per sub-level directory | wsm already computes the level's files (`_unit_files`); it links that list. No fake HOME, no built-in list |
-| 8 | wsm remove: `wsm:436` | `stow -D`, output discarded | Then its own loop removes each recorded link anyway | The loop is the whole of it |
-| 9 | `wsm add`: `wsm:1454`, `1469` | Nothing: wsm writes the link itself, "as stow would" | Its own `_relpath`, because stow treats an absolute link as foreign (`wsm:540` still cleans up absolute links from wsm 0.3) | The same function the installs use |
+| 1 | ppm install: `stow_subdir`, `installer.sh:563` | Links `home/` and the `$PPM_GROUP_ID` directory (`macos`, `linux`) into `$HOME`, file by file | Layering is a growing list of `--ignore=^path$` regexes, one per file every higher layer linked (`PPM_IGNORE_ARGS`). Only `.` is escaped (`_stow_ignore_arg`), so a file name with `+`, `(` or `[` is a wrong regex | A set of exact paths to skip. No regex, no argument list that grows with the install |
+| 2 | Before every one of those: `remove_dangling_links`, `force_remove_conflicts` (`installer.sh:560–561`), `meta_cleanup_stale` (after, `installer.sh:123`) | Nothing: stow aborts the whole operation at the first conflict, and calls a dangling link into another package "not owned by stow" | Three pre-passes over the package's files that clear what would make stow abort | One plan pass that classifies every target (ours and current, ours and stale, another layer's, the user's) and reports **all** conflicts at once; `-f` is a rule in that pass |
+| 3 | ppm remove: `unstow_package`, `installer.sh:520` | `stow -D`: scans the target for links into the package | The tracker already lists the files | Unlink the tracker's list, checking each still points into the package; walk the package tree as the fallback when a tracker is missing |
+| 4 | Bootstrap: `stow_base`, `install.sh:347` (ppm's `stow_package`) | Links `core/anfs` and `core/ppm` before ppm exists | Homebrew must install `stow` (and its Perl) first (`base_formulas`, `install.sh:176`; checks at `:324` and `:499`); a 20-line pre-pass (`:325–345`) clears links that would abort it | No `stow` formula in the bootstrap. The library is part of the bash 3.2 set |
+| 5 | `ppm file add`, `claim`: `_file_claim`, `file.sh:200`; `reset`: `_file_reset`, `file.sh:259` | Re-stows a whole package to link one file; `reset` rebuilds an ignore list of every other file first | — | Link exactly that file |
+| 6 | `ppm move`: `_move_restow`, anfs-dev `packages/dev/home/.local/lib/ppm/move.sh:212` | Re-stows from the new source | The complement of the tracker as an ignore list, so a higher layer's files are not taken; it also calls core's `unstow_package` | Link the tracker's list. Handled in plan 03 (3a), not plan 01 |
+| 7 | wsm install: `_link_unit`, `wsm:563` | Links one level of `spaces/` into the tree | stow runs with `HOME` pointed at a fake directory, because its built-in ignore list drops `README.*`, `LICENSE.*` and `.gitignore`; `--ignore` per sub-level directory | wsm already computes the level's files (`_unit_files`); it links that list. No fake HOME, no built-in list |
+| 8 | wsm remove: `_unlink_unit`, `wsm:441` | `stow -D`, output discarded | Then its own loop removes each recorded link anyway | The loop is the whole of it |
+| 9 | `wsm add`: `_add_one`, `wsm:1521`, `1536` | Nothing: wsm writes the link itself, "as stow would" | Its own `_relpath`, because stow treats an absolute link as foreign (`wsm:545` still cleans up absolute links from wsm 0.3) | The same function the installs use |
 
-Also fixed, from CLAUDE.md's own notes: a `README.md` under a package's `home/` is not stowed
+Not calls, but there because of stow: `ppm implode` names it as kept (`implode.sh:35`), `anfs
+implode --all` removes it as a recorded bootstrap formula, ppm's `backup.bats` and anfs-dev's
+`work.bats` skip without it, and anfs-dev's round trip bakes it into its bootstrap snapshot
+(`roundtrip:68`).
+
+Also fixed, from core `AGENTS.md`'s own notes ("wsm: workspaces"): a `README.md` under a package's `home/` is not stowed
 today (stow's built-in list), and ppm and wsm disagree about that list.
 
 ## 2. What we lose
@@ -115,11 +121,13 @@ So:
 
 ## Plans
 
-1. `01-link-library` — `lib/anfs/link.sh`; ppm, wsm, `install.sh` and `ppm move` on it; stow out
-   of the bootstrap
+1. `01-link-library` — `lib/anfs/link.sh`; ppm, wsm and `install.sh` on it; stow out of the
+   bootstrap
 2. `02-platform-files` — `stow:` in `package.yml`; the four packages that have a `macos/` or
    `linux/` directory converted; `PPM_GROUP_ID` removed
 3. `03-owned-files` — `anfs owner`, `anfs mv`, `anfs status`; the opt-in shell `mv`
+4. `04-dry-run` — `-n` on every command that installs, adds, removes or purges, across the
+   tools (`ppm install -n` itself is plan 01). Plan to write
 
 ## Completion Criteria
 

@@ -25,6 +25,20 @@ table below it says what each unit is; the plans say how.
 - [x] CLAUDE.md becomes AGENTS.md in core, stack and anfs-dev (2026-10-19); each CLAUDE.md is
       `@AGENTS.md`, since Claude Code reads only CLAUDE.md
 
+### Then: the linker, then wsm on it (no stow)
+
+Moved ahead of the rest of stacks and setup (2026-10-21).
+
+- [ ] `linker/01-link-library` — first read `units/linker.md`
+- [ ] `linker/02-platform-files`
+- [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
+      `ppm move` (and its tests) to be discussed first
+- [ ] `linker/04-dry-run` — `-n` on every install, add, remove and purge command — plan to write
+- [ ] `wsm` without levels — plan to write after the linker, on it: anything spaces need from
+      the linker is added there, not worked around. A space is any directory with a `space.yml`
+      (and a source's `spaces/`), at any depth; ids are paths (`lgat/tech/web`); a space's files
+      are those not inside a child space; no LEVEL, no workspace/space naming, no two-level limit
+
 ### Then: stacks (`units/stacks.md`, decided 2026-10-19)
 
 - [x] `stacks/01-stacks` and `stacks/03-container-manifest`, as two jobs at once (merged
@@ -57,16 +71,6 @@ table below it says what each unit is; the plans say how.
   - [ ] open questions 1 and 2 (a space's setup), then `04-spaces`, `05-forms`
 - [ ] `stacks/04-boxes` — a stack onto a container or VM; replaces `dev-source/03-boxes`
 - [ ] `stacks/05-roundtrips`
-
-### Then: the linker, then wsm on it (no stow)
-
-- [ ] `linker/01-link-library` — first read `units/linker.md`
-- [ ] `linker/02-platform-files`
-- [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; `ppm move` goes
-- [ ] `wsm` without levels — plan to write after the linker, on it: anything spaces need from
-      the linker is added there, not worked around. A space is any directory with a `space.yml`
-      (and a source's `spaces/`), at any depth; ids are paths (`lgat/tech/web`); a space's files
-      are those not inside a child space; no LEVEL, no workspace/space naming, no two-level limit
 
 ### Then: features
 

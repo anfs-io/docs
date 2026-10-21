@@ -61,6 +61,12 @@ user's repo `host` and `ssh` (on a branch; these are the user's own files, so on
 the key, nothing else). A link that pointed into `macos/` is replaced on the next install
 (the plan's `replace`).
 
+### 3a. stack's bash comment
+
+`packages/bash/install.sh`'s header says the distro's `~/.bashrc` is moved aside "instead of
+letting stow abort the install". After plan 01 nothing aborts; the conflict is reported. Reword
+the reason (the user keeps their file rather than `-f` deleting it); the hook stays.
+
 ### 4. Documentation
 
 CLAUDE.md "Package Structure": the `stow:` key beside `brew`/`cask`/`system`. Remove

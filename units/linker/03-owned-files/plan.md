@@ -5,7 +5,11 @@
 
 ## Context — read these files first
 
+The job touches core and anfs-dev: `anfs work new <job> core anfs-dev`.
+
 - `units/linker.md`, section 3; the logs of plans 01 and 02
+- anfs-dev `packages/dev/home/.local/lib/ppm/move.sh` — `ppm move` (`cmd_move`, `_move_restow`,
+  `_move_rollback_stow`), which 3a folds into ppm
 - `packages/ppm/home/.local/lib/ppm/file.sh` — `add`, `claim`, `reset`, `protect`; `claims.yml`,
   `protected.yml`, the trackers
 - `packages/wsm/home/.local/bin/wsm` — `cmd_add`, `cmd_status`, the trackers
@@ -54,15 +58,12 @@ state `replaced` (an editor wrote over the link).
 It prints what changed in the source (`moved packages/git/home/.gitconfig -> ...; not
 committed`). It never commits. `-n` prints the plan.
 
-### 3a. A whole package
+### 3a. A whole package — to be discussed
 
-`ppm move` (in the `dev` package, `move.sh`) becomes ppm's own plumbing, `ppm __package mv
-<source/package> <source>`, and `anfs mv stack/rails --to user` is how it is reached. It keeps
-what `ppm move` does and refuses (the tracker and claims follow, hooks are not re-run, a
-dependent that would break and a dirty repo are refused without `-f`, an existing package of
-that name is refused always), with two changes: relinking is `anfs_link_apply` over the
-tracker's list (plan 01), and it does not commit, as nothing else here does. `move.sh` and its
-tests are deleted from the `dev` package; the tests move to `packages/ppm/tests`.
+`ppm move` (anfs-dev's `move.sh`) is broken from plan 01 on. What becomes of it is open
+(2026-10-21): it may go entirely, in favour of the shell `mv` wrapper (section 5), or become
+`anfs mv <source/package> --to <source>` with the work in ppm. Its tests are part of the same
+discussion (it has no bats file today). Settle this before the plan is run.
 
 ### 4. `anfs status`
 
