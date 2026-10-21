@@ -43,8 +43,8 @@ Paths below are core's unless they name another repo.
 Its behaviour does not change beyond the name: marker `ovm.yml`, state `$XDG_STATE_HOME/ovm`,
 `OVM_*` variables, `CLI_TOOL=ovm`. Then every place core treats a vault as a resource goes:
 `anfs vault`, `vaults:` in a stack, `pvm` on the toolkit API, the two anfs-ui panels, the docs.
-`user/pjm` follows the rename. A one-time `post_install` step carries an existing pvm install
-over.
+`user/pjm` follows the rename. There is no migration code (decided 2026-10-21): the person's
+one vault is moved by hand after merge.
 
 What a user sees: `ovm` where `pvm` was, `ppm install obsidian` to get it, `anfs vault` gone, a
 stack with `vaults:` refused (64), anfs-ui without the Vaults and Vault links panels.
@@ -72,19 +72,14 @@ stack with `vaults:` refused (64), anfs-ui without the Vaults and Vault links pa
 - `package.yml`: `version: 0.2.0`, keep `categories: [pde]`, add `depends: [wsm]` with pvm's
   comment. No `yq`: it is anfs's base software, and no stack package declares it.
 - `install.sh` (new for this package): pvm's, renamed: `post_install` registers
-  `anfs_callback_register wsm "$PPM_CURRENT_PACKAGE" "ovm link apply --event"`, then runs the
-  migration (below), then the `user_message`; `post_remove` unregisters and says what is left
+  `anfs_callback_register wsm "$PPM_CURRENT_PACKAGE" "ovm link apply --event"`, then the `user_message`; `post_remove` unregisters and says what is left
   (`$XDG_STATE_HOME/ovm`, the `ovm.yml` files, the links).
-- **The migration**, a function in `install.sh`, idempotent and quiet when there is nothing:
-  when `$XDG_STATE_HOME/pvm` is a directory and `$XDG_STATE_HOME/ovm` does not exist, `mv` it;
-  then for each line of `ovm/vaults` (`id<TAB>name<TAB>added<TAB>path`) whose path answers within
-  3 s (the same `perl -e 'alarm ...; stat'` probe as `_reachable`) and has `pvm.yml` and no
-  `ovm.yml`, `mv pvm.yml ovm.yml` and print one line per vault. A vault that does not answer is
-  named with "rename its pvm.yml to ovm.yml by hand". `links` keeps its format: its paths and
-  vault ids are unchanged. If both state directories exist, nothing is moved and the message
-  says so.
+- **No migration** (no backward compatibility, decided 2026-10-21): nothing in stack reads or
+  names pvm's state or `pvm.yml`. After merge the person moves the one vault by hand:
+  `mv ~/.local/state/pvm ~/.local/state/ovm` and `pvm.yml` → `ovm.yml` in apex. The registry
+  and `links` keep their formats, so both are valid as they are.
 - `README.md` for the package (stack's packages have one when they ship a tool): what a vault
-  is, the commands, the links, the migration and its manual form.
+  is, the commands, the links.
 - stack `AGENTS.md`, "Tools shipped by packages": `ovm` (obsidian) joins the "On it" list, and
   the keys table gets `ovm list`, `ovm link list`, `ovm docs`, `ovm validate`.
 
@@ -161,18 +156,11 @@ ovm, in stack (`packages/obsidian/tests/`):
   `ovm`, `ovm.yml` and `$XDG_STATE_HOME/ovm`. `helper.bash`: `ovm_setup` takes the libraries
   from `ANFS_TEST_LIB` (stack's convention, as `ventoy.bats`), not `PVM_TEST_ANFS_LIB`;
   `REGISTRY` is `$XDG_STATE_HOME/ovm/vaults`. The `wsm` stub is unchanged.
-- No test may mention `pvm` except the migration's.
+- No test may mention `pvm`.
 - `install.bats` (new), sourcing `install.sh` with `anfs_callback_register`,
   `anfs_callback_unregister` and `user_message` stubbed:
   - `post_install` registers `ovm link apply --event` for `wsm` under `$PPM_CURRENT_PACKAGE`;
     `post_remove` unregisters.
-  - Migration: a `pvm/` state with two vaults, one with `pvm.yml`, one already `ovm.yml` →
-    state moved, the first renamed, the second untouched, ids and `links` unchanged; a second run
-    does nothing and says nothing; both `pvm/` and `ovm/` present → nothing moved, said once;
-    no `pvm/` → silent; a vault whose path is gone is skipped with its manual line;
-    `OVM_PROBE_SECONDS=0`-style stub for an unreachable one is optional (the probe is pvm's,
-    already tested).
-- After the migration, `ovm list` shows the vault `ok` and `ovm link list` the link `ok`.
 
 core (`packages/anfs/tests/`):
 
@@ -197,8 +185,8 @@ keys and stay).
 ## Verification
 
 Every command runs in the job: `anfs work run <job> <repo> -- <cmd> </dev/null`. Nothing that
-boots a VM or a box runs, and nothing is installed on this host (no `ppm install obsidian`, no
-migration on the real `~/.local/state/pvm`).
+boots a VM or a box runs, and nothing is installed on this host (no `ppm install obsidian`, nothing
+moved in the real `~/.local/state/pvm`).
 
 - [ ] While working, the file you touch: in stack, `env ANFS_TEST_LIB=<job>/core/packages/anfs/home/.local/lib/anfs
       bats packages/obsidian/tests/<file>` (`anfs work path <job> core` gives the path; the
@@ -211,11 +199,12 @@ migration on the real `~/.local/state/pvm`).
 - [ ] user: `bats packages/pjm/tests`
 - [ ] `grep -rn 'pvm' packages stacks containers install.sh AGENTS.md README.md` in core:
       nothing; `grep -rn 'vault' ...` the same: only onboard's 1Password and wsm's `opm.yml`
-      fixture. In stack: only the migration and its test, and the README's migration note.
+      fixture. In stack: nothing.
 - [ ] Once, at the end: `anfs work run <job> core -- packages/anfs/tests/all`
 - Not run, for the person after merge (in `log.md`): `ppm remove user/pvm` (its source is gone,
   so if the hook cannot run, unregister by hand: `anfs callbacks wsm` must not list `user/pvm`),
-  delete the dangling `~/.local/bin/pvm`, `ppm install obsidian`, then `ovm list` (apex `ok`),
+  delete the dangling `~/.local/bin/pvm`, `ppm install obsidian`, `mv ~/.local/state/pvm
+  ~/.local/state/ovm`, rename `pvm.yml` to `ovm.yml` in apex, `ovm scan`, then `ovm list` (apex `ok`),
   `ovm link list` (the `anfs/` link `ok`), `anfs callbacks wsm` (`stack/obsidian` `ok`).
 - Deferred to the end of the roadmap (named in `log.md`): `roundtrip debian`, `roundtrip-macos`
   with the changed checks.

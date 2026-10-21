@@ -16,18 +16,10 @@ date: 2026-10-21
   formats. `_wsm_load`'s hint still says `ppm install core/wsm`.
   - `home/.config/zsh/ovm.zsh` (`zcomp ovm`); `obsidian.zsh` untouched.
   - `package.yml`: `depends: [wsm]` with pvm's comment; no `yq`.
-  - `install.sh` (new): `post_install` registers `ovm link apply --event` as a wsm listener,
-    runs `_ovm_migrate`, then the usage message; `post_remove` unregisters and says what is
-    left.
-  - **`_ovm_migrate`**: when `$XDG_STATE_HOME/pvm` is a directory and `$XDG_STATE_HOME/ovm`
-    (or `$OVM_STATE_HOME`) does not exist, `mv` it. Then for each registry line whose vault
-    answers the probe (`perl alarm; stat`, `OVM_PROBE_SECONDS`, 3 s, as `_reachable`) and has
-    `pvm.yml` and no `ovm.yml`, `mv pvm.yml ovm.yml`. One `user_message` line per vault renamed;
-    a vault that does not answer, or whose directory is gone, gets "rename its pvm.yml to
-    ovm.yml by hand". Both directories present: nothing moves, one line says so. No `pvm/`:
-    silent. `links` is untouched (same paths, same ids).
-  - `README.md` (new): ovm, links into spaces, "From pvm" with the manual form of the
-    migration.
+  - `install.sh` (new): `post_install` registers `ovm link apply --event` as a wsm listener and
+    gives the usage message; `post_remove` unregisters and says what is left. **No migration**
+    (see Decisions): nothing in stack names pvm.
+  - `README.md` (new): ovm and its links into spaces.
   - stack `AGENTS.md`: `ovm` (obsidian) on the "On it" list; `ovm list`, `ovm link list`,
     `ovm docs`, `ovm validate` in the keys table.
 - **core: vaults out of anfs.** `packages/pvm` deleted. `bin/anfs`: no `_anfs_tool vault pvm
@@ -64,6 +56,7 @@ core (ovm-01):
 
 stack (ovm-01):
 - `72307b1` obsidian: ovm, the Obsidian Vault Manager (pvm from core, renamed) (obsidian 0.2.0)
+- `14b6efa` obsidian: no migration from pvm (no backward compatibility)
 
 anfs-dev (ovm-01):
 - `c3c1928` dev: the round trips check for no ovm (stack/obsidian), not pvm (dev 0.1.13)
@@ -73,9 +66,16 @@ user (ovm-01):
 
 docs (ovm-01):
 - `1651224` ovm/01: vaults out of the stack kinds and the apps roadmap; pvm's credential lines go
-- this log
+- `2495b44` this log
+- the migration reversed in `units/ovm.md` and the plan, and this log updated
 
 ## Decisions taken during the work
+
+- **No migration code (decision 3 reversed by the person, 2026-10-21, during the job).** The
+  first version had `_ovm_migrate` in `post_install` (state moved, `pvm.yml` renamed per
+  registered vault, one line each) and 5 tests for it (`72307b1`); `14b6efa` removes the
+  function, its tests and the README's "From pvm" section. The person's one vault (apex) is
+  moved by hand after merge (below). `units/ovm.md` decision 3 and the plan say so now.
 
 - **ROADMAP-apps.md 41 and 102, verified before deleting**: 102 is the "Still open" row "Where
   cloud credentials are kept after `pvm` leaves core"; 41 is the second line of the
@@ -83,12 +83,6 @@ docs (ovm-01):
   leave the bullet's first line ending in "; where", so the bullet now ends at "as containers'
   are." Nothing names op/fnox there: the decision (credentials are op/fnox's) is in
   `units/ovm.md`.
-- **The migration's messages go through `user_message`**, ppm's hook channel, so they print with
-  the install's other messages (`[stack/obsidian] Vault apex (...): renamed pvm.yml to ovm.yml
-  in ...`), one line per vault.
-- **A vault whose directory is gone gets the manual line too**, worded "did not answer": it may
-  be on a volume that is not mounted. The plan's test asked for exactly that.
-- **`_ovm_migrate` honours `OVM_STATE_HOME`** for the destination, as ovm itself would read it.
 - **registry.bats' rule-5 exemptions**: pvm's three headers (`NAME ID STATUS PATH`, `ID TYPE
   TITLE SPACE PATH VAULT`, `PATH FINDING`) are gone from the test's `others` list: no core tool
   prints them now. ovm's lists are stack's, outside that check.
@@ -105,23 +99,17 @@ docs (ovm-01):
   finds, besides onboard's 1Password and wsm's `opm.yml` fixture, the plan's own new negative
   tests: `registry.bats` (`anfs vault list` and `anfs pvm list` are 64; help names no vault or
   pvm), `stacks.bats` (`vaults:` is 64), `rpc.bats` (`{"run":["pvm","list"]}` is refused). In
-  stack, `pvm` is only in `install.sh`, `install.bats` and the README's migration section, as
-  the plan allows.
-- The plan's `install.bats` asked that `post_remove` unregisters: done, plus that `post_install`'s
-  messages never say pvm when there is nothing to migrate.
+  stack, `grep -rn pvm` finds nothing.
 
 ## Tests
 
 All through the job (`anfs work run ovm-01 <repo> -- ... </dev/null`).
 
-- stack `bats packages/obsidian/tests`: **58 passed** (pvm's 52 renamed + 6 in `install.bats`),
-  0 skipped, both with `ANFS_TEST_LIB=<job>/core/packages/anfs/home/.local/lib/anfs` and with
-  the installed libraries (ovm needs nothing of the branch's core).
-  - `install.bats`: the listener registered/unregistered; the migration moves the state, renames
-    one vault's `pvm.yml`, leaves the one already on `ovm.yml`, keeps `vaults` and `links` byte
-    for byte, then `ovm ls` shows both `ok` and `ovm link ls` the link `ok`; a second run says
-    nothing of pvm; both directories present: nothing moved, said once; no `pvm/`: silent; a
-    vault whose path is gone: the manual line, the other still renamed.
+- stack `bats packages/obsidian/tests`: **53 passed** (pvm's 52 renamed + 1 in `install.bats`:
+  the listener registered by `post_install`, unregistered by `post_remove`), 0 skipped, both with
+  `ANFS_TEST_LIB=<job>/core/packages/anfs/home/.local/lib/anfs` and with the installed libraries
+  (ovm needs nothing of the branch's core). Before the migration was removed: 58 (with its 5).
+- stack `grep -rn pvm` (outside `.git`): nothing.
 - core `bats packages/anfs/tests/{registry,stacks,bash,system,callbacks,rpc}.bats`: **117
   passed**.
 - core anfs-ui (`containers/ui`): `bundle exec rspec` **63 examples, 0 failures**; `bundle exec
@@ -138,7 +126,7 @@ All through the job (`anfs work run ovm-01 <repo> -- ... </dev/null`).
 - pmm's and pcm's suites (off since 2026-10-19; nothing of theirs changed).
 - Deferred to the end of the roadmap (boots a VM): `roundtrip debian` and `roundtrip-macos` with
   the changed "no pmm, qemu or ovm" checks.
-- Nothing installed on this host: no `ppm install obsidian`, no migration against the real
+- Nothing installed on this host: no `ppm install obsidian`, nothing moved in the real
   `~/.local/state/pvm`, no `ppm remove user/pvm`.
 
 ## Merging
@@ -162,11 +150,12 @@ All through the job (`anfs work run ovm-01 <repo> -- ... </dev/null`).
 1. `ppm remove user/pvm`. Its source is gone, so if the hook cannot run, unregister by hand:
    `anfs callbacks wsm` must not list `user/pvm` (or `core/pvm`).
 2. Delete the dangling `~/.local/bin/pvm` if it is still there.
-3. `ppm install obsidian`. Its `post_install` registers the listener and carries
-   `~/.local/state/pvm` over, printing one line per vault renamed (apex's `pvm.yml` becomes
-   `ovm.yml`). If apex's iCloud path does not answer within 3 s, it says so: then
-   `mv <apex>/pvm.yml <apex>/ovm.yml`.
-4. Check: `ovm list` shows `apex` `ok`; `ovm link list` shows its link into `anfs/` as `ok`;
-   `anfs callbacks wsm` lists `stack/obsidian` `ok` and nothing stale; `anfs vault` is 64.
-5. anfs-ui: restart it (`pcm up ui`) to drop the two panels.
-6. Tick `ovm/01-pvm-to-ovm` in `ROADMAP.md`; then `anfs work remove ovm-01`.
+3. `ppm install obsidian` (registers the wsm listener; nothing else).
+4. Move the state: `mv ~/.local/state/pvm ~/.local/state/ovm` (ids, registry and `links` keep
+   their formats).
+5. In the apex vault (on iCloud): `mv pvm.yml ovm.yml`.
+6. `ovm scan` (or `ovm scan <apex dir>`), then check: `ovm list` shows `apex` `ok`; `ovm link
+   list` shows its link into `anfs/` as `ok`; `anfs callbacks wsm` lists `stack/obsidian` `ok`
+   and nothing stale; `anfs vault` is 64.
+7. anfs-ui: restart it (`pcm up ui`) to drop the two panels.
+8. Tick `ovm/01-pvm-to-ovm` in `ROADMAP.md`; then `anfs work remove ovm-01`.

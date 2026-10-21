@@ -67,10 +67,9 @@ installed, its `~/.local/bin/pvm` dangling and its wsm listener registered as `u
   registry format are unchanged. Plain-markdown vaults still work; "Obsidian" is the name, not a
   restriction. Obsidian-specific commands are later plans.
 - **The marker is `ovm.yml`; the state is `$XDG_STATE_HOME/ovm`; variables are `OVM_*`.** No
-  fallback to `pvm.yml` (alpha: no backward compatibility). `post_install` migrates once: when
-  `$XDG_STATE_HOME/pvm` exists and `$XDG_STATE_HOME/ovm` does not, it moves the directory and
-  renames `pvm.yml` to `ovm.yml` in each registered vault that answers and has no `ovm.yml`.
-  Ids are kept, so links and document ids are the same.
+  fallback to `pvm.yml` (alpha: no backward compatibility), and no migration code: the
+  person's one vault is moved by hand after merge (`mv ~/.local/state/pvm ~/.local/state/ovm`, `pvm.yml` renamed
+  to `ovm.yml` in apex). Ids are kept, so links and document ids are the same.
 - **Vaults are found as today**: the marker, the registry, `ovm scan [dir...]`, the vault you
   stand in. Nothing reads a source. No `vaults/` directory, no `vaults:` key, no source
   resolution.
@@ -103,7 +102,7 @@ says today), and `anfs_link_owner` (plan 03) will call it the user's.
 
 | # | Plan | What |
 | --- | --- | --- |
-| 01 | `01-pvm-to-ovm` | `ovm` in `stack/obsidian`, pvm's tests with it; every vault-as-resource tie out of core, anfs-ui and the docs; `user/pjm` on ovm; the one-time state migration |
+| 01 | `01-pvm-to-ovm` | `ovm` in `stack/obsidian`, pvm's tests with it; every vault-as-resource tie out of core, anfs-ui and the docs; `user/pjm` on ovm |
 | 02 | `02-items` | Stub. `ovm items` and `exclude:`, the source `user/pjm` pulls from; first answer whether pvm once had them |
 
 Later (not written): Obsidian's own things through ovm (open a document by id in the app, the
@@ -114,7 +113,8 @@ vault's `.obsidian` settings), a `skills/` entry so an agent finds documents by 
 1. **No `anfs ovm`.** ovm is a tool on PATH like ventoy; vaults are not anfs's.
 2. **Not on the toolkit API.** If a later app needs vaults, `anfs rpc` gets a rule for tools that
    are not core's then; noted against `toolkit-api`, not this unit.
-3. **The migration is automatic**, from `post_install`, printing one line per vault it renames.
+3. **No migration code**: the person's one vault is moved by hand (decided 2026-10-21; this
+   reverses the first answer, an automatic migration from `post_install`).
 4. **pvm was never a secrets vault.** The "Secrets" description goes with `anfs vault`, and
    `ROADMAP-apps.md`'s two credential lines that wait on pvm (41, 102) are removed; credentials
    are `op`/`fnox`'s.
@@ -133,9 +133,10 @@ vault's `.obsidian` settings), a `skills/` entry so an agent finds documents by 
   1Password vault (`lib/anfs/onboard.sh`, `lib/ppm/onboard.sh`) and wsm's tests' `opm.yml`
   fixture; `anfs vault` is an unknown command (64), `anfs help` lists five tools, and a
   `stack.yml` with `vaults:` is 64.
-- `ovm` from `stack/obsidian` passes pvm's 52 tests renamed, plus the migration's; its lists,
+- `ovm` from `stack/obsidian` passes pvm's 52 tests renamed, plus `install.bats`'s; its lists,
   `--json`, `-i`, help and completion work as stack's other tools'.
 - anfs-ui has no Vaults or Vault links panel and its suite passes.
-- On this Mac, after the person installs `stack/obsidian` and removes `user/pvm`: `ovm list`
+- On this Mac, after the person installs `stack/obsidian`, removes `user/pvm` and moves apex by
+  hand (`mv ~/.local/state/pvm ~/.local/state/ovm`, `pvm.yml` → `ovm.yml`, `ovm scan`): `ovm list`
   shows `apex`, `ovm link list` shows its link into `anfs/` as `ok`, and `anfs callbacks wsm`
   lists `stack/obsidian` and nothing stale.
