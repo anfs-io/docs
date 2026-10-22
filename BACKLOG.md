@@ -500,7 +500,7 @@ Recent failures in the log (~/.local/state/anfs/anfs.log):
 
 ## r-20261022-5 pcm remove: podman 'no container / no such pod' Error lines when the service has no containers
 
-Status: open
+Status: fixed in core 4d8cf0e (2026-10-22)
 
 Package: `core/pcm`
 
