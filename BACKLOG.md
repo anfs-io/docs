@@ -64,3 +64,8 @@ gets a unit.
   Find out whether the skills CLI supports those agent ids or psm should stop listing them.
 - `anfs report status` for a GitHub issue closed without a `Fixed in` comment says `fixed`;
   `closed` may be truer (not planned is not fixed). Decide on first real GitHub use.
+
+- stack obsidian `init.bats`' sync test failed once in a full ovm-02 run (passed alone and in two
+  more full runs). Flaky; not tracked down.
+- apex: `ovm validate` gives 254 findings in 257 documents (123 missing `id`, 112 no
+  frontmatter, 19 `type`): the person's call whether to fix the documents or loosen `required:`.
