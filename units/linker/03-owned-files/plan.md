@@ -5,6 +5,8 @@
 
 ## Notes from the 2026-10-21 review — to settle before this plan is refreshed
 
+- **2026-10-22: `ppm move` is settled** — it becomes `linker/05-move` (each tool's own `move` on `lib/anfs/move.sh`); `anfs mv <source/name> --to <source>` here only runs the owning tool's `move`.
+
 - **2026-10-22: the opt-in shell `mv` wrapper (section 5) is out of this plan**, moved to the end of the roadmap ("Last").
 
 The plan below predates wsm-spaces and plan 02's rewrite. The review moved its theme to **file

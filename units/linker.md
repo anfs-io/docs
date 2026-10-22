@@ -10,8 +10,8 @@ platform, directories linked whole and files copied instead of linked, declared 
 `package.yml` and `space.yml` (plan 02), and one answer to "who owns this file, and how do I move
 it" (plan 03).
 
-Depends on: nothing. It touches ppm, wsm, `install.sh` and `ppm move` (anfs-dev's `dev` package,
-plan 03), none of which the `machine-images` branch changes, so it can run as its own job beside it.
+Depends on: nothing. It touches ppm, wsm, `install.sh` and `ppm move` (anfs-dev's `dev` package;
+plan 05 moves it into core), none of which the `machine-images` branch changes, so it can run as its own job beside it.
 
 ## 1. Where stow is used today, and what improves
 
@@ -25,7 +25,7 @@ this Mac.
 | 3 | ppm remove: `unstow_package`, `installer.sh:520` | `stow -D`: scans the target for links into the package | The tracker already lists the files | Unlink the tracker's list, checking each still points into the package; walk the package tree as the fallback when a tracker is missing. **Plan 02:** the fallback is the manifest's list (a directory link is one entry; walking the tree would miss it); copies (`files:`) are left |
 | 4 | Bootstrap: `stow_base`, `install.sh:347` (ppm's `stow_package`) | Links `core/anfs` and `core/ppm` before ppm exists | Homebrew must install `stow` (and its Perl) first (`base_formulas`, `install.sh:176`; checks at `:324` and `:499`); a 20-line pre-pass (`:325–345`) clears links that would abort it | No `stow` formula in the bootstrap. The library is part of the bash 3.2 set. **Plan 02:** `manifest.sh` and `files.sh` join it (core/anfs's `lib/anfs` is a directory link, and `system.list` a copy, from the first install) |
 | 5 | `ppm file add`, `claim`: `_file_claim`, `file.sh:200`; `reset`: `_file_reset`, `file.sh:259` | Re-stows a whole package to link one file; `reset` rebuilds an ignore list of every other file first | — | Link exactly that file |
-| 6 | `ppm move`: `_move_restow`, anfs-dev `packages/dev/home/.local/lib/ppm/move.sh:212` | Re-stows from the new source | The complement of the tracker as an ignore list, so a higher layer's files are not taken; it also calls core's `unstow_package` | Link the tracker's list. Handled in plan 03 (3a), not plan 01 |
+| 6 | `ppm move`: `_move_restow`, anfs-dev `packages/dev/home/.local/lib/ppm/move.sh:212` | Re-stows from the new source | The complement of the tracker as an ignore list, so a higher layer's files are not taken; it also calls core's `unstow_package` | Link the tracker's list. Handled in plan 05 (`move` in core, with the package's history), not plan 01 |
 | 7 | wsm install: `_link_unit`, `wsm:563` | Links one level of `spaces/` into the tree | stow runs with `HOME` pointed at a fake directory, because its built-in ignore list drops `README.*`, `LICENSE.*` and `.gitignore`; `--ignore` per sub-level directory | wsm already computes the level's files (`_unit_files`); it links that list. No fake HOME, no built-in list. **Plan 02:** a space's `links:` and `files:` read through `manifest.sh`, as a package's; its `links: {src}` entries (absolute today) are made relative by `anfs_link_one` |
 | 8 | wsm remove: `_unlink_unit`, `wsm:441` | `stow -D`, output discarded | Then its own loop removes each recorded link anyway | The loop is the whole of it |
 | 9 | `wsm add`: `_add_one`, `wsm:1521`, `1536` | Nothing: wsm writes the link itself, "as stow would" | Its own `_relpath`, because stow treats an absolute link as foreign (`wsm:545` still cleans up absolute links from wsm 0.3) | The same function the installs use. **Plan 02:** `anfs_link_one` itself, not `ln -s` with `anfs_relpath` |
@@ -83,8 +83,9 @@ which the user has to know.
   | owned | `--to <source/package>` | Today's `ppm file claim` |
 
 - `ppm file ...` and `wsm add` stay as the tool's own words for its own kind, calling the same
-  functions. `ppm move` (a package between sources, today in the `dev` package) goes the same way:
-  `anfs mv <source/package> --to <source>`, with the work in ppm (plan 03).
+  functions. `ppm move` (a package between sources, today in the `dev` package) becomes core's
+  `<tool> move` (plan 05: ppm and wsm, on `lib/anfs/move.sh`); `anfs mv <source/name> --to
+  <source>` only runs the owning tool's `move` (plan 03).
 
 **3.2 Wrapping `mv` in the shell: an opt-in second step, not the mechanism.**
 
@@ -173,6 +174,43 @@ So:
    (`lib/anfs/files.sh` plus a `cli.sh`-declared group), with `anfs owner|mv|status` over it.
    Its notes are at the top of plan 03; the rest of that plan is refreshed after they are settled.
 
+### Decided with the person, 2026-10-22 (move)
+
+1. **`ppm move` leaves anfs-dev.** `packages/dev/home/.local/lib/ppm/move.sh` is deleted with its
+   declaration and its mentions (anfs-dev's `AGENTS.md`, `packages/dev/README.md`); its `stow` calls
+   and `PPM_GROUP_ID` loop, the last in anfs-dev's code, go with it. Moving is core's (plan 05).
+2. **The tool orchestrates; the library supplies building blocks**, with no hooks or callbacks. A
+   tool that has a move writes its own `cmd_move`, which reads top to bottom with its own functions
+   (ppm: check, unlink, tree, tracker, relink; pcm, later: check, stop if running, tree, start again
+   if it was, its own rollback). A tool without a `cmd_move` has no move.
+3. **`lib/anfs/move.sh`**:
+   - `anfs_move_check <dir> <source/name> <to>`: both repositories clean (`-f` overrides, as
+     today), the path free in the destination, the destination a source, and the dependents rule
+     over `resolve.sh` (moving *up* in priority hides the resource from lower sources' dependents);
+     the same for packages, spaces and containers.
+   - `anfs_move_tree <dir> <source/name> <to>`: the directory moves **with its history** in one
+     step: `git -C <from> format-patch --root -o <tmp> -- <dir>/<name>`, then `git -C <to> am
+     --committer-date-is-author-date` (the same relative path in both), then `git rm -r` and one
+     commit in the origin naming the destination. When the replay fails (merged parallel branches,
+     a message the mailbox format cannot carry, a conflict): `am` aborted cleanly, the files copied,
+     one commit in the destination naming the origin repository and commit, and the method said.
+   - `anfs_move_cli`: one helper, so every tool declares `move <source/name> <to-source>` with the
+     same help, `-f` and `-n`. `-n` prints the checks, the commits that would be replayed, and the
+     tool's own steps (each tool prints its own).
+   - Safe: never pushes; refuses when the destination has the path (`-f` or not); leaves both
+     repositories clean, or as they were on failure.
+   - **A move commits, by design** (history is commits). This reverses plan 03's "it never
+     commits" for `move` only; `anfs mv` of a file still does not commit.
+4. **In plan 05: ppm and wsm.** ppm keeps today's semantics (unlink without remove hooks, the tree,
+   relink without install hooks, the tracker and the claims renamed). wsm moves a space's installed
+   directory too (`~/spaces/<from>/<path>` to `~/spaces/<to>/<path>`, the clones inside untouched,
+   relinked); ids that name the source (`depends:`) are not rewritten. pcm, pmm and psm only if
+   small: found not to fit this plan (their suites are off; they resolve through `catalog.sh`), so
+   they are a follow-on plan with what was found recorded in plan 05.
+5. **`anfs mv <source/name> --to <source>`** (plan 03) only runs the owning tool's `move`. Plan 05
+   does not depend on plan 03.
+6. No backward compatibility, no migration code.
+
 ## Plans
 
 1. `01-link-library` — `lib/anfs/link.sh`; ppm, wsm and `install.sh` on it; stow out of the
@@ -186,6 +224,12 @@ So:
    the 2026-10-21 review at its top, to settle before it is refreshed
 4. `04-dry-run` — `-n` on every command that installs, adds, removes or purges, across the
    tools (`ppm install -n` itself is plan 01). Plan to write
+5. `05-move` — `lib/anfs/move.sh` (`anfs_move_check`, `anfs_move_tree`, `anfs_move_cli`): a
+   resource moves to another source with its history (format-patch/am, a one-commit copy when the
+   replay fails); `ppm move` and `wsm move` on it; `ppm move` leaves anfs-dev. Independent of 03 and
+   04. Plan written 2026-10-22
+6. `06-move-containers-machines-skills` — `pcm move`, `pmm move` (machines), psm: after pmm's and
+   pcm's suites are back on. Plan to write (plan 05's "Not in this plan" has what was found)
 
 ## Completion Criteria
 

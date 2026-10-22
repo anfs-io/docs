@@ -47,6 +47,9 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
       `ppm move` (and its tests) to be discussed first
 - [ ] `linker/04-dry-run` — `-n` on every install, add, remove and purge command — plan to write
+- [ ] `linker/05-move` — `lib/anfs/move.sh` (checks, the move with its history, one cli helper);
+      `ppm move` and `wsm move` written in each tool; anfs-dev's `move.sh` goes (2026-10-22)
+- [ ] `linker/06-move-more` — `move` for pcm, pmm and psm (after their suites are back on)
 - [x] `ovm/01-pvm-to-ovm` — merged 2026-10-21 (see `log.md`); pvm leaves core as `ovm` in `stack/obsidian`; vaults stop being a
       resource (`units/ovm.md`). Independent of the linker; runs beside it (2026-10-21)
 - [ ] `ovm/02-items` — stub: `ovm items` and `exclude:` for `user/pjm`; never written (checked 2026-10-22), to design
