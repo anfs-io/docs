@@ -531,3 +531,19 @@ gone, so the library directory comes first:
 - `src:` entries are **allowed** in `package.yml` (not refused): `ovm/03-vaults-home` needs
   `links: [{src: ~/Library/.../apex, dest: vaults/apex, platforms: [macos]}]` in a user layer of
   `obsidian`. Relative, as every link; `missing src` is a state, not an error.
+- **Per-tool opt-in (2026-10-21).** `manifest.sh` knows every entry kind (per-file `path`,
+  directory `dir/`, `src:`/`dest:`, `platforms:`, `files:`); each tool declares the kinds it accepts,
+  as each declares its command groups, and validation refuses the rest with a message. ppm accepts
+  all of them, `src:` included (decided: option (a), for `ovm/03`); wsm accepts all of them.
+- **`platform()` and `os()` move to `lib/anfs/platform.sh`** (from ppm's `platform.sh` and
+  `core.sh`), unchanged in behaviour; ppm and wsm source them from there. Merging the two into one
+  function is deferred to the end of the roadmap (`ROADMAP.md`, "Last").
+- **`system.list` stays a link.** It was protected on this Mac only so that `anfs src ssh` would
+  not edit core's checkout, and `src ssh` already switches a system source's clone `origin` to ssh
+  without touching the list (the list's URL is used only for the first clone). Do not add system
+  sources to `user.list` to override their URL: the kept entry takes the user list's position, which
+  reorders layer priority. In this plan: the "protect it" hint and `gitsrc_hook_system_writable`
+  go; `src ssh`'s note for a system-list https entry says the origin was switched and the list's URL
+  is only used for the first clone. `files:` ships with its tests only (no package uses it yet).
+  By hand after merge: `ppm file unprotect ~/.config/anfs/system.list`, delete the copy,
+  `ppm install core/anfs`, `anfs src list` (core and stack origins still ssh).

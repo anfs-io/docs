@@ -117,6 +117,13 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
       tart build, `anfs work install` into boxes, a Linux host. Each plan's log lists its own
       as deferred; collect them here when they are run
 
+- [ ] **ppm audit (after the dust settles):** what ppm still does that predates the anfs tool
+      suite and belongs in the shared libraries (candidates: `core.sh`'s helpers, the legacy list
+      name hook, the source hooks, anything `file`-like left after linker/03)
+- [ ] **One platform function:** `os()` (macos/linux) and `platform()` (macos/distro) are one
+      question; merge them in `lib/anfs/platform.sh` and refactor the callers (moved there, unmerged,
+      in linker/02)
+
 - [ ] `audit`, in full
 - [ ] `tutorial` — "From dotfiles to deployment"
 
