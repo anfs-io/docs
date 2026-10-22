@@ -3,7 +3,7 @@
 
 # Plan 02 — `ovm items`, the source `pjm` pulls from (stub)
 
-Stub, 2026-10-21. Not to be run until its open question is answered and the plan is written.
+Stub, 2026-10-21; its question answered 2026-10-22 (never written). To be designed and written.
 
 ## Why
 
@@ -13,12 +13,13 @@ relies on an `exclude` key in the vault's marker (`_generated` is excluded so pj
 not read back). Neither exists in pvm today, so `pjm pull` fails. pjm stays its own tool in the
 user source (decided 2026-10-21); this plan gives it the source it expects.
 
-## Open question
+## Answered (2026-10-22): never written
 
-- **Lost or never written?** Was `items` (and `exclude`) a feature of pvm while it lived in the
-  user source, lost when it moved to core (core 450241b, 2026-10-16), or was it only ever
-  planned? If lost: recover it from the user source's history and port it to ovm. If never
-  written: design it here.
+`items` and `exclude` never existed in pvm. Checked: the user source's `packages/pvm` history
+(`8199ac3` first pass, `4294372` move to core) has neither; core's history has no `cmd_items` and no
+`exclude:` for pvm; no repo or space on this machine has an implementation. `pjm` arrived as a
+spike in the same commit that moved pvm to core (user `8a37a76`), already calling `pvm items`, so
+it was written against a command still to be designed. This plan designs it.
 
 ## To settle when the plan is written
 

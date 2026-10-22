@@ -123,10 +123,7 @@ vault's `.obsidian` settings), a `skills/` entry so an agent finds documents by 
 
 ## Open questions
 
-1. **`pjm`'s `items`.** `user/pjm` runs `pvm items --json --space ...` and its config mentions an
-   `exclude` key in `pvm.yml`; core's pvm has neither, so pjm cannot pull today. Plan 01 renames
-   the calls and leaves the gap. Is `items` a pvm feature lost in the move to core (restore it in
-   ovm), or still to write? Either way it is plan 02 (`02-items`, a stub until this is answered).
+None. `pjm`'s `items` and `exclude` were never written (checked 2026-10-22); plan 02 designs them.
 
 ## Completion Criteria
 

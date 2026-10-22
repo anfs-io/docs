@@ -36,7 +36,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         tracker, `wsm status` folded into `wsm list`
   - [x] `wsm-spaces/02-repo-lib` — merged 2026-10-21 — `lib/anfs/repo.sh` shared by `anfs src` and `wsm repo`
   - [x] `wsm-spaces/03-skills-and-links` — merged 2026-10-21 — `lib/anfs/skill.sh` (psm on it), `wsm skill`, `links:`
-- [ ] `linker/02-links-and-files` — gains `link_dirs:` (lib directories linked whole); before config/03
+- [ ] `linker/02-links-and-files` — `links:`, `files:`, `platforms:` in package.yml and space.yml; relative links; directory links; before config/03
 - [ ] `config` (`units/config.md`, decided 2026-10-21): per-tool settings, `<tool> config`, `ANFS_WORK`
   - [ ] `config/01-tool-env` — `~/.config/<tool>/<tool>{,.local}.env`; `anfs.conf` goes
   - [ ] `config/02-config-command` — `lib/anfs/config.sh`: `<tool> config list|get|set|unset`,
@@ -49,7 +49,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
 - [ ] `linker/04-dry-run` — `-n` on every install, add, remove and purge command — plan to write
 - [x] `ovm/01-pvm-to-ovm` — merged 2026-10-21 (see `log.md`); pvm leaves core as `ovm` in `stack/obsidian`; vaults stop being a
       resource (`units/ovm.md`). Independent of the linker; runs beside it (2026-10-21)
-- [ ] `ovm/02-items` — stub: `ovm items` for `user/pjm`; open question first
+- [ ] `ovm/02-items` — stub: `ovm items` and `exclude:` for `user/pjm`; never written (checked 2026-10-22), to design
 - [ ] `ovm/03-vaults-home` — `~/vaults` is the list; no registry or scan (after linker/02 and config/01)
 
 ### Then: stacks (`units/stacks.md`, decided 2026-10-19)
@@ -63,7 +63,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         gotchas); data dirs, ports and image come from `compose.yml` through `pcm show`,
         description and attribution from `container.yml`
 - [x] `stacks/02-system` — the toolkit is the `system` stack; implode is `anfs remove system`
-- [ ] anfs-ui into core, before boxes (decided 2026-10-19):
+- [x] anfs-ui into core, before boxes (decided 2026-10-19; done 2026-10-19):
   - [x] `containers/ui` in core (merged 2026-10-19): a Containerfile that builds the gems (`dev`
         target; `release` copies the code), the code mounted read-only from the source so it is
         developed on the host. Not in `system` yet (`pcm install` starts a service): `pcm up ui`
