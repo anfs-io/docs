@@ -545,5 +545,9 @@ gone, so the library directory comes first:
   reorders layer priority. In this plan: the "protect it" hint and `gitsrc_hook_system_writable`
   go; `src ssh`'s note for a system-list https entry says the origin was switched and the list's URL
   is only used for the first clone. `files:` ships with its tests only (no package uses it yet).
-  By hand after merge: `ppm file unprotect ~/.config/anfs/system.list`, delete the copy,
-  `ppm install core/anfs`, `anfs src list` (core and stack origins still ssh).
+  On this Mac the person relinks `system.list` by hand (unprotect, remove the copy, `ppm install
+  core/anfs`); not a step of this plan.
+- **`anfs src list` shows the clone's `origin`** when the source is cloned, and the list's URL only
+  when it is not (decided 2026-10-21): the URL a source really uses is its clone's remote, so a
+  source switched by `src ssh` lists as ssh whatever the list says. `--json` keeps a `url` key with
+  that value (and adds `list_url` only if a reader needs it — check the readers first).
