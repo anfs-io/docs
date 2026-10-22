@@ -30,12 +30,12 @@ table below it says what each unit is; the plans say how.
 Moved ahead of the rest of stacks and setup (2026-10-21).
 
 - [x] `linker/01-link-library` — merged 2026-10-21 (see `log.md`; VM checks deferred)
-- [ ] `wsm-spaces` (`units/wsm-spaces.md`, decided 2026-10-21; replaces "wsm without levels"),
+- [x] `wsm-spaces` (`units/wsm-spaces.md`, decided 2026-10-21; replaces "wsm without levels"),
       ahead of linker 02–04:
   - [x] `wsm-spaces/01-spaces` — merged 2026-10-21 (see `log.md`; by-hand steps there) — a space is a directory with `space.yml`, ids are paths, no
         tracker, `wsm status` folded into `wsm list`
   - [x] `wsm-spaces/02-repo-lib` — merged 2026-10-21 — `lib/anfs/repo.sh` shared by `anfs src` and `wsm repo`
-  - [ ] `wsm-spaces/03-skills-and-links` — `lib/anfs/skill.sh` (psm on it), `wsm skill`, `links:`
+  - [x] `wsm-spaces/03-skills-and-links` — merged 2026-10-21 — `lib/anfs/skill.sh` (psm on it), `wsm skill`, `links:`
 - [ ] `linker/02-platform-files` — gains `link_dirs:` (lib directories linked whole); before config/03
 - [ ] `config` (`units/config.md`, decided 2026-10-21): per-tool settings, `<tool> config`, `ANFS_WORK`
   - [ ] `config/01-tool-env` — `~/.config/<tool>/<tool>{,.local}.env`; `anfs.conf` goes
