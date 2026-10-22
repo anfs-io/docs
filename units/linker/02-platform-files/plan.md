@@ -67,6 +67,30 @@ the key, nothing else). A link that pointed into `macos/` is replaced on the nex
 letting stow abort the install". After plan 01 nothing aborts; the conflict is reported. Reword
 the reason (the user keeps their file rather than `-f` deleting it); the hook stays.
 
+### 3b. Directories linked whole: `link_dirs:` (decided 2026-10-21)
+
+A package may name directories under `home/` that are linked as one link to the directory,
+instead of file by file:
+
+```yaml
+link_dirs: [.local/lib/anfs]
+```
+
+- Only when the package says so; ppm never folds on its own (stow's folding is what
+  `hooks.bats`' "when stow folded the hook directory" was about).
+- Why: a tool's library set is then always whole: a file added or removed upstream is there after
+  `git pull`, with no reinstall, and no lib can be half-linked. The fallbacks to the core clone's
+  `link.sh` in ppm and wsm are deleted.
+- The plan treats such a directory as one entry (`keep`, `link`, or a `conflict` naming any file
+  another package put there). The tracker records the one path. A higher layer cannot override
+  one file inside it, and `ppm file protect` refuses a path inside it.
+- Only for a directory one package owns. `.local/lib/ppm` stays per-file (core/ppm, anfs-dev/dev
+  and stack/ruby all write there). Converted here: core `anfs` (`.local/lib/anfs`), `pcm`
+  (`.local/lib/pcm`), `pmm` (`.local/lib/pmm`), stack `tailscale` (`.local/lib/tsm`), stack
+  `rpi-imager` (`.local/lib/rpi-imager`) — check each has one owner first.
+- No migration code: the per-file links on this Mac are replaced by hand after merge
+  (`ppm install -f` of each converted package, or remove the old links first); the log lists it.
+
 ### 4. Documentation
 
 CLAUDE.md "Package Structure": the `stow:` key beside `brew`/`cask`/`system`. Remove

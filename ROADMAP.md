@@ -34,7 +34,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
       ahead of linker 02–04:
   - [x] `wsm-spaces/01-spaces` — merged 2026-10-21 (see `log.md`; by-hand steps there) — a space is a directory with `space.yml`, ids are paths, no
         tracker, `wsm status` folded into `wsm list`
-  - [ ] `wsm-spaces/02-repo-lib` — `lib/anfs/repo.sh` shared by `anfs src` and `wsm repo`
+  - [x] `wsm-spaces/02-repo-lib` — merged 2026-10-21 — `lib/anfs/repo.sh` shared by `anfs src` and `wsm repo`
   - [ ] `wsm-spaces/03-skills-and-links` — `lib/anfs/skill.sh` (psm on it), `wsm skill`, `links:`
 - [ ] `linker/02-platform-files`
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
