@@ -38,3 +38,9 @@ gets a unit.
 
 - `anfs-admin` (`anfs-io/admin-anfs`, private): anfs.io's own infrastructure. The website, the
   demo cloud instances, anything not public. Nothing of the toolkit lives there.
+- **Tests failing on main (2026-10-22):** stack `op/tests/ssh-hook.bats` 25, 31, 34, 35 and
+  `tailscale/tests/tsm.bats` 61; user `pjm/tests/pjm.bats` 12 ("dispatch sends only what is
+  ready"). Found by linker/02 and ovm/01; not caused by them.
+- **anfs-dev after linker/02:** `roundtrip-macos`'s bootstrap parse check lists the new `lib/anfs`
+  files (`manifest.sh`, `files.sh`, `platform.sh`); `move.sh` still uses stow and `PPM_GROUP_ID`
+  (goes with `linker/05-move`).
