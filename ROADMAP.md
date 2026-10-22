@@ -38,7 +38,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
   - [x] `wsm-spaces/03-skills-and-links` — merged 2026-10-21 — `lib/anfs/skill.sh` (psm on it), `wsm skill`, `links:`
 - [x] `linker/02-links-and-files` — merged 2026-10-22 (see `log.md`; by-hand steps run) — `links:`, `files:`, `platforms:` in package.yml and space.yml; relative links; directory links; before config/03
 - [ ] `config` (`units/config.md`, decided 2026-10-21): per-tool settings, `<tool> config`, `ANFS_WORK`
-  - [ ] `config/01-tool-env` — `~/.config/<tool>/<tool>{,.local}.env`; `anfs.conf` goes
+  - [x] `config/01-tool-env` — merged 2026-10-22 (see `log.md`) — `~/.config/<tool>/<tool>{,.local}.env`; `anfs.conf` goes
   - [ ] `config/02-config-command` — `lib/anfs/config.sh`: `<tool> config list|get|set|unset`,
         `anfs config list --all`
   - [ ] `config/03-work-switch` — `ANFS_WORK=<job>` runs a job's tools on live data (after linker/02)
