@@ -48,4 +48,7 @@ gets a unit.
   (`pcm validate` warns). Pick another port for one of them.
 - **pcm's own suite** has not run since config/04 changed `packages/pcm/tests/helper.bash` and
   `edges.bats`: `ANFS_TESTS_PMM_PCM=1 packages/anfs/tests/all pcm` (for the person; see "Last").
+- **`anfs config list --all`** treats any `~/.config/<d>/<d>.env` as an installed tool; an unrelated
+  file of that shape would be listed. Accepted for now (2026-10-22); could read installed packages
+  instead.
 
