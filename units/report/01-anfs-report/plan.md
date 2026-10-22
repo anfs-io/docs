@@ -4,7 +4,9 @@
 # Plan 01 — `anfs report`: an issue with its diagnostics, filed where the machine says
 
 Written 2026-10-22 against core main `78aac47`. Decided with the person 2026-10-22 (the ROADMAP
-"Next" item); `anfs report check` and the skill's check mode added the same day.
+"Next" item). Two additions from the person the same day, while it was being built: `anfs report
+check` with the skill's check mode, and ids with `close`, `status` and `wait`, so the reporter
+learns when its bug is fixed. Both are folded in below.
 
 ## Context — read these files first
 
@@ -41,6 +43,9 @@ That is one addition to `cli.sh` (below); a group that is also a command is othe
 | `anfs report [new] [--package PKG] [--title T] [--expected TEXT] [--actual TEXT] [--steps TEXT] [--body-file F] [-n] [-y]` | builds the report and files it where `ANFS_REPORT_TO` says |
 | `anfs report diag` | prints only the diagnostics block (markdown) |
 | `anfs report check` | `CHECK STATUS DETAIL`, one `ok`/`fail` row per item; exit 1 when one fails |
+| `anfs report status <id>` | `open`, `fixed` or `available`; exit 0 available, 1 open or fixed, 2 an unknown id |
+| `anfs report close <id> --commit SHA [--source S]` | records the fix on the report and closes it |
+| `anfs report wait <id> [--timeout SECS] [--interval SECS]` | polls `status`: 0 when available, 1 at the timeout (default 3600, every 60) |
 | `anfs report` | the group's help (nothing given) |
 
 - `--title` is required, and so is something to say: one of `--expected`, `--actual`, `--steps`,
@@ -56,8 +61,9 @@ That is one addition to `cli.sh` (below); a group that is also a command is othe
   <file>`. No `gh` call at all, not even the duplicate search: `-n` works offline.
 - `-y`: no confirmation before `gh issue create`. A file target never asks (appending destroys
   nothing).
-- `--json`: `new` prints one object: `to` (`github`, `file`), `repo`, `file`, `url` (the issue
-  made; null for a file or `-n`), `title`, `filed` (`true`/`false`), `duplicates` (an array of
+- `new` prints the report's **id**: `owner/repo#N` (github), `r-<YYYYMMDD>-<n>` (a file).
+- `--json`: `new` prints one object: `id` (null for `-n` on github), `to` (`github`, `file`),
+  `repo`, `file`, `url` (the issue made; null for a file or `-n`), `title`, `filed` (`true`/`false`), `duplicates` (an array of
   `{number, state, title, url}`), `report` (the markdown). `diag --json` is
   `{"diagnostics": "<markdown>"}`. `check --json` is the table's array (`check`, `status`,
   `detail`).
@@ -107,9 +113,11 @@ path: a leading `~/` expanded (`anfs_conf_expand`; the loader does it already fo
 covers the environment), then it must be absolute (else 1, `ANFS_REPORT_TO is 'x': github or an
 absolute path`).
 
-- **A file**: appended, never rewritten (`>>`): a blank line (and a newline first when the file
-  does not end with one), `## <YYYY-MM-DD>: <title>`, a blank line, the body. The directory is
-  made when missing. Prints `appended to <file>`.
+- **A file**: appended (`>>`): a blank line (and a newline first when the file does not end with
+  one), `## r-<YYYYMMDD>-<n> <title>`, a blank line, `Status: open`, a blank line, the body. `<n>`
+  is one past the highest of that day's ids in the file. The directory is made when missing.
+  Prints `r-...: appended to <file>`. Only `close` changes a report afterwards, and only its
+  `Status:` line.
 - **github**: the owner source's clone (`gitsrc_dir_reply`), its `origin` (`git remote get-url`).
   `git@github.com:o/r(.git)`, `ssh://git@github.com/o/r(.git)`, `https://github.com/o/r(.git)`
   give `o/r`; anything else (another host, a local source, no clone) is 1: `<alias>'s origin
@@ -118,8 +126,29 @@ absolute path`).
   --state all --search "<title> in:title" --limit 10 --json number,state,title,url --jq ...`
   (tab-separated rows, so no jq on the host); the duplicates are shown (`possible duplicates on
   o/r:` and one line each), then `anfs_confirm "report files an issue on o/r" "File it on o/r?"`
-  (77 without a terminal and `-y`), then `gh issue create --repo o/r --title T --body-file <tmp>`,
-  whose URL is printed. A failing `gh` is 1 with its message.
+  (77 without a terminal and `-y`), then `gh issue create --repo o/r --title T --body-file <tmp>`;
+  the id `o/r#N` (from the URL) and the URL are printed. A failing `gh` is 1 with its message.
+
+### Following the fix: `close`, `status`, `wait`
+
+- `close <id> --commit SHA [--source core|stack]`: `--commit` is required (7 to 40 hex digits;
+  else 64). A file id: that section's `Status:` line becomes `Status: fixed in <source> <sha>
+  (<YYYY-MM-DD>)`; nothing else in the file changes (a temp file beside it, then `mv`); `--source`
+  defaults to core. A GitHub id: `gh issue comment N --body "Fixed in <source> <sha> (anfs report
+  close, <date>)"`, then `gh issue close N`; `--source` defaults to the source whose origin is that
+  repo (none: 1, name it). No confirmation: closing loses nothing.
+- `status <id>`: a file id reads its section's `Status:` line (the file must be the current
+  `ANFS_REPORT_TO`); a GitHub id reads `gh issue view N --json state,comments` (the first line of
+  each comment; the last `Fixed in <source> <sha>` names the fix). `open` (exit 1); closed with a
+  commit that is an ancestor of HEAD (`git merge-base --is-ancestor`) in the source's live
+  checkout (`gitsrc_dir_reply`, repo.sh's path) or, with `ANFS_WORK`, in the job's worktree of the
+  source (`anfs_work_job`): `available` (0); otherwise `fixed` (1), the detail saying `anfs src
+  update <source>` (or `closed with no commit named`). An id of neither form, one not in the file,
+  or a `gh` that cannot answer: 2.
+- `wait <id>`: `status` every `--interval` until `available` (0) or `--timeout` (1, with the last
+  state); an unknown id (2) at once; a `gh` that cannot answer is a warning, and it asks again.
+- `--json`: `{id, status, source, commit, detail}` for `status` and `wait`, `{id, status: fixed,
+  source, commit[, file]}` for `close`.
 
 ### `anfs report check`
 
@@ -156,7 +185,10 @@ anfs tool (anfs, ppm, pcm, pmm, psm, wsm, or a stack tool) does something wrong.
 3. Exit 77 means it wants a person's yes (the GitHub target): show them what it printed (where
    it goes, any duplicates) and rerun with `-y` only when they say so. A duplicate that is the
    same bug: tell the person, do not file.
-4. **Check mode**: invoked with no bug in hand (`/anfs-bug-report check`, or just to test it):
+4. Keep the id it prints and name it in later messages, plans and commits about the bug.
+5. Run `anfs report wait <id>` as a background command, so the harness says when it exits; carry
+   on, or delegate, meanwhile. Whoever merges a fix runs `anfs report close <id> --commit <sha>`.
+6. **Check mode**: invoked with no bug in hand (`/anfs-bug-report check`, or just to test it):
    run `anfs report check` and relay its rows as they are.
 
 ## Files
@@ -198,6 +230,17 @@ arguments and answer from files the test writes. `ANFS_WORK` unset; no network.
 - `--json` on github: `to`, `repo`, `url`, `duplicates` as an array.
 - Usage: no title, or nothing to say: 64. `--body-file -` reads stdin.
 - `anfs report --title ...` (no sub-command) is `report new`; `anfs report` alone is the help.
+- File ids: two reports the same day are `-1` and `-2`. `close` changes exactly one line (a diff
+  of two lines), the other report stays `open`; `status` is `open` (1), then `fixed` with the
+  commit on a branch (1), then `available` once the branch is merged into the checkout (0);
+  `--json`. An unknown id, a malformed one: 2; `close` without `--commit` or with a non-sha: 64.
+- GitHub ids: `close` comments `Fixed in stack <sha>` and closes, the source found by the origin;
+  a repo no source has: 1. `status`: `OPEN` is open; `CLOSED` with a commit not in the checkout is
+  fixed, with one that is (a real temp repo) available; `gh issue view` failing: 2.
+- `wait`: `--timeout 0` on an open report is 1; a report whose fix is in the checkout is 0 at
+  once; the fix merged into the checkout while it waits is 0; an unknown id is 2.
+- Not tested: `ANFS_WORK`'s job worktree counting for `status` (a test may not set `ANFS_WORK`;
+  the person's rule for this job).
 - `check`: file target writable (0), not writable (1); github with gh missing (1, `gh` fail),
   `gh auth status` failing (1), a non-GitHub stack origin (1), all ok (0); the skill installed for
   every detected agent (ok), for some (fail, partial), missing (fail); `--json`.
@@ -214,4 +257,5 @@ on this host; no `gh` call reaches GitHub (the real `gh` is never run).
       </dev/null`, `registry.bats`, `settings.bats`, `bash.bats`
 - [ ] Once, at the end: `anfs work run anfs-report core -- packages/anfs/tests/all </dev/null`
 - By hand, after merge (in `log.md`): `anfs src update`; `ANFS_REPORT_TO=~/spaces/anfs-dev/docs/BACKLOG.md`
-  in `~/.config/anfs/anfs.local.env`; `psm install core/anfs-bug-report`; `anfs report check`.
+  in `~/.config/anfs/anfs.local.env`; `psm install core/anfs-bug-report`; `anfs report check`;
+  a file report, `close` and `status` against BACKLOG.md by hand.
