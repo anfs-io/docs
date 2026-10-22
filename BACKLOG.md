@@ -497,3 +497,113 @@ Recent failures in the log (~/.local/state/anfs/anfs.log):
 2026-10-22T17:33:03-0400 partitia[29190] start: 29190-1792704783 engine check
 2026-10-22T17:33:03-0400 partitia[29190] end: 29190-1792704783 1
 ```
+
+## r-20261022-5 pcm remove: podman 'no container / no such pod' Error lines when the service has no containers
+
+Status: open
+
+Package: `core/pcm`
+
+### What was expected
+
+pcm remove on a stopped service with no containers prints no podman Error lines
+
+### What happened
+
+Error: no container with name or ID "authentik_worker_1" found (x4, worker/server) and Error: unable to find pod "pod_authentik": no such pod; the remove and the postgres deprovision still succeed
+
+### Steps to reproduce
+
+pcm down authentik (containers gone); pcm remove -y authentik. Related to r-20261022-3 (that fixed --rmi local only)
+
+### Diagnostics
+
+- anfs: 0.2.16
+- platform: macos (Darwin 27.0.0, arm64; macOS 27.0.1)
+- bash: 5.3.15(1)-release
+- git: 2.55.0
+- podman: 6.1.1
+
+Sources:
+
+| Source | Commit | Status |
+| --- | --- | --- |
+| anfs-dev | 77ff15d | clean |
+| anfs-admin | 4413964 | clean |
+| lgat | e3ae6b4 | clean |
+| roteoh | a9ec35b | clean |
+| cnfs | 5031446 | unpushed |
+| rws | 43a125f | dirty |
+| user | 710b294 | dirty, unpushed |
+| stack | 29e13fb | unpushed |
+| core | b2656a8 | unpushed |
+
+Installed packages:
+
+| Package | Version |
+| --- | --- |
+| anfs-dev/dev | 0.1.15 |
+| cnfs/rails | 0.1.1 |
+| core/anfs | 0.2.16 |
+| core/node | 0.1.0 |
+| core/pcm | 0.3.1 |
+| core/pmm | 0.1.5 |
+| core/podman | 0.1.1 |
+| core/ppm | 0.2.8 |
+| core/psm | 0.1.6 |
+| core/qemu | 0.1.1 |
+| core/varlock | 0.1.2 |
+| core/wsm | 0.1.10 |
+| pdt/pcs | 0.1.0 |
+| pdt/python | 0.1.0 |
+| rws/git | 0.1.0 |
+| spaces/cnfs | 0.1.0 |
+| spaces/rjayroach | 0.1.0 |
+| spaces/rws | 0.1.0 |
+| stack/antigravity | 0.1.1 |
+| stack/bash | 0.1.1 |
+| stack/claude | 0.1.1 |
+| stack/cli | 0.1.0 |
+| stack/firstmate | 0.1.0 |
+| stack/fnox | 0.1.1 |
+| stack/ghostty | 0.1.1 |
+| stack/git | 0.1.2 |
+| stack/herdr | 0.1.1 |
+| stack/nvim | 0.1.1 |
+| stack/obsidian | 0.6.0 |
+| stack/op | 0.1.5 |
+| stack/opencode | 0.1.1 |
+| stack/pi | 0.1.1 |
+| stack/pikvm | 0.1.2 |
+| stack/python | 0.1.0 |
+| stack/rails | 0.1.0 |
+| stack/remotefs | 0.1.1 |
+| stack/ruby | 0.1.2 |
+| stack/ssh | 0.1.3 |
+| stack/tmux | 0.1.0 |
+| stack/ventoy | 0.1.3 |
+| stack/zsh | 0.1.4 |
+| user/anfs | 0.1.0 |
+| user/claude | 0.1.0 |
+| user/git | 0.1.0 |
+| user/pjm | 0.1.0 |
+| user/pvm | 0.1.0 |
+| user/ssh | 0.1.1 |
+| utils/ventoy | 0.1.0 |
+
+Recent failures in the log (~/.local/state/anfs/anfs.log):
+
+```
+2026-10-22T17:48:43-0400 pcm[16630] start: 16630-1792705723 deprovision authentik --as partitia/ptsvc slug=ptsvc redirect=http://localhost:3000/auth/callback
+2026-10-22T17:48:44-0400 pcm[16630] end: 16630-1792705723 1
+2026-10-22T17:48:44-0400 pcm[16928] start: 16928-1792705724 deprovision glitchtip --as partitia/ptsvc org=partitia project=ptsvc
+2026-10-22T17:48:44-0400 pcm[16928] end: 16928-1792705724 1
+2026-10-22T17:48:42-0400 partitia[14895] start: 14895-1792705722 services --down
+2026-10-22T17:48:44-0400 partitia[14895] end: 14895-1792705722 1
+```
+
+- psm copies local-path skills (core/skills/*) rather than linking them, and `psm sync` re-copies
+  them only with `--local`: an edited core skill stays stale for every agent until someone runs
+  `psm sync --local core` (found 2026-10-22 via r-20261022-5: pcm-containers named the old
+  `~/.config/pcm/env/` path). Link them instead, or re-copy on every sync, or run that sync in
+  core/psm's post-merge hook.
