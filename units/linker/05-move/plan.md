@@ -586,3 +586,10 @@ at the path its new `move.sh` takes.
 5. **A change inside the resource's own path** is refused even with `-f` (new). Default: refused;
    today's `ppm move -f` carried it along uncommitted. Say if `-f` should commit it into the
    destination as a last commit instead.
+
+## Decided 2026-10-22
+
+The five open questions take their defaults (accepted by the person): the dependency reader is the
+tool's own `anfs_resolve` function; replayed commits use `am --no-verify`, the origin's removal and
+the fallback copy run the repo's hooks; the skills lock is checked with a fixture; wsm emits its
+events on a move; uncommitted changes in the moved directory are refused even with `-f`.

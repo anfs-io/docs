@@ -238,3 +238,11 @@ source at its release tag; nothing was tried in a running Obsidian).
   hand (`mv ~/.local/state/pvm ~/.local/state/ovm`, `pvm.yml` → `ovm.yml`, `ovm scan`): `ovm list`
   shows `apex`, `ovm link list` shows its link into `anfs/` as `ok`, and `anfs callbacks wsm`
   lists `stack/obsidian` and nothing stale.
+
+## Decided 2026-10-22 (overnight authority; the coordinator's recommendations, accepted by the person)
+
+- `links.local.yml` only adds links; it never removes one the shipped `links.yml` declares.
+- `ovm init` installs the plugins by default (`--no-plugins` skips them).
+- `ovm init` never edits an existing Shell commands `data.json`; it prints how to add ovm's command.
+- `ovm tasks` has exactly pjm's ten fields.
+- `#go` is validated like any tag: the person lists `go` in `tags:`.
