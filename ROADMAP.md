@@ -37,13 +37,13 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
   - [x] `wsm-spaces/02-repo-lib` — merged 2026-10-21 — `lib/anfs/repo.sh` shared by `anfs src` and `wsm repo`
   - [x] `wsm-spaces/03-skills-and-links` — merged 2026-10-21 — `lib/anfs/skill.sh` (psm on it), `wsm skill`, `links:`
 - [x] `linker/02-links-and-files` — merged 2026-10-22 (see `log.md`; by-hand steps run) — `links:`, `files:`, `platforms:` in package.yml and space.yml; relative links; directory links; before config/03
-- [ ] `config` (`units/config.md`, decided 2026-10-21): per-tool settings, `<tool> config`, `ANFS_WORK`
+- [x] `config` (`units/config.md`, decided 2026-10-21): per-tool settings, `<tool> config`, `ANFS_WORK`
   - [x] `config/01-tool-env` — merged 2026-10-22 (see `log.md`) — `~/.config/<tool>/<tool>{,.local}.env`; `anfs.conf` goes
   - [x] `config/02-config-command` — merged 2026-10-22 (see `log.md`) — `lib/anfs/config.sh`: `<tool> config list|get|set|unset`,
         `anfs config list --all`
   - [x] `config/03-work-switch` — merged 2026-10-22 except the user repo's pjm branch (waits for the person; see `log.md`) — `ANFS_WORK=<job>` runs a job's tools on live data (after linker/02)
   - [x] `config/04-pcm-local-env` — merged 2026-10-22 (see `log.md`) — `~/.config/pcm/containers/<name>/local.env`; `env/` goes
-  - [ ] `config/05-xdg-rule` — CONFIG/STATE/DATA/CACHE/RUNTIME in AGENTS.md; the audit's fixes
+  - [x] `config/05-xdg-rule` — merged 2026-10-22 (see `log.md`) — CONFIG/STATE/DATA/CACHE/RUNTIME in AGENTS.md; the audit's fixes
 - [ ] `linker/05-move` — `lib/anfs/move.sh` (checks, the move with its history, one cli helper);
       `ppm move` and `wsm move` written in each tool; anfs-dev's `move.sh` goes (2026-10-22; after the config unit)
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
