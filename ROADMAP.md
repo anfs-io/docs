@@ -51,7 +51,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         `ANFS_REPORT_TO` says (`github`, the shipped default, or a file: here
         `~/spaces/anfs-dev/docs/BACKLOG.md` in `anfs.local.env`); an `anfs-bug-report` skill in core
         that only runs it
-  - [ ] `pcm/01-run` — `pcm run <service> -- <cmd>`: a one-off container from a service's
+  - [x] `pcm/01-run` — merged 2026-10-22 (see `log.md`; smoke test run here) — `pcm run <service> -- <cmd>`: a one-off container from a service's
         definition (image, env, network, mounts, labels), removed on exit unless `--keep`;
         `pcm-containers` says plain `podman run --rm` is right for a stock image; also fixes
         `pcm show`'s mounts format on podman 6 (from Last)

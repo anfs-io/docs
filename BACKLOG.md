@@ -52,3 +52,9 @@ gets a unit.
   file of that shape would be listed. Accepted for now (2026-10-22); could read installed packages
   instead.
 
+
+- pcm suite (`ANFS_TESTS_PMM_PCM=1`), two old failures found in pcm/01-run: `manifest.bats` 55
+  expects exit 1 but a confirm without a terminal returns 77 since setup/01; `toolkit.bats` 83
+  uses a shell function as the compose runner, which pcm can't `exec`. One-line fixes each.
+- `units/container-images.md` plan 01 still proposes `pcm run <image>`; decided against
+  2026-10-22 (`units/pcm.md`): edit that draft when the unit is refreshed.
