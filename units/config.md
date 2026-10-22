@@ -23,13 +23,13 @@ work that run before it (decision 15):
 - **job `wsm-03`** (`units/wsm-spaces/03-skills-and-links/`): renames `PSM_CLI_VERSION` to
   `ANFS_SKILLS_CLI_VERSION` in `anfs.conf` (its commit `905d5ba` on the job's branch), read by the
   new `lib/anfs/skill.sh` for psm and wsm. This unit runs after it merges.
-- **linker plan 02** (`units/linker/02-platform-files/plan.md`): removes `PPM_GROUP_ID` (and
+- **linker plan 02** (`units/linker/02-links-and-files/plan.md`): removes `PPM_GROUP_ID` (and
   install.sh's seed of it), and adds `link_dirs:`, so `~/.local/lib/anfs`, `lib/pcm`, `lib/pmm`,
   stack's `lib/tsm` and `lib/rpi-imager` become one link to the directory, and deletes ppm's and
   wsm's fallbacks to the core clone's `link.sh`. `lib/ppm` stays per file (core/ppm, anfs-dev/dev
   and stack/ruby all write there). The plans here are written as if it has merged.
 
-Depends on: `wsm-spaces/03-skills-and-links` and `linker/02-platform-files` merged.
+Depends on: `wsm-spaces/03-skills-and-links` and `linker/02-links-and-files` merged.
 
 ## What is there today (core main + wsm-03)
 
@@ -172,7 +172,7 @@ stack's opm settings are renamed in the same move (decision 10): `OP_SHARED_VAUL
     in `BACKLOG.md`.
 14. **stack/gam's `gam.cfg` and stack/ssh's `Include` line stay**, noted as future `setup:` steps
     (`units/setup.md`).
-15. **Order**: `wsm-spaces/03` → `linker/02-platform-files` → config 01 → 02, 03, 04 → 05 any
+15. **Order**: `wsm-spaces/03` → `linker/02-links-and-files` → config 01 → 02, 03, 04 → 05 any
     time. linker 02 first so the library directories are directory links and plan 03 maps a
     directory, not each file (`lib/ppm`, shared by three packages, stays per file and keeps its
     case).
@@ -254,7 +254,7 @@ stack's opm settings are renamed in the same move (decision 10): `OP_SHARED_VAUL
 | 04 | `04-pcm-local-env` | `containers/<name>/local.env`; `PCM_ENV_HOME` gone; catalogue and completion skip settings-only dirs; `pcm show`, docs, the `pcm-containers` skill | core, stack |
 | 05 | `05-xdg-rule` | The rule in core `AGENTS.md`; the audit of every write into a config directory and its fixes; the tunnel token to STATE; pmm's sockets under `$XDG_RUNTIME_DIR` on Linux | core, stack |
 
-The order (decision 15): `wsm-spaces/03` → `linker/02-platform-files` → 01 → 02, 03, 04 side by
+The order (decision 15): `wsm-spaces/03` → `linker/02-links-and-files` → 01 → 02, 03, 04 side by
 side → 05 any time. 02 reads 01's files and edits every tool's command declarations; 03 edits every
 entry script's header and `paths.sh` (02 and 03 both touch the tools' scripts, in different
 places: whichever merges second rebases); 04 uses 01's loader and edits pcm. 03 needs linker 02's

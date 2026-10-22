@@ -3,6 +3,38 @@
 
 # Plan 03 — `anfs owner`, `anfs mv`, `anfs status`
 
+## Notes from the 2026-10-21 review — to settle before this plan is refreshed
+
+The plan below predates wsm-spaces and plan 02's rewrite. The review moved its theme to **file
+operations, shared**; these notes say where it is going. The rest of the plan is refreshed only
+after they are settled with the person.
+
+- **A shared `file` command group, built like config's** (`units/config.md`, plan 02: a library
+  plus a group declared through `lib/anfs/cli.sh`). The library is `lib/anfs/files.sh`, which
+  linker 02 creates for copies (copy-if-missing) and designs as this group's home.
+  - `ppm file add|claim|reset|protect|unprotect`
+  - `wsm file add|protect|unprotect`. `claim` and `reset` only where layers exist: ppm's; spaces
+    do not layer.
+  - **`wsm add` goes, with no alias**: it becomes `wsm file add`.
+- **Each tool supplies an adapter** the group calls: the owner of a path and its source directory;
+  its layers (ppm only); its record (ppm's tracker; wsm has none since wsm-spaces 01, so a move in
+  a space is the file's move in the source plus a relink); its protected list (ppm's
+  `protected.yml`; wsm's new `~/.config/wsm/protected.yml`). Tools that do not link content into
+  `~` (pcm, pmm, ovm) do not get the group.
+- **`anfs owner|mv|status` sit on top**, dispatching through the adapters instead of the
+  `ppm __file` / `wsm __file` plumbing of section 1 below.
+- **ppm's `file.sh` shrinks to its adapter**; the command logic moves into `files.sh`.
+- **`ppm move`'s fate** (section 3a: maybe gone, in favour of the shell `mv` wrapper) is still to be
+  discussed.
+- **It must adapt to wsm having no tracker** (wsm-spaces decisions 4, 6, 18). The mentions of
+  `wsm status` below (section 4's "wsm status ... supplies the rows for spaces", the Context's
+  `cmd_status`) and of wsm's trackers are stale: spaces' rows come from `wsm list --json`'s
+  per-file detail.
+- From plan 02: `anfs owner` of a path *inside* a directory link (a file of the source, not a link
+  itself) must still name the package (the nearest ancestor that is a link into the sources); the
+  group's commands refuse such a path as plan 02's `ppm file` already does. `files:` copies are the
+  user's: `anfs owner` names nobody, and `status` does not report them as drift.
+
 ## Context — read these files first
 
 The job touches core and anfs-dev: `anfs work new <job> core anfs-dev`.

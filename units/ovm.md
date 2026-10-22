@@ -104,6 +104,7 @@ says today), and `anfs_link_owner` (plan 03) will call it the user's.
 | --- | --- | --- |
 | 01 | `01-pvm-to-ovm` | `ovm` in `stack/obsidian`, pvm's tests with it; every vault-as-resource tie out of core, anfs-ui and the docs; `user/pjm` on ovm |
 | 02 | `02-items` | Stub. `ovm items` and `exclude:`, the source `user/pjm` pulls from; first answer whether pvm once had them |
+| 03 | `03-vaults-home` | `~/vaults` (`OVM_VAULTS_HOME`) is the list of vaults; a vault elsewhere is a `links:` entry in the person's repo; registry, `scan`, `remove`, `prune` go |
 
 Later (not written): Obsidian's own things through ovm (open a document by id in the app, the
 vault's `.obsidian` settings), a `skills/` entry so an agent finds documents by id.
