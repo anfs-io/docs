@@ -50,6 +50,8 @@ The plan was written before linker/02 merged. Checked against main (core `ea6270
     `psm.env`. `anfs/anfs.conf` deleted.
   - stack: `remotefs.env`, `ventoy.env`, `pikvm.env`, `tsm.env` (stack/tailscale), `opm.env`
     (stack/op), `ovm.env` (stack/obsidian).
+  - (Before merge: `OPM_PROVISION_TAG` folded into `OPM_TAG`; the loader expands a leading `~/`.
+    See "Fixes before merge".)
 - **ppm**: `HOMEBREW_UPDATE_CACHE_DURATION` → `PPM_BREW_UPDATE_CACHE_DURATION` (no shim); header
   comments.
 - **install.sh**: `install_configs` seeds `user.list` only; the header's steps and file list,
@@ -130,9 +132,8 @@ command changed; `OVM_VERSION` still equals obsidian's 0.2.1).
   `*_{CONFIG,DATA,STATE,CACHE}_HOME` (an `anfs.env` line `PCM_CONFIG_HOME=` would otherwise move
   pcm's files, since anfs's are loaded first), plus `ANFS_WORK_HOME` and `ANFS_WORK_TMP`
   (decision 11; plan 03 can rely on the loader never setting them).
-- **Paths in a file are absolute** (nothing is expanded). Path settings whose default is under
-  `~` are shipped as `#NAME=` with the default in the comment (`REMOTEFS_MOUNT_HOME`,
-  `VENTOY_ISO_DIR`), since the tools treat empty as unset (`:=`); only wsm expands `~` itself.
+- **Paths in a file** may start with `~/` (the loader's one expansion, added before merge, below);
+  `VENTOY_ISO_DIR` is shipped as `#VENTOY_ISO_DIR=` with its XDG-derived default in the comment.
 - **The settings test is `packages/anfs/tests/settings.bats`** (the plan allowed it), not
   `registry.bats`, which is `cli.sh`'s.
 - **tsm.bats and opm.bats now run under a temp HOME with `ANFS_TEST_LIB`** like stack's other
@@ -178,16 +179,37 @@ command changed; `OVM_VERSION` still equals obsidian's 0.2.1).
 
 ## Open questions
 
-1. **`OPM_PROVISION_TAG` and `OPM_TAG`** are two names for one tag (decision 10 renamed the first
-   and kept the second, so `OPM_TAG` defaults to `OPM_PROVISION_TAG`). Fold them into `OPM_TAG`?
-2. **Nothing in a file is expanded**, so a path setting must be absolute (`VENTOY_ISO_DIR`,
-   `VENTOY_DISK`, `REMOTEFS_MOUNT_HOME`); only wsm expands `~`. Fine, or should the loader expand
-   a leading `~/` (one rule for every tool, and plan 02's `config set` would store it as typed)?
-3. **The allow-list of non-settings** above (pmm's `PMM_SSH_CONFIG`, firmware and bridge paths in
-   particular): agreed, or should any of them be in `pmm.env`?
-4. **A layer's `anfs.env` replaces core's whole**, so a layer that ships one must carry every line
-   (and keep up with core's). user/anfs's only difference was `ANFS_QUIET_SKIPPED_REPOS=true`, a
-   machine's choice: the steps below drop the layer file rather than port it.
+None left. Answered before merge (2026-10-22):
+
+1. **`OPM_PROVISION_TAG` folded into `OPM_TAG`** (no shim): fixed, below.
+2. **The loader expands a leading `~/`, or a value that is exactly `~`, to `$HOME`**, nothing else
+   (no `$VAR`, no `~user`, no globbing, no `~` past the start): fixed, below.
+3. The non-settings allow-list (test hooks, internal paths, pmm's paths) stays out of the `.env`
+   files: agreed.
+4. user/anfs's `anfs.conf` is dropped, not ported; `ANFS_QUIET_SKIPPED_REPOS=true` goes into this
+   machine's `anfs.local.env` (step 4 below): agreed.
+
+## Fixes before merge
+
+- **The `~` expansion** (core `533935e`): `anfs_conf_expand <value>` (into `REPLY`, no fork),
+  applied by `anfs_load_conf` to every value it exports, quoted or not. `anfs_conf_read` still
+  returns values as written, so plan 02's `config` can show and rewrite a line as the person typed
+  it, and expand with `anfs_conf_expand` where it needs the effective value. Documented in
+  `paths.sh`'s Settings header and AGENTS.md "Configuration"; every shipped `.env` header says it.
+  `REMOTEFS_MOUNT_HOME`'s shipped default is now `#REMOTEFS_MOUNT_HOME=~/mnt` (true now);
+  `VENTOY_ISO_DIR` stays `#VENTOY_ISO_DIR=` (its default follows `XDG_CACHE_HOME`). No tool's own
+  expansion was removed: wsm's `_spaces_home` stays (it also takes `$HOME`, and the environment
+  can still carry a literal `~`); nothing else expanded `~` in a setting.
+- **opm** (stack `2f989ee`): `: "${OPM_TAG:=op-provision}"`; `OPM_PROVISION_TAG` gone from code,
+  help, `opm.env`, tests (README only ever named `OPM_TAG`).
+- Tests: `conf.bats` 15 (new: `~/mnt`, a quoted `"~/x"`, a lone `~` and `'~'` expand; `~user`,
+  `a/~/b`, `$HOME/x`, `~x` and a glob stay literal; `anfs_conf_read` keeps `~`;
+  `anfs_conf_expand`), `settings.bats` 8, stack `opm.bats` (the tag test now: `OPM_TAG` from
+  `opm.local.env`, `OP_PROVISION_TAG` and `OPM_PROVISION_TAG` not read), `remotefs.bats` 17 (new:
+  `REMOTEFS_MOUNT_HOME=~/remote` in `remotefs.local.env` gives `$HOME/remote/<label>`).
+  Stack again with the job's core lib: remotefs 17/17, ventoy 18/18, pikvm 18/18, obsidian 59/59,
+  tailscale 28/29, op 34/38 (the same 5 known failures). **`packages/anfs/tests/all` once more:
+  528 passed, 0 failed**, 37 files, 55 s.
 
 ## By hand, for the person after merge (in this order)
 
@@ -237,8 +259,8 @@ prefix in step 2).
    ```
 
 6. Renamed, no shim: if you set `OP_SHARED_VAULT`, `OP_SA_CREDENTIALS_VAULT` or `OP_PROVISION_TAG`
-   (opm) or `TSM_CONFIG_HOME` (tsm, meaning tailscale's directory) anywhere (shell rc, fnox,
-   `.envrc`), rename them `OPM_SHARED_VAULT`, `OPM_SA_CREDENTIALS_VAULT`, `OPM_PROVISION_TAG`,
+   (opm; the tag is now `OPM_TAG`) or `TSM_CONFIG_HOME` (tsm, meaning tailscale's directory) anywhere (shell rc, fnox,
+   `.envrc`), rename them `OPM_SHARED_VAULT`, `OPM_SA_CREDENTIALS_VAULT`, `OPM_TAG`,
    `TSM_TAILSCALE_HOME`; `HOMEBREW_UPDATE_CACHE_DURATION` is `PPM_BREW_UPDATE_CACHE_DURATION`:
 
    ```bash
