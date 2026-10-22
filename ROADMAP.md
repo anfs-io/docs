@@ -48,7 +48,6 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
       `ppm move` and `wsm move` written in each tool; anfs-dev's `move.sh` goes (2026-10-22; after the config unit)
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
       `ppm move` (and its tests) to be discussed first
-- [ ] `linker/04-dry-run` — `-n` on every install, add, remove and purge command — plan to write
 - [ ] `linker/06-move-more` — `move` for pcm, pmm and psm (after their suites are back on)
 - [x] `ovm/01-pvm-to-ovm` — merged 2026-10-21 (see `log.md`); pvm leaves core as `ovm` in `stack/obsidian`; vaults stop being a
       resource (`units/ovm.md`). Independent of the linker; runs beside it (2026-10-21)
@@ -123,6 +122,8 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
 - [ ] **ppm audit (after the dust settles):** what ppm still does that predates the anfs tool
       suite and belongs in the shared libraries (candidates: `core.sh`'s helpers, the legacy list
       name hook, the source hooks, anything `file`-like left after linker/03)
+- [ ] `linker/04-dry-run` — `-n` on every command that changes files, records or repos (moved here
+      2026-10-22; questions in the conversation: scope incl. runtime up/down, one contract, one vocabulary)
 - [ ] **The opt-in shell `mv` wrapper** (`ANFS_SHELL_MV=true`; linker 03 section 5 and
       `units/linker.md` 3.2): moved here from linker/03 (2026-10-22)
 - [ ] **One platform function:** `os()` (macos/linux) and `platform()` (macos/distro) are one
