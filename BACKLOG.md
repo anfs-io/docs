@@ -69,3 +69,204 @@ gets a unit.
   more full runs). Flaky; not tracked down.
 - apex: `ovm validate` gives 254 findings in 257 documents (123 missing `id`, 112 no
   frontmatter, 19 `type`): the person's call whether to fix the documents or loosen `required:`.
+
+## r-20261022-1 pcm show/ps: 'Exited (0) 292 years ago' when podman has no FinishedAt
+
+Status: fixed in core 0c3fe35 (2026-10-22)
+
+Package: `core/pcm`
+
+`pcm show authentik` (and `podman ps -a` from a terminal) shows its containers as `Exited (0) 292 years ago`.
+
+Root cause: podman recorded the containers as exited but never set FinishedAt (`podman inspect authentik_server_1` gives `started=2026-10-11 23:32:25 … finished=0001-01-01 00:00:00 +0000 UTC`), most likely because they stopped with the podman machine rather than through `pcm down`. podman builds its Status string from that zero time. pcm prints the string as is.
+
+Suggested fix: when `.State.FinishedAt` is the zero time, pcm shows the state alone (`exited`), or `exited (unclean)`, and doesn't pass podman's Status string through. This applies everywhere pcm prints container status (show, ps, list).
+
+### What was expected
+
+A sensible status for a container that exited without a recorded finish time
+
+### What happened
+
+Exited (0) 292 years ago
+
+### Steps to reproduce
+
+Stop the podman machine while a service is running; pcm show <service>
+
+### Diagnostics
+
+- anfs: 0.2.16
+- platform: macos (Darwin 27.0.0, arm64; macOS 27.0.1)
+- bash: 5.3.15(1)-release
+- git: 2.55.0
+- podman: 6.1.1
+
+Sources:
+
+| Source | Commit | Status |
+| --- | --- | --- |
+| anfs-dev | 77ff15d | clean |
+| anfs-admin | 4413964 | clean |
+| lgat | e3ae6b4 | clean |
+| roteoh | a9ec35b | clean |
+| cnfs | 32e4bdf | unpushed |
+| rws | 43a125f | dirty |
+| user | 710b294 | dirty, unpushed |
+| stack | 018c496 | unpushed |
+| core | 2cbc7f9 | unpushed |
+
+Installed packages:
+
+| Package | Version |
+| --- | --- |
+| anfs-dev/dev | 0.1.15 |
+| cnfs/rails | 0.1.1 |
+| core/anfs | 0.2.16 |
+| core/node | 0.1.0 |
+| core/pcm | 0.2.0 |
+| core/pmm | 0.1.5 |
+| core/podman | 0.1.1 |
+| core/ppm | 0.2.8 |
+| core/psm | 0.1.6 |
+| core/qemu | 0.1.1 |
+| core/varlock | 0.1.2 |
+| core/wsm | 0.1.10 |
+| pdt/pcs | 0.1.0 |
+| pdt/python | 0.1.0 |
+| rws/git | 0.1.0 |
+| spaces/cnfs | 0.1.0 |
+| spaces/rjayroach | 0.1.0 |
+| spaces/rws | 0.1.0 |
+| stack/antigravity | 0.1.1 |
+| stack/bash | 0.1.1 |
+| stack/claude | 0.1.1 |
+| stack/cli | 0.1.0 |
+| stack/firstmate | 0.1.0 |
+| stack/fnox | 0.1.1 |
+| stack/ghostty | 0.1.1 |
+| stack/git | 0.1.2 |
+| stack/herdr | 0.1.1 |
+| stack/nvim | 0.1.1 |
+| stack/obsidian | 0.6.0 |
+| stack/op | 0.1.5 |
+| stack/opencode | 0.1.1 |
+| stack/pi | 0.1.1 |
+| stack/pikvm | 0.1.2 |
+| stack/python | 0.1.0 |
+| stack/rails | 0.1.0 |
+| stack/remotefs | 0.1.1 |
+| stack/ruby | 0.1.2 |
+| stack/ssh | 0.1.3 |
+| stack/tmux | 0.1.0 |
+| stack/ventoy | 0.1.3 |
+| stack/zsh | 0.1.4 |
+| user/anfs | 0.1.0 |
+| user/claude | 0.1.0 |
+| user/git | 0.1.0 |
+| user/pjm | 0.1.0 |
+| user/pvm | 0.1.0 |
+| user/ssh | 0.1.1 |
+| utils/ventoy | 0.1.0 |
+
+## r-20261022-2 pcm provision/deprovision: run a service's provision hooks for a consumer that isn't a pcm definition
+
+Status: open
+
+Package: `core/pcm`
+
+Feature request (pcm). Provision hooks only run when another pcm definition lists the service under `x-pcm.depends_on`. A consumer that is not a pcm definition can't use them. For example, a Rails app run on the host by the `partitia` tool needs an authentik OIDC client, a glitchtip DSN or a postgres database. Running `./provision` directly bypasses varlock and pcm's environment (PCM_PROJECT, PCM_SERVICE…), and the hooks aren't meant to be run that way.
+
+Requested public commands:
+
+- `pcm provision <service> [key=value...]`: start the service if it isn't running, wait until it's healthy (PCM_HEALTH_TIMEOUT), then run its provision hook under varlock exactly as `up` does for a dependent. Print the hook's KEY=VALUE lines on stdout. With --json, print them as an object. Set PCM_DEPENDENT to a caller-supplied name (e.g. `--as partitia/shop`) or something like `external`.
+- `pcm deprovision <service> [key=value...]`: run the deprovision hook with the same args and env. If the service isn't running, say what was left in place, as `remove` does.
+
+Exit non-zero if the service has no provision/deprovision hook. The partitia `pt services` command would be the first consumer; the stack authentik and glitchtip definitions would gain hooks for it.
+
+### What was expected
+
+A public pcm command to provision/deprovision for an external consumer
+
+### What happened
+
+Hooks only run via x-pcm.depends_on
+
+### Steps to reproduce
+
+n/a (feature request)
+
+### Diagnostics
+
+- anfs: 0.2.16
+- platform: macos (Darwin 27.0.0, arm64; macOS 27.0.1)
+- bash: 5.3.15(1)-release
+- git: 2.55.0
+- podman: 6.1.1
+
+Sources:
+
+| Source | Commit | Status |
+| --- | --- | --- |
+| anfs-dev | 77ff15d | clean |
+| anfs-admin | 4413964 | clean |
+| lgat | e3ae6b4 | clean |
+| roteoh | a9ec35b | clean |
+| cnfs | 32e4bdf | unpushed |
+| rws | 43a125f | dirty |
+| user | 710b294 | dirty, unpushed |
+| stack | 018c496 | unpushed |
+| core | 2cbc7f9 | unpushed |
+
+Installed packages:
+
+| Package | Version |
+| --- | --- |
+| anfs-dev/dev | 0.1.15 |
+| cnfs/rails | 0.1.1 |
+| core/anfs | 0.2.16 |
+| core/node | 0.1.0 |
+| core/pcm | 0.2.0 |
+| core/pmm | 0.1.5 |
+| core/podman | 0.1.1 |
+| core/ppm | 0.2.8 |
+| core/psm | 0.1.6 |
+| core/qemu | 0.1.1 |
+| core/varlock | 0.1.2 |
+| core/wsm | 0.1.10 |
+| pdt/pcs | 0.1.0 |
+| pdt/python | 0.1.0 |
+| rws/git | 0.1.0 |
+| spaces/cnfs | 0.1.0 |
+| spaces/rjayroach | 0.1.0 |
+| spaces/rws | 0.1.0 |
+| stack/antigravity | 0.1.1 |
+| stack/bash | 0.1.1 |
+| stack/claude | 0.1.1 |
+| stack/cli | 0.1.0 |
+| stack/firstmate | 0.1.0 |
+| stack/fnox | 0.1.1 |
+| stack/ghostty | 0.1.1 |
+| stack/git | 0.1.2 |
+| stack/herdr | 0.1.1 |
+| stack/nvim | 0.1.1 |
+| stack/obsidian | 0.6.0 |
+| stack/op | 0.1.5 |
+| stack/opencode | 0.1.1 |
+| stack/pi | 0.1.1 |
+| stack/pikvm | 0.1.2 |
+| stack/python | 0.1.0 |
+| stack/rails | 0.1.0 |
+| stack/remotefs | 0.1.1 |
+| stack/ruby | 0.1.2 |
+| stack/ssh | 0.1.3 |
+| stack/tmux | 0.1.0 |
+| stack/ventoy | 0.1.3 |
+| stack/zsh | 0.1.4 |
+| user/anfs | 0.1.0 |
+| user/claude | 0.1.0 |
+| user/git | 0.1.0 |
+| user/pjm | 0.1.0 |
+| user/pvm | 0.1.0 |
+| user/ssh | 0.1.1 |
+| utils/ventoy | 0.1.0 |
