@@ -7,7 +7,7 @@ date: 2026-10-22
 # Log: ovm/04b-workflow-init
 
 Branch `ovm-04b`, cut from `ovm-04a` (stack `b4739e7`, not merged yet): if 04a changes, this
-rebases on it. The shared lines are `cmd_init` (04a's `vault.yml` template is kept byte for byte)
+rebases on it. Rebased 2026-10-22 on 04a's revision (stack `d3a6630`; see "Revision" below). The shared lines are `cmd_init` (04a's `vault.yml` template is kept byte for byte)
 and `README.md`.
 
 ## What was built (stack, `packages/obsidian`)
@@ -152,10 +152,50 @@ edit the person's file).
 (`turn-on-community-plugins`, `templater-trigger-on-new-file`, `add-ovm-command`). Lists are
 space-separated strings: `anfs_result` takes strings only.
 
+## Revision 2026-10-22: rebased on 04a's nested spaces; psm's sync/update convention
+
+**Rebase** onto `ovm-04a` (stack `d3a6630`, itself on stack main with config-03's preamble): one
+conflict, the help epilogue (04a's new space paragraph kept, 04b's paragraph after it). Main's
+preamble has no `ANFS_LIB` any more, so `_skeleton_apply` sources `$ANFS_LIB_DIR/files.sh` (every
+test failed on "ANFS_LIB: unbound variable" until then). docs: no conflict.
+
+**Decided: psm's sync/update convention (the person, 2026-10-22)**, which answers open question 1:
+
+- `ovm init [dir]` / `ovm new NAME` write `vault.yml`; our templates and plugin settings are copied
+  **only when the vault has no `.obsidian/` yet** (a fresh vault, checked before anything is
+  written), each file where missing as before. A template deleted later never comes back; a vault
+  Obsidian already opened gets none ("settings and templates: not copied (.obsidian/ is there: what
+  the vault has is yours)"). Then what sync does, unless `--no-plugins`.
+- `ovm sync [vault...]`: the pinned plugins that are missing placed and enabled in
+  `community-plugins.json`; existing plugins, templates, `data.json` and `vault.yml` never
+  touched. The "add ovm's command" hint and the two clicks are said only when this run placed a
+  plugin.
+- `ovm update [vault...]`: what `init --update` did (older plugins to the pin, newer left, absent
+  named "ovm sync places it"; the reload note).
+- No vault named: every vault in `~/vaults` that answers (`_live_vaults`, as psm with no
+  argument); a named one must be usable (1 none, 3 not a vault). Exit: the worst over the vaults
+  (1 over 69).
+- `init --update` is gone (64: an unknown option). `--no-plugins` stays on init and new.
+- `--json`: init keeps one object (`id name path status placed kept copied steps_left`; `updated`
+  dropped, init no longer updates); sync and update print one row per vault through `anfs_table`,
+  `vault id path placed[] updated[] kept[] steps_left[]` (real arrays). stack `AGENTS.md`: a row.
+- Help (`cli_cmd` lines, the epilogue), README ("A workflow-ready vault"), the section comment;
+  completion is cli.sh's (`[vault...]` completes vaults).
+
+Tests: **83/83** (`ANFS_TEST_LIB=~/.local/lib/anfs anfs work run ovm-04b stack -- bats
+packages/obsidian/tests </dev/null`; 82 after the rebase: 70 of 04a + 12). `init.bats`: the
+copy-if-missing test is now "only into a fresh vault" (edited files kept, deleted ones stay
+deleted after `init` and `sync`, a vault with `.obsidian/` gets plugins only); a new sync test
+(one vault named, an older plugin and its `data.json` and `vault.yml` untouched, no vault named is
+every vault, `--json` per vault, an unknown vault 1); the update test uses `ovm update v` and
+`ovm update` (every vault), `init --update` is 64, `update` of a non-vault is 3; `--json` reads
+update's rows.
+
 ## Commits (branch ovm-04b, not pushed)
 
 stack:
-- `e2612d2` obsidian: ovm init makes a vault workflow ready ... (obsidian 0.5.0)
+- `101e6fc` (was `e2612d2`, rebased on 04a's `d3a6630`) obsidian: ovm init makes a vault workflow ready ... (obsidian 0.5.0)
+- `0e6932c` obsidian: psm's sync/update convention: ovm sync, ovm update; init's skeleton only into a fresh vault ... (obsidian 0.5.0)
 
 docs:
 - this log
@@ -239,31 +279,21 @@ docs:
    command in Settings > Shell commands.
    On each other device (another Mac, the phone): the same two clicks after the vault syncs.
    Shell commands does not load on a phone; the button does nothing there.
-3. **apex** (`~/vaults/apex`, after 04a's by-hand steps). Run it; it is safe:
+3. **apex** (`~/vaults/apex`, after 04a's by-hand steps). It has `.obsidian/`, so no settings or
+   templates of ours go in; only the missing plugins. Check first, then sync:
 
    ```bash
-   ovm init ~/vaults/apex
-   ```
-
-   What it does there: apex's own `_templates/` files and its Shell commands `data.json` are
-   kept (copy-if-missing: a file there is never touched; only `_templates/note.md` and
-   `task-list.md` are added if apex has no file of that name, and the Templater and Meta Bind
-   `data.json` only if missing). The `templater-obsidian` directory already there is left, with a
-   line giving its version against 2.26.0; `ovm init --update ~/vaults/apex` if it is older (then
-   reload Obsidian). Meta Bind (and Shell commands, if its directory has no `manifest.json`) is
-   placed and enabled. ovm's `ovm-validate` command is not added to apex's Shell commands: init
-   prints how to add it by hand, if wanted. Check first what would be added:
-
-   ```bash
-   ls ~/vaults/apex/_templates ~/vaults/apex/.obsidian/plugins
+   ls ~/vaults/apex/.obsidian/plugins
    cat ~/vaults/apex/.obsidian/community-plugins.json
+   ovm sync apex
    ```
 
-   A deleted template is missing, so the next `ovm init` copies it again. To keep ovm's
-   `note.md` or `task-list.md` out of apex for good, keep a file of that name there (even empty):
-   it is then yours and never touched. Templater's `data.json`, if apex has none, makes
-   `_templates/note.md` the template of every new note: if apex has its own Templater settings
-   (it does if the directory exists with a `data.json`), they stay.
+   The `templater-obsidian` directory already there is left, with a line giving its version
+   against 2.26.0; `ovm update apex` if it is older (then reload Obsidian). Meta Bind (and Shell
+   commands, if its directory has no `manifest.json`) is placed and enabled. Nothing else in apex
+   is touched: its `_templates/`, its plugins' `data.json`, `vault.yml`. ovm's `ovm-validate`
+   command is not added to apex's Shell commands; to add it, see the README (Settings > Shell
+   commands > New shell command).
 4. apex's `bin/apex plugins sync` and its `plugins.yml` overlap with this (and its
    `community-plugin-directory` key in `app.json` does nothing in 1.14.4); retiring them is your
    call.
@@ -276,10 +306,8 @@ docs:
 
 ## Open questions (for the person, before merge)
 
-1. **Templates that come back**: copy-if-missing means a template the person deletes is copied
-   again by the next `ovm init` (the plan's test asks for it). For apex, where `_templates/` has
-   its own set, `note.md` and `task-list.md` will appear and return if deleted. Acceptable, or
-   should init copy the skeleton only into a vault that has no `.obsidian/` yet (a new vault)?
+1. ~~Templates that come back~~: answered 2026-10-22, the skeleton goes only into a fresh vault
+   (Revision above).
 2. **`--json` lists as strings**: `placed`, `kept`, ... are space-separated strings, since
    `anfs_result` takes strings. If a reader wants arrays, core's `anfs_result` could take the
    `key[]` convention `anfs_table` has (a core change, not made here).
