@@ -42,7 +42,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
   - [ ] `config/02-config-command` — `lib/anfs/config.sh`: `<tool> config list|get|set|unset`,
         `anfs config list --all`
   - [ ] `config/03-work-switch` — `ANFS_WORK=<job>` runs a job's tools on live data (after linker/02)
-  - [ ] `config/04-pcm-local-env` — `~/.config/pcm/containers/<name>/local.env`; `env/` goes
+  - [x] `config/04-pcm-local-env` — merged 2026-10-22 (see `log.md`) — `~/.config/pcm/containers/<name>/local.env`; `env/` goes
   - [ ] `config/05-xdg-rule` — CONFIG/STATE/DATA/CACHE/RUNTIME in AGENTS.md; the audit's fixes
 - [ ] `linker/05-move` — `lib/anfs/move.sh` (checks, the move with its history, one cli helper);
       `ppm move` and `wsm move` written in each tool; anfs-dev's `move.sh` goes (2026-10-22; after the config unit)

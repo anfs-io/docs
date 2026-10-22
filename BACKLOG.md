@@ -44,3 +44,8 @@ gets a unit.
 - **anfs-dev after linker/02:** `roundtrip-macos`'s bootstrap parse check lists the new `lib/anfs`
   files (`manifest.sh`, `files.sh`, `platform.sh`); `move.sh` still uses stow and `PPM_GROUP_ID`
   (goes with `linker/05-move`).
+- **Port clash (2026-10-22):** `cnfs/gemstash` and `core/ui` both publish host port 9292
+  (`pcm validate` warns). Pick another port for one of them.
+- **pcm's own suite** has not run since config/04 changed `packages/pcm/tests/helper.bash` and
+  `edges.bats`: `ANFS_TESTS_PMM_PCM=1 packages/anfs/tests/all pcm` (for the person; see "Last").
+
