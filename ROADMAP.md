@@ -215,6 +215,8 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
   unmerged work); before any step whose "Needs from you first" is not done; before anything that
   needs hardware or a PVE host.
 - bats is Homebrew's `bats-core`. Run it with `</dev/null`.
+- **`ANFS_WORK` is never set in a test** (config/03): `anfs work run` unsets it, and so do the
+  test helpers; a test that needs the switch sets it for one command only.
 
 ## Why this order
 
