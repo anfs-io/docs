@@ -152,7 +152,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
       `sh/` tier, the `cd` wrapper through `_anfs_cd`, `zcomp`), and bats isolation (temp
       `HOME`, `ANFS_LOG=off`, stubs). Motivation: gem-local had drifted (`NOTE`, fixed in stack
       764d5b3)
-- [ ] **`pcm show` fails on a created container** (taken into `pcm/01-run`, 2026-10-22) (podman 6.1.1): `inspect.sh:199`'s format uses
+- [x] **`pcm show` fails on a created container** (taken into `pcm/01-run`, 2026-10-22; fixed in pcm/01-run, with a test pinning the format) (podman 6.1.1): `inspect.sh:199`'s format uses
       `{{$.Name}}` inside `range .Mounts`, and `$` is now the list of inspect results, so the
       mounts section errors (`can't evaluate field Name in type []interface {}`). Fix, tested
       by hand: `{{$n := .Name}}{{range .Mounts}}{{$n}}…`. ("Exited … 292 years ago" is podman's
