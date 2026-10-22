@@ -59,7 +59,8 @@ date: 2026-10-22
 ## Commits (branch ovm-04a, not pushed)
 
 stack:
-- `b4739e7` obsidian: vault.yml ...; ovm space ... replaces ovm link; ... (obsidian 0.4.0)
+- `0a71618` (was `b4739e7`, rebased on main) obsidian: vault.yml ...; ovm space ... replaces ovm link; ... (obsidian 0.4.0)
+- `d3a6630` obsidian: a vault space is any folder under spaces_path, named by its path ... (obsidian 0.4.0)
 
 docs:
 - this log
@@ -133,6 +134,56 @@ docs:
   config-03 adds `unset ANFS_WORK` to `ovm_setup`, it is a neighbouring hunk.
 - 04b shares `cmd_init`'s template and `README.md`.
 
+## Revision 2026-10-22: nested vault spaces
+
+The person's direction: keep the tools flexible; users lay out vaults however suits them. A vault
+space was "a folder directly under `spaces_path`"; that restriction is gone. Stack commit
+`d3a6630` (on `0a71618`, both rebased on stack main for config-03's preamble: no conflict).
+
+- **A vault space is any folder under `spaces_path`**, named by its path there (`anfs/product`):
+  `_space_path_ok` (no empty part, no `..`, nothing hidden, not absolute; a trailing `/` dropped).
+  `<vault>/<path>`: the first part is always the vault (`apex/anfs/product`); a one-part name is
+  a space of the vault you are in, as before. links.yml's `space:` takes a path. `as` defaults to
+  the path's last part (`product`).
+- **`spaces_path: .`** is the vault's root (`VC_PFX`, what a space's path sits under: `spaces/`
+  or nothing). Its top-level folders are the spaces; `exclude:` leaves folders out of the list
+  (`_templates` with `.`).
+- **`space list`**: the top-level folders plus every path links.yml declares in the vault, sorted,
+  each with its links or `unlinked`. An unlinked deeper folder is not listed. Orphans show the path
+  under `spaces_path` when the vault is here. `space add` is `mkdir -p`; `unlink`/`remove` match
+  the path exactly (unlinking `anfs` leaves `anfs/product`'s links).
+- **Nested links**: `anfs` and `anfs/product` into one wsm space under different `as`; the same
+  name is the conflict (73) it always was, since `_link_state` is by path.
+- **A document's space** (`_space_of <root> <rel> <vault>`, into `REPLY`, no subshell): the
+  deepest path links.yml links in that vault (any wsm space; both files) holding the file; else
+  the first folder under `spaces_path`; none directly in it. links.yml is read once per run; one
+  that does not read is warned about here (only `space` commands and `docs --to` refuse it). docs,
+  show and (02) tasks use it.
+- **`docs --space VAULT-SPACE`**: that path and everything below it, by whole parts (`anfs` takes
+  `anfs/product`, not `anfsx`), in the scope as before (the argument, the vault you are in, every
+  vault). Decided: the old `--space SPEC` (vault spaces linked into a wsm space) is kept as
+  **`--to SPEC`** (links.yml's word), since dropping it would leave pjm without its source.
+  `--to` with an argument is 64; `--space` combines with both. The scope code is one function,
+  `_scope` (02's tasks can share it), and a folder inside another one in scope is read once
+  (nested links into one wsm space).
+- **validate's per-space vocabulary**: `spaces:` keys are paths; a document gets the deepest entry
+  holding it (not merged up the chain). Decided: by `spaces:` entries, not by links, since the
+  vocabulary is the vault's and links are the machine's. A key that is not a valid path is a
+  `vault.yml` finding.
+- **Completion**: `complete_space` adds the deeper paths links.yml and links.local.yml link
+  (read in bash from block entries, no yq); `--space` completes `complete_vault_space`: the
+  top-level folders and linked deeper ones of the vault you are in, else of every vault.
+- obsidian stays **0.4.0** (unmerged). Help epilogue, header comment, `init`'s template comments,
+  README, stack `AGENTS.md`'s `space` keys.
+
+Tests: **70/70** (`ANFS_TEST_LIB=~/.local/lib/anfs anfs work run ovm-04a stack -- bats
+packages/obsidian/tests </dev/null`; was 65). New: nested links (path, conflict, default name,
+list, unlink of the outer, remove, apply), `spaces_path: .` (spaces.bats and docs.bats, with
+validate), the deepest-linked space and `--space` by prefix (docs.bats), a deeper `spaces:`
+entry's vocabulary; changed: `space add a/b/c` is now "no vault 'a'" (1), bad paths are 64, an
+invalid links.yml's `docs --to` is 64 while `docs` still lists; the tab press offers linked deeper
+spaces and `docs --space` values. shellcheck still not installed.
+
 ## By hand, for the person after merge (in this order)
 
 apex's `ovm.yml` today (read 2026-10-22): `id: fl24qptnnh`, `name: "apex"`, `profile.required:
@@ -157,56 +208,33 @@ apex's `ovm.yml` today (read 2026-10-22): `id: fl24qptnnh`, `name: "apex"`, `pro
    rm ovm.yml
    ```
 
-3. Decide what `spaces/anfs/product` becomes: a vault space is a folder directly under
-   `spaces/`, so `anfs/product` cannot be one. Either:
-
-   - **A. link the whole `anfs` space** into anfs-dev, under the same name as today:
-
-     ```yaml
-     # ~/.config/ovm/links.yml
-     - vault: apex
-       space: anfs
-       to: [anfs-dev]
-       as: apex
-     ```
-
-     (anfs-dev's `apex` then shows `anfs/` — `inbox`, `marketing`, `product`, `projects`, ... —
-     not only `product`.)
-
-   - **B. move `product` up a level** (`mv ~/vaults/apex/spaces/anfs/product
-     ~/vaults/apex/spaces/product`; Obsidian's wikilinks resolve by name, path links would need
-     fixing) and link it:
-
-     ```yaml
-     # ~/.config/ovm/links.yml
-     - vault: apex
-       space: product
-       to: [anfs-dev]
-       as: apex
-     ```
-
-4. Remove the old link first (it points at `spaces/anfs/product`, so either option would see a
-   `conflict` at the same path):
+3. Remove the old link first (it points at `spaces/anfs/product` and ovm did not make it, so
+   `space link` would see a `conflict` at the same path):
 
    ```bash
    old="$(wsm ls --json | yq -p json -r '.[] | select(.space == "anfs-dev") | .dir')/apex"
    [ -L "$old" ] && rm "$old"
    ```
 
-5. Write `~/.config/ovm/links.yml`: `ovm space link apex/anfs anfs-dev --as apex` (A) or `ovm
-   space link apex/product anfs-dev --as apex` (B), which writes it and makes the link; or by
-   hand as above; or ship it in your repository's layer
-   (`user/packages/obsidian/home/.config/ovm/links.yml`, then `ppm install obsidian`; ovm then
+4. Link the space, which writes `~/.config/ovm/links.yml` and makes the link:
+
+   ```bash
+   ovm space link apex/anfs/product anfs-dev --as apex
+   ```
+
+   (or ship links.yml in your repository's layer,
+   `user/packages/obsidian/home/.config/ovm/links.yml`, then `ppm install obsidian`; ovm then
    writes this machine's additions to `links.local.yml`).
-6. `ovm space apply`, then `ovm space list --problems` (exit 0, "no problems"); `ovm space list
-   apex` shows each folder of `spaces/` and where it is linked.
-7. `ovm validate` in apex: fix the documents, or extend the vocabulary (`kinds:`, `fields:`,
+5. `ovm space apply`, then `ovm space list --problems` (exit 0, "no problems"); `ovm space list
+   apex` shows each folder of `spaces/`, and `anfs/product`, and where each is linked.
+6. `ovm validate` in apex: fix the documents, or extend the vocabulary (`kinds:`, `fields:`,
    `tags:` — list `go` if `#go` is used).
 
 ## Open questions
 
 None blocking. For the person:
 
-1. apex's `spaces/anfs/product`: option A or B above.
-2. `exclude:` patterns are whole paths from the root (the plan's choice): apex's old substring
+1. `exclude:` patterns are whole paths from the root (the plan's choice): apex's old substring
    list may have matched nested folders that now need `*/` entries.
+2. `docs --space` now takes a vault space's path (revision below); what it did (the vault spaces
+   linked into a wsm space) is `docs --to SPEC`. pjm's source then reads `--to anfs-dev` (02).

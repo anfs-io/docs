@@ -39,7 +39,8 @@ The job is `anfs work new <job> stack docs`. Paths are stack's unless they name 
 
 The marker becomes `vault.yml`, named for the kind as `space.yml` is. It holds only the vault's
 own concerns: where its spaces are, what to skip, and the vocabulary its documents are checked
-against. A **vault space** is a folder directly under `spaces_path`. Which vault spaces show up in
+against. A **vault space** is any folder under `spaces_path`, named by its path there
+(`anfs/product`; revised 2026-10-22, see `log.md`, "Revision: nested vault spaces"). Which vault spaces show up in
 which wsm spaces is not the vault's business, and not wsm's: it is this person's, declared in
 `~/.config/ovm/links.yml`, and ovm is the only bridge. `ovm space` replaces `ovm link`.
 
@@ -80,9 +81,10 @@ spaces:                          # per vault space: more vocabulary (no links: s
   a `validate` finding naming the key; for the three keys of the old marker it says what replaced
   them (`links:` → `ovm space link`, in `~/.config/ovm/links.yml`; `profile:` → `required:` and
   `kinds:`; `items:` → `exclude:`). Nothing reads them.
-- **`spaces_path`**: relative to the vault root, no `..`, not hidden; default `spaces`. A vault
-  space is a direct subfolder of it, not hidden: its name is the folder's name (no `/`). The
-  vault's other folders are not spaces. `spaces:` entries are optional; one naming a folder that
+- **`spaces_path`**: relative to the vault root, no `..`, not hidden; default `spaces`; `.` is
+  the vault's root. A vault space is any folder under it, none of its parts hidden, named by its
+  path relative to `spaces_path` (`product`, `anfs/product`). The vault's other folders are not
+  spaces. (Revised 2026-10-22: it was "a direct subfolder".) `spaces:` entries are optional; one naming a folder that
   is not there is a `validate` finding.
 - **`exclude`**: a list of bash patterns, each matched (`[[ $rel == $pat ]]`, so `*` crosses `/`)
   against the path, relative to the vault root, of every directory and file the walk meets; a
