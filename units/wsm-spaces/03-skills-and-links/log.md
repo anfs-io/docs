@@ -72,6 +72,7 @@ core:
 - `9e1e531` wsm: skills: and links: in space.yml; wsm skill install|list|remove; agent installs re-sync the spaces' skills (wsm_ppm_changed); anfs rpc: skill is a group; 0.7.0
 - `290eb87` skills: never an unscoped remove in a space (it sweeps skills/<name> and other agents' dirs): -a for the agents it is on, wsm drops the shared copy and lock entry; a universal agent counts when the copy is in .agents/skills
 - `e4ca231` docs: skill.sh, wsm's skills: and links:, wsm skill, the callback (AGENTS.md); the CLI's project scope and Claude Code's parent-directory lookup (psm AGENTS.md); wsm README
+- `c3626d1` skills: the global scope is scoped too (remove -g -y swept ~/agent/skills/<name>): anfs_skill_remove removes with -a for the agents a skill is on, then the shared copy and lock entry; psm's remove, prune and implode and wsm on it (the fix asked for before merge, below)
 
 The pre-commit hook bumped `packages/psm` to 0.1.6; anfs (0.2.14) and wsm (0.1.8) already carried
 unpushed bumps. `WSM_VERSION` set to 0.7.0 by hand.
@@ -88,8 +89,8 @@ plan's findings hold, plus four that changed the code:
   deleted a user's `skills/hello/SKILL.md` in the scratch run, and in the first end-to-end run it
   took the space's own linked `skills/hello/` (the link only: the source was intact). Hence the
   third commit: wsm never removes without `-a`, and deletes itself what a scoped remove keeps for
-  universal agents (the `.agents/skills/<name>` copy and its lock entry). psm's global removes are
-  unchanged (not examined for the same sweep: the global agent directories are under `~`).
+  universal agents (the `.agents/skills/<name>` copy and its lock entry). The global scope does
+  the same (fix after review, below).
 - **The project-scope list leaves Pi out** of a skill's agents (OpenCode, the other universal one,
   is listed), so a skill installed for Pi read `partial` forever. `anfs_skill_has` now counts a
   universal agent (`pi`, `opencode`) as installed when the listed path is in `.agents/skills/`.
@@ -97,6 +98,32 @@ plan's findings hold, plus four that changed the code:
 - The CLI lists a skill as installed for AstrBot when a `data/skills/<name>` of the user's exists.
 
 Written into `packages/psm/AGENTS.md` ("With a project scope").
+
+## Fix after review: the global scope sweeps too
+
+The orchestrator confirmed in a temp `HOME` (1.7.4) that psm's `remove -g -y foo` deleted a user's
+own `~/agent/skills/foo/` (it left `~/skills` and `~/data/skills`). Re-checked here: a scoped
+`remove -g -a ...` leaves `~/agent/skills/<name>`; it keeps `~/.agents/skills/<name>` when a
+universal agent is still listed (`-a pi claude-code`) and drops it for `-a opencode`. The global
+lock is `~/.agents/.skill-lock.json` (`version: 3`, `skills.<name>`).
+
+`anfs_skill_remove <scope> <name>...` now does it for both scopes (wsm's own version moved into
+it): one `list`, then `remove <names> -y -a <ids>` for the agents each name is on (a name not
+installed is skipped; one only on agents with no known id stays, with a warning, copy included),
+then the `<base>/.agents/skills/<name>` copy (a real directory) and the lock entry
+(`<dir>/skills-lock.json`, or `~/.agents/.skill-lock.json`) go. psm's `remove`, `prune` and
+`implode` call it with `-g`; `agents rm` already used `-a`. **No `skills remove` without `-a`
+is left in core.**
+
+psm behaviour change: `psm remove <name>` of a skill the CLI does not list now runs nothing (was a
+blind `remove -g -y`); the command lines carry `-a`. By hand with the real CLI (temp `HOME`,
+agents pi and claude-code): `psm install -y acme/`, then `psm remove -y hello` left the user's
+`~/agent/skills/hello/SKILL.md`, removed the copy and the lock entry, `psm ls` says `missing`.
+
+Tests: psm 15 (new: every remove `psm remove`, `prune`, `agents rm` and `implode` make carries
+`-a`, the shared copy goes, `~/agent/skills/<name>` stays), `skill.bats` 8 (new: both scopes, the
+copy and both locks, a not-installed name skipped, an empty scope refused), wsm 96. **Full run
+once: 448 passed, 0 failed**, 31 files, 48 s.
 
 ## Claude Code and parent directories (unit decision 16)
 
@@ -112,11 +139,12 @@ skills above it (inference, not tested). Recorded in `packages/psm/AGENTS.md`; n
 ## Decisions made during the work
 
 - **Removal is scoped** (above): the plan said "the CLI removes each"; a bare remove would break
-  decision 7.
+  decision 7. **wsm (and psm) delete the `.agents/skills/<name>` copy and the lock entry
+  themselves** after a scoped remove: approved by the person before merge.
 - **`missing src` for a link already in place** whose src vanished (text equals src): reported as
   `missing src`, not `ok`, and `remove` still takes it.
 - **`invalid` links are not counted** in `wsm ls`'s NOTE (they fail install with a warning and show
-  in `--json`'s `links`). They could count as `wrong`; left out because nothing is on disk to fix.
+  in `--json`'s `links`). Approved by the person before merge.
 - **`wsm skill install` takes `-n`** (the plan names no option; `wsm install -n` already passes dry
   through, so it was free). `wsm skill remove` has no `-n` (linker plan 04's sweep).
 - **`wsm skill list`'s `repo`** is the repo as the CLI is given it (a path resolved through links),
@@ -141,7 +169,7 @@ skills above it (inference, not tested). Recorded in `packages/psm/AGENTS.md`; n
   a space directory replaced by a link), `rpc.bats` 21 (new: `wsm skill list` is a read, `skill
   install` a write). The 70 existing wsm tests unchanged and passing.
 - **Once, at the end**: `packages/anfs/tests/all`: **446 passed, 0 failed**, 31 files (pmm and pcm
-  off), 48 s.
+  off), 48 s; after the fix, once more: **448 passed, 0 failed**.
 - anfs-ui: not run (`kinds.rb` unchanged).
 - **By hand, temp HOME, the real CLI** (`skills@1.7.4`): a source with a space declaring
   `skills: [{repo: ./skills}]` and a `links:` entry, a ppm tracker for an agent package. With
@@ -159,12 +187,8 @@ skills above it (inference, not tested). Recorded in `packages/psm/AGENTS.md`; n
 
 ## Open questions
 
-- **The sweep**: a scoped remove leaves a universal agent's copy, which wsm deletes itself (the
-  CLI's `.agents/skills/<name>` and lock entry for a declared skill). Acceptable, or should wsm
-  refuse to remove when `skills/<name>` exists in the space and let the person clean up?
-- **psm's global `remove -g -y <names>`** was not examined for the same sweep (`~/skills/<name>`,
-  `~/data/skills/<name>`?). Worth a check before psm's next change.
-- **`invalid` links** not counted in `partial`: fine?
+None left: the three raised were answered before merge (the cleanup and `invalid` approved; the
+global sweep confirmed and fixed above).
 
 ## By hand, for the person after merge
 
