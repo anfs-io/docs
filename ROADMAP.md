@@ -46,6 +46,15 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
   - [x] `config/05-xdg-rule` — merged 2026-10-22 (see `log.md`) — CONFIG/STATE/DATA/CACHE/RUNTIME in AGENTS.md; the audit's fixes
 - [x] `linker/05-move` — merged 2026-10-22 (see `log.md`) — `lib/anfs/move.sh` (checks, the move with its history, one cli helper);
       `ppm move` and `wsm move` written in each tool; anfs-dev's `move.sh` goes (2026-10-22; after the config unit)
+- [ ] Next (asked 2026-10-22 from the cnfs session, which is working through its tickets):
+  - [ ] `report/01-anfs-report` — `anfs report`: diagnostics plus the issue, filed where
+        `ANFS_REPORT_TO` says (`github`, the shipped default, or a file: here
+        `~/spaces/anfs-dev/docs/BACKLOG.md` in `anfs.local.env`); an `anfs-bug-report` skill in core
+        that only runs it
+  - [ ] `pcm/01-run` — `pcm run <service> -- <cmd>`: a one-off container from a service's
+        definition (image, env, network, mounts, labels), removed on exit unless `--keep`;
+        `pcm-containers` says plain `podman run --rm` is right for a stock image; also fixes
+        `pcm show`'s mounts format on podman 6 (from Last)
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
       `ppm move` (and its tests) to be discussed first
 - [ ] `linker/06-move-more` — `move` for pcm, pmm and psm (after their suites are back on)
@@ -143,7 +152,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
       `sh/` tier, the `cd` wrapper through `_anfs_cd`, `zcomp`), and bats isolation (temp
       `HOME`, `ANFS_LOG=off`, stubs). Motivation: gem-local had drifted (`NOTE`, fixed in stack
       764d5b3)
-- [ ] **`pcm show` fails on a created container** (podman 6.1.1): `inspect.sh:199`'s format uses
+- [ ] **`pcm show` fails on a created container** (taken into `pcm/01-run`, 2026-10-22) (podman 6.1.1): `inspect.sh:199`'s format uses
       `{{$.Name}}` inside `range .Mounts`, and `$` is now the list of inspect results, so the
       mounts section errors (`can't evaluate field Name in type []interface {}`). Fix, tested
       by hand: `{{$n := .Name}}{{range .Mounts}}{{$n}}…`. ("Exited … 292 years ago" is podman's
