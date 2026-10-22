@@ -51,8 +51,12 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
 - [ ] `linker/06-move-more` — `move` for pcm, pmm and psm (after their suites are back on)
 - [x] `ovm/01-pvm-to-ovm` — merged 2026-10-21 (see `log.md`); pvm leaves core as `ovm` in `stack/obsidian`; vaults stop being a
       resource (`units/ovm.md`). Independent of the linker; runs beside it (2026-10-21)
-- [ ] `ovm/02-items` — stub: `ovm items` and `exclude:` for `user/pjm`; never written (checked 2026-10-22), to design
 - [ ] `ovm/03-vaults-home` — `~/vaults` is the list; no registry or scan (after linker/02 and config/01)
+- [ ] `ovm/04a-vault-spaces` — `vault.yml` (spaces_path, exclude, vocabulary); `ovm space`
+      replaces `ovm link`; links in `~/.config/ovm/links.yml` (ovm is the only bridge to wsm)
+- [ ] `ovm/04b-workflow-init` — `ovm init`: Templater, Shell commands, Meta Bind (pinned, sha256),
+      settings and templates copied if missing
+- [ ] `ovm/02-tasks` — `ovm tasks`: open `- [ ]` tasks with pjm's ten fields (after 04)
 
 ### Then: stacks (`units/stacks.md`, decided 2026-10-19)
 

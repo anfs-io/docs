@@ -1,6 +1,6 @@
 ---
 objective: Vaults are a tool's business, not the toolkit's — pvm leaves core as `ovm`, the Obsidian Vault Manager in stack's `obsidian` package, and nothing in anfs knows what a vault is
-status: plan 01 written; decisions taken 2026-10-21
+status: 01 merged; 03, 04a, 04b, 02 written (order 03 → 04a → 04b → 02); decisions taken 2026-10-21 and 2026-10-22
 ---
 
 pvm (Personal Vault Manager) came into core from the user source on 2026-10-16 (core 450241b) and
@@ -100,14 +100,107 @@ says today), and `anfs_link_owner` (plan 03) will call it the user's.
 
 ## Plans
 
+In this order: 03 → 04a → 04b → 02 (decided 2026-10-22).
+
 | # | Plan | What |
 | --- | --- | --- |
-| 01 | `01-pvm-to-ovm` | `ovm` in `stack/obsidian`, pvm's tests with it; every vault-as-resource tie out of core, anfs-ui and the docs; `user/pjm` on ovm |
-| 02 | `02-items` | Stub. `ovm items` and `exclude:`, the source `user/pjm` pulls from; first answer whether pvm once had them |
+| 01 | `01-pvm-to-ovm` | Merged 2026-10-21. `ovm` in `stack/obsidian`, pvm's tests with it; every vault-as-resource tie out of core, anfs-ui and the docs; `user/pjm` on ovm |
 | 03 | `03-vaults-home` | `~/vaults` (`OVM_VAULTS_HOME`) is the list of vaults; a vault elsewhere is a `links:` entry in the person's repo; registry, `scan`, `remove`, `prune` go |
+| 04a | `04a-vault-spaces` | `ovm.yml` → `vault.yml` (`spaces_path`, `exclude`, the vocabulary); vault spaces; `~/.config/ovm/links.yml` (+ `links.local.yml`); `ovm space list\|add\|remove\|link\|unlink` (and `apply` for wsm's events) replaces `ovm link`; `docs`' space is the vault space; `validate` reads the vocabulary |
+| 04b | `04b-workflow-init` | `ovm init` places pinned Templater, Shell commands and Meta Bind (cached, sha256-checked), copies our settings and templates when missing; `init --update`; the per-device clicks said plainly |
+| 02 | `02-tasks` | `ovm tasks`: open `- [ ]` lines of a vault, a vault space, a wsm space (through `links.yml`) or a dir, in pjm's ten-key contract; `user/pjm`'s source line |
 
-Later (not written): Obsidian's own things through ovm (open a document by id in the app, the
-vault's `.obsidian` settings), a `skills/` entry so an agent finds documents by id.
+04 is two plans because 04a rewrites how ovm reads a vault and its links (and `links.bats`), and
+04b is a downloader, pins and shipped files: each is a session, they share only `cmd_init`'s
+template, and 04b's tests need 04a's `vault.yml`.
+
+Later (not written): open a document by id in the app, a `skills/` entry so an agent finds
+documents by id.
+
+## Decided with the person (2026-10-22)
+
+1. **`ovm.yml` → `vault.yml`**, the marker named for the kind, as `space.yml` is. No migration
+   code; the person renames apex's by hand (plan 04a).
+2. **`ovm new <name>`** creates `$OVM_VAULTS_HOME/<name>` (03) and runs `ovm init`.
+3. **`ovm init` makes a vault workflow ready**: pinned Templater, Shell commands and Meta Bind
+   (not Buttons), placed as files, downloads cached in `$OVM_CACHE_HOME`; their settings and our
+   templates shipped in `stack/obsidian` and copied when missing, never overwritten (`files:`
+   semantics: the vault is the person's content). `init --update` refreshes the plugins' code to
+   the pins and touches nothing the person edits. Shell commands ships with our command only, and
+   ovm says plainly that it makes notes able to run commands (a synced vault becomes executable).
+   Restricted mode cannot be turned off by a file (checked, below), so init tells the person to
+   open the vault and turn community plugins on once (plan 04b).
+4. **Vault spaces**: a folder directly under `spaces_path` (in `vault.yml`, default `spaces`),
+   named freely. Vault spaces and wsm spaces are many-to-many. *Revised the same day:* the links
+   are **not** in `vault.yml`, and wsm knows nothing about vaults: ovm is the only bridge. They
+   are the person's declaration in `~/.config/ovm/links.yml` (CONFIG; their repo's obsidian layer
+   can ship it; `links.local.yml` beside it for one machine):
+
+   ```yaml
+   - vault: apex
+     space: product              # a folder under the vault's spaces_path
+     to: [anfs-dev, lgat/tech]   # wsm space ids
+   ```
+
+   `ovm space list|add|remove` work on a vault's folders (`list` shows each one's links from
+   `links.yml`); `ovm space link|unlink <vault>/<space> <wsm-space>` edit `links.yml` and make or
+   remove the link (relative, `lib/anfs/link.sh`). `remove` unlinks and leaves the folder (notes
+   are the person's). ovm keeps listening to wsm's events to relink (`ovm space apply --event`).
+   `ovm space` replaces the `ovm link` group. Every vault is in `~/vaults` (a directory, or a link
+   such as the iCloud one).
+5. **The validation vocabulary is ovm's**, in `vault.yml` (vault-wide and per vault space under
+   `spaces:`): tags, frontmatter field types, document kinds; `ovm validate` reads it. pjm's
+   judgement (lanes, thresholds, questions, `#go`, projects by space) stays in pjm's own config.
+   No `space.yml` in vault folders and no `judge.yml` dropped into vaults (a tool writing config
+   into content). pjm reads ovm's output.
+6. **An item is an open `- [ ]` task line**, plugin-independent. Plan 02 becomes `ovm tasks`
+   (`02-items` → `02-tasks`), in pjm's field contract (vault_id, vault, file, line, doc, space,
+   section, parent, tags, text); `exclude:` globs in `vault.yml` skipped by `tasks` and `docs`
+   (`.obsidian/`, `.trash/` always); fenced code skipped; section the nearest heading; parent the
+   enclosing task; tags the `#tags`. **`space` is the vault space, `<vault>/<space>`** (decided in
+   plan 02, as asked: one value per task, the same on every machine; a wsm space is neither unique
+   to a task nor machine-independent). pjm's source line becomes `ovm tasks ...` (plan 02 changes
+   the user repo's shipped `config.yml`).
+
+## Obsidian, checked 2026-10-22
+
+What plan 04b relies on, with where it was verified (the app's 1.14.4 bundle and each plugin's
+source at its release tag; nothing was tried in a running Obsidian).
+
+- **Plugins as files**: `<vault>/.obsidian/plugins/<id>/{main.js,manifest.json,styles.css}`,
+  enabled by listing `<id>` in `.obsidian/community-plugins.json` (a JSON array), settings in
+  `<plugin dir>/data.json`, which Obsidian reloads when it changes on disk. Sources: the sample
+  plugin's "Manually installing the plugin"
+  (https://github.com/obsidianmd/obsidian-sample-plugin); the app code
+  (https://github.com/obsidianmd/obsidian-releases/releases/tag/v1.14.4). Obsidian's help does not
+  document manual installation.
+- **Restricted mode is not a file.** The app reads `localStorage["enable-plugin-<appId>"] ==
+  "true"`; "Turn on community plugins" writes it. A vault with plugins and no key shows the trust
+  dialog. One click per device and vault; nothing in `.obsidian/` changes it. The string
+  `community-plugin-directory` (which apex's `bin/apex` writes into `app.json` to skip the prompt)
+  is not in the 1.14.4 bundle: it does nothing. Sources: the 1.14.4 bundle; staff reply "stored
+  outside of that folder" (https://forum.obsidian.md/t/failure-to-write-config-in-app-json-no-community-plugins/112922);
+  https://forum.obsidian.md/t/unable-to-exit-restricted-mode-on-macos-26-obsidian-1-12-7/115741.
+  Not verified: that `appId` is the vault id of `obsidian.json`, and which version moved it.
+- **Ids and releases**: Templater `templater-obsidian` (SilentVoid13/Templater, 2.26.0 of
+  2026-10-11, minAppVersion 1.13.0); Shell commands `obsidian-shellcommands`
+  (Taitava/obsidian-shellcommands, 0.23.0 of 2024-11-09, 1.4.0, desktop only); Meta Bind
+  `obsidian-meta-bind-plugin` (mProjectsCode/obsidian-meta-bind-plugin, 1.5.1 of 2026-06-16,
+  1.13.1). Each release has `main.js`, `manifest.json`, `styles.css` as separate assets. Source: the
+  GitHub API, each `manifest.json`, `obsidian-releases/community-plugins.json`.
+- **Templater**: the templates folder is `templates_folder` in `data.json`; new-note templates
+  are `trigger_on_file_creation_mode` (`none`, `folder`, `regex`) with `folder_templates:
+  [{folder, template}]` or `file_templates: [{regex, template}]`, `"data_version": 2`. Since
+  2.24.0 the switch "Trigger Templater on new file creation" (and startup templates, system
+  commands) is per device in localStorage (`templater-local-settings`, default off): a second
+  click per device, which no file can make. Source:
+  https://github.com/SilentVoid13/Templater/tree/2.26.0/src/settings.
+- **Shell commands**: a minimal `data.json` is accepted and filled in; `settings_version` newer
+  than the plugin disables it; a command is Obsidian command `obsidian-shellcommands:shell-command-<id>`.
+  Source: https://github.com/Taitava/obsidian-shellcommands/tree/0.23.0/src.
+- **Meta Bind**: works with no `data.json`; `excludedFolders` defaults to `["templates"]`; a
+  button action `{type: command, command: <id>}` runs any Obsidian command, Shell commands' too.
+  Source: https://github.com/mProjectsCode/obsidian-meta-bind-plugin/tree/1.5.1/packages/core/src.
 
 ## Decided with the person (2026-10-21)
 
@@ -123,7 +216,14 @@ vault's `.obsidian` settings), a `skills/` entry so an agent finds documents by 
 
 ## Open questions
 
-None. `pjm`'s `items` and `exclude` were never written (checked 2026-10-22); plan 02 designs them.
+- `links.local.yml` adds links; can it take one away from a shipped `links.yml`? (04a: no.)
+- `init` on a plain-markdown vault: 04b gives `--no-plugins`; should the default be the other way
+  round for a vault that has no `.obsidian/`?
+- apex's own Shell commands `data.json` is kept as it is, so ovm's command is not in it: add it by
+  hand, or should `init` add commands by id to an existing file (an edit of the person's file)?
+- A key beyond pjm's ten in `ovm tasks` (the wsm space a task was reached through, the task's
+  checked state for done-tracking) is a contract change with pjm; none is added now.
+- `ROADMAP.md` still names `ovm/02-items` and has no 04a/04b lines; the person updates it.
 
 ## Completion Criteria
 
