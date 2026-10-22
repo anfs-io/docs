@@ -50,7 +50,7 @@ date: 2026-10-22
 ## Commits (branch ovm-03, not pushed)
 
 stack:
-- `c731ebc` obsidian: ovm's vaults are the entries of ~/vaults (OVM_VAULTS_HOME); the registry,
+- `19d4bd5` (was `c731ebc` before the rebase) obsidian: ovm's vaults are the entries of ~/vaults (OVM_VAULTS_HOME); the registry,
   scan, remove and prune go (obsidian 0.3.0)
 
 docs:
@@ -128,5 +128,21 @@ config/01.
 
 ## Open questions
 
-None blocking. For the person: should `ovm list` hide `not a vault` entries (a stray file in
-`~/vaults`), or keep showing them as now (plan: it lists them)?
+None. Decided by the coordinator before merge (2026-10-22):
+
+1. `ovm list` keeps showing entries that are not vaults (`not a vault`), as the plan says.
+2. obsidian 0.3.0 (a minor bump by hand, not the hook's patch) is fine.
+
+## Rebase on main (config/02)
+
+The coordinator rebased stack's ovm-03 onto main (config/02, stack `55b1ceb`: ovm's `config`
+group through `lib/anfs/config.sh`). Conflicts, resolved:
+
+- `ovm`: config/02 had added `config` to the auto-register dispatch block's skip list; the block
+  is gone here (no registry), so it was dropped. config.sh's sourcing and
+  `anfs_config_declare` merged without conflict.
+- `README.md`: this plan's text, keeping config/02's example as `ovm config set
+  OVM_VAULTS_HOME=~/notes`.
+
+`package.yml` 0.3.0, `OVM_VERSION=0.3.0`. Tests after the rebase, same command (live core main,
+which has `config.sh`): **58/58** (57 + config/02's `ovm config` test).
