@@ -36,7 +36,14 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         tracker, `wsm status` folded into `wsm list`
   - [x] `wsm-spaces/02-repo-lib` — merged 2026-10-21 — `lib/anfs/repo.sh` shared by `anfs src` and `wsm repo`
   - [ ] `wsm-spaces/03-skills-and-links` — `lib/anfs/skill.sh` (psm on it), `wsm skill`, `links:`
-- [ ] `linker/02-platform-files`
+- [ ] `linker/02-platform-files` — gains `link_dirs:` (lib directories linked whole); before config/03
+- [ ] `config` (`units/config.md`, decided 2026-10-21): per-tool settings, `<tool> config`, `ANFS_WORK`
+  - [ ] `config/01-tool-env` — `~/.config/<tool>/<tool>{,.local}.env`; `anfs.conf` goes
+  - [ ] `config/02-config-command` — `lib/anfs/config.sh`: `<tool> config list|get|set|unset`,
+        `anfs config list --all`
+  - [ ] `config/03-work-switch` — `ANFS_WORK=<job>` runs a job's tools on live data (after linker/02)
+  - [ ] `config/04-pcm-local-env` — `~/.config/pcm/containers/<name>/local.env`; `env/` goes
+  - [ ] `config/05-xdg-rule` — CONFIG/STATE/DATA/CACHE/RUNTIME in AGENTS.md; the audit's fixes
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
       `ppm move` (and its tests) to be discussed first
 - [ ] `linker/04-dry-run` — `-n` on every install, add, remove and purge command — plan to write

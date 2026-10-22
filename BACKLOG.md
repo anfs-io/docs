@@ -18,6 +18,12 @@ gets a unit.
   modified. Seen 2026-10-19 in core. The hook should `git add` what it changed only when the
   commit is not pathspec-limited, or re-stage after.
 
+- **anfs-dev's git hooks out of `~/.config`** (from `units/config.md`, plan 05's audit,
+  2026-10-21): hook code is shipped under `~/.config/git/ppm-hooks` (code, not config), and
+  `ppm install anfs-dev/dev` sets `core.hooksPath` in every source's `.git/config` as a side
+  effect. Move the hooks to `~/.local/lib/anfs-dev/hooks`; set `hooksPath` only from `anfs hooks
+  install` (and `anfs work new`). An anfs-dev job.
+
 ## Now units
 
 - pmm out of the default install (pcm stays, for the dashboard): `machine-images` plan 05.
