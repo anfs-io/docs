@@ -270,3 +270,119 @@ Installed packages:
 | user/pvm | 0.1.0 |
 | user/ssh | 0.1.1 |
 | utils/ventoy | 0.1.0 |
+
+## r-20261022-3 pcm remove: 'Error: image name or ID must be specified' for a definition with no built images
+
+Status: fixed in core b2656a8 (2026-10-22)
+
+Package: `core/pcm`
+
+### What was expected
+
+pcm remove completes without an error line when there are no built images to delete
+
+### What happened
+
+Prints 'Error: image name or ID must be specified' mid-output; the remove still completes
+
+### Steps to reproduce
+
+Local definition using a stock image (busybox:1.37, no build:) with x-pcm.depends_on glitchtip; pcm up it; pcm remove -y it
+
+### Diagnostics
+
+- anfs: 0.2.16
+- platform: macos (Darwin 27.0.0, arm64; macOS 27.0.1)
+- bash: 5.3.15(1)-release
+- git: 2.55.0
+- podman: 6.1.1
+
+Sources:
+
+| Source | Commit | Status |
+| --- | --- | --- |
+| anfs-dev | 77ff15d | clean |
+| anfs-admin | 4413964 | clean |
+| lgat | e3ae6b4 | clean |
+| roteoh | a9ec35b | clean |
+| cnfs | 32e4bdf | unpushed |
+| rws | 43a125f | dirty |
+| user | 710b294 | dirty, unpushed |
+| stack | 5f6d56a | dirty, unpushed |
+| core | b7be10b | unpushed |
+
+Installed packages:
+
+| Package | Version |
+| --- | --- |
+| anfs-dev/dev | 0.1.15 |
+| cnfs/rails | 0.1.1 |
+| core/anfs | 0.2.16 |
+| core/node | 0.1.0 |
+| core/pcm | 0.3.0 |
+| core/pmm | 0.1.5 |
+| core/podman | 0.1.1 |
+| core/ppm | 0.2.8 |
+| core/psm | 0.1.6 |
+| core/qemu | 0.1.1 |
+| core/varlock | 0.1.2 |
+| core/wsm | 0.1.10 |
+| pdt/pcs | 0.1.0 |
+| pdt/python | 0.1.0 |
+| rws/git | 0.1.0 |
+| spaces/cnfs | 0.1.0 |
+| spaces/rjayroach | 0.1.0 |
+| spaces/rws | 0.1.0 |
+| stack/antigravity | 0.1.1 |
+| stack/bash | 0.1.1 |
+| stack/claude | 0.1.1 |
+| stack/cli | 0.1.0 |
+| stack/firstmate | 0.1.0 |
+| stack/fnox | 0.1.1 |
+| stack/ghostty | 0.1.1 |
+| stack/git | 0.1.2 |
+| stack/herdr | 0.1.1 |
+| stack/nvim | 0.1.1 |
+| stack/obsidian | 0.6.0 |
+| stack/op | 0.1.5 |
+| stack/opencode | 0.1.1 |
+| stack/pi | 0.1.1 |
+| stack/pikvm | 0.1.2 |
+| stack/python | 0.1.0 |
+| stack/rails | 0.1.0 |
+| stack/remotefs | 0.1.1 |
+| stack/ruby | 0.1.2 |
+| stack/ssh | 0.1.3 |
+| stack/tmux | 0.1.0 |
+| stack/ventoy | 0.1.3 |
+| stack/zsh | 0.1.4 |
+| user/anfs | 0.1.0 |
+| user/claude | 0.1.0 |
+| user/git | 0.1.0 |
+| user/pjm | 0.1.0 |
+| user/pvm | 0.1.0 |
+| user/ssh | 0.1.1 |
+| utils/ventoy | 0.1.0 |
+
+Recent failures in the log (~/.local/state/anfs/anfs.log):
+
+```
+2026-10-22T17:12:57-0400 pcm[67643] start: 67643-1792703577 down postgres
+2026-10-22T17:13:12-0400 pcm[67643] end: 67643-1792703577 1
+2026-10-22T17:14:28-0400 pcm[70709] start: 70709-1792703668 exec glitchtip -- ./manage.py shell --no-imports -c 
+2026-10-22T17:14:30-0400 pcm[70709] end: 70709-1792703668 1
+2026-10-22T17:15:09-0400 pcm[18761] start: 18761-1792703709 provision --as probe-check glitchtip org=probe
+2026-10-22T17:15:10-0400 pcm[18761] end: 18761-1792703709 1
+2026-10-22T17:15:11-0400 pcm[20024] start: 20024-1792703711 provision --as probe-check glitchtip org=Probe project=x
+2026-10-22T17:15:12-0400 pcm[20024] end: 20024-1792703711 1
+2026-10-22T17:15:12-0400 pcm[21388] start: 21388-1792703712 provision --as probe-check glitchtip project=x bogus=1
+2026-10-22T17:15:13-0400 pcm[21388] end: 21388-1792703712 1
+2026-10-22T17:15:13-0400 pcm[22633] start: 22633-1792703713 provision --as probe-check glitchtip org=admin project=x
+2026-10-22T17:15:14-0400 pcm[22633] end: 22633-1792703713 1
+2026-10-22T17:15:17-0400 pcm[28039] start: 28039-1792703717 provision --as probe-check glitchtip org=Probe project=x
+2026-10-22T17:15:18-0400 pcm[28039] end: 28039-1792703717 1
+2026-10-22T17:15:18-0400 pcm[29320] start: 29320-1792703718 provision --as probe-check glitchtip project=x bogus=1
+2026-10-22T17:15:19-0400 pcm[29320] end: 29320-1792703718 1
+2026-10-22T17:15:19-0400 pcm[30329] start: 30329-1792703719 provision --as probe-check glitchtip org=admin project=x
+2026-10-22T17:15:22-0400 pcm[30329] end: 30329-1792703719 1
+```
