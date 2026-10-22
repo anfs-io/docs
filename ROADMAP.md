@@ -41,7 +41,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
   - [x] `config/01-tool-env` — merged 2026-10-22 (see `log.md`) — `~/.config/<tool>/<tool>{,.local}.env`; `anfs.conf` goes
   - [x] `config/02-config-command` — merged 2026-10-22 (see `log.md`) — `lib/anfs/config.sh`: `<tool> config list|get|set|unset`,
         `anfs config list --all`
-  - [ ] `config/03-work-switch` — `ANFS_WORK=<job>` runs a job's tools on live data (after linker/02)
+  - [x] `config/03-work-switch` — merged 2026-10-22 except the user repo's pjm branch (waits for the person; see `log.md`) — `ANFS_WORK=<job>` runs a job's tools on live data (after linker/02)
   - [x] `config/04-pcm-local-env` — merged 2026-10-22 (see `log.md`) — `~/.config/pcm/containers/<name>/local.env`; `env/` goes
   - [ ] `config/05-xdg-rule` — CONFIG/STATE/DATA/CACHE/RUNTIME in AGENTS.md; the audit's fixes
 - [ ] `linker/05-move` — `lib/anfs/move.sh` (checks, the move with its history, one cli helper);
