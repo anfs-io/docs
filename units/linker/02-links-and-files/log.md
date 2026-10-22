@@ -115,6 +115,8 @@ core:
 - `07e84c5` wsm on manifest.sh and files.sh; 0.8.0 (package 0.1.9)
 - `9192a38` docs (AGENTS.md, READMEs)
 - `ac3c7de` docs: stow_package, not stow_subdir (two stale mentions found by the closing grep)
+- `ea62700` the fix asked for before merge: a `{src}` entry wrong on its own is only that entry
+  (below); docs
 
 stack:
 - `b2a4037` obsidian: ovm on anfs_link_one; tests (package already 0.2.1 unpushed; `OVM_VERSION`
@@ -132,7 +134,7 @@ list, so every stopping point is still clean.
 ## Decisions made during the work
 
 - **`{path: x}` without platforms is refused** like a `links:` string without `/` (it says
-  nothing the default does not). The plan lists only the string.
+  nothing the default does not). The plan lists only the string. Approved before merge.
 - **A directory link over a directory holding another package's links is never cleared by `-f`**
   (the test spec: "a conflict in either install order, and -f does not clear it"). A directory of
   only this package's own links (or nothing of the sources) is `a directory`, which `-f` moves aside
@@ -143,12 +145,22 @@ list, so every stopping point is still clean.
 - **`_ANFS_ABS` fixed**: it was set for every link whose text was not the expected one (the
   relative prefix was added before the test), not only absolute ones. Now only an absolute text is
   marked, and none where absolute is expected.
-- **An unset variable in a `src` makes the whole space (or package) invalid**, as every refusal
-  does; before, only that entry was `invalid` and the rest installed. The plan's refusal rule
-  ("every error listed, nothing of that package or space is installed") read literally.
+- **A `{src}` entry wrong on its own is only that entry** (fixed before merge, at the person's
+  request; the first version invalidated the whole space or package). An unset variable, a
+  relative `src` where none may be (a `package.yml`), a `dest` outside the target, a link to `/`:
+  `ANFS_MF_INVALID` (`<dest>\t<src as written>\t<why>`), not `ANFS_MF_ERR`. Everything else
+  stays a refusal of the manifest: those are its syntax and its paths in the tree (a path not
+  there, a directory link inside another, a duplicate, an unknown platform...). An entry for
+  another platform is `off` whatever is wrong with it. **Exit status chosen**: ppm says it with
+  `ppm_fail` (`invalid link ~/<dest>, skipped: <why>`), installs the rest and records only the
+  good links; like every `ppm_fail`, the run's exit is unchanged (0); `-n` prints `invalid` and does
+  not make the run exit 1; `ppm show` lists it. wsm warns (`invalid link in <id>, skipped: ...`),
+  installs the rest of the space and exits 1, as an invalid `links:` entry did in wsm 0.7.0;
+  `wsm ls` does not count it (the space stays `ok`) and `--json`'s `links` has it as `invalid`;
+  `remove` leaves it alone.
 - **`wsm ls <id> --json`: copies are `copies: [{path, status}]`**, not `files:` as the plan says:
   `files` already holds the linked files' states (`[{file, status}]`), and a reader of one shape
-  must not get two.
+  must not get two. Approved by the person before merge.
 - **`ppm show` has no `--json`** (it is a detail view, never was one), so "gains links and files"
   became the human "Placed:" block.
 - **wsm's "hidden agent directory" rule** is: a directory link whose first component starts with
@@ -157,6 +169,8 @@ list, so every stopping point is still clean.
   binds looser than `==` unless parenthesised; the reader uses `==`, `not` and parentheses.
   Recorded in manifest.sh.
 - bash 3.2: a `local a=x b=$a` sees no `a` (files.sh had one; fixed, the 3.2 test caught it).
+
+- **`wsm ls` at 215 ms** on this Mac's copy (was 185): accepted by the person before merge.
 
 ## Tests (all through `anfs work run linker-02 …`, `</dev/null`)
 
@@ -177,6 +191,15 @@ list, so every stopping point is still clean.
   directory links, a platform entry, `files:` twice, `space.yml` in `files:`, `wsm add`).
 - **Once, at the end**: `packages/anfs/tests/all`: **501 passed, 0 failed**, 34 files (pmm and pcm
   off), 56 s.
+- **The fix before merge**: `manifest.bats` 15 (the refusal case no longer lists the `{src}`
+  problems; new: three bad entries and a good one → only the good one planned, the three in
+  `ANFS_MF_INVALID`, another platform's bad entry `off`; a relative `src` without a base an invalid
+  entry), ppm `manifest.bats` 17 (the relative-`src` case became: an unset variable and a relative
+  `src` invalid and skipped, the good link and the package's file made, exit 0, the tracker's
+  `links` only the good one, `-n` and `ppm show` say `invalid`), wsm `links.bats` 16 (the unset
+  variable case became: three bad entries skipped, the good one linked, exit 1, `wsm ls` `ok`,
+  `--json` `invalid`, remove takes the good one): 48/48. Then `packages/anfs/tests/all` once more:
+  **502 passed, 0 failed**, 34 files, 56 s.
 - stack, with `ANFS_TEST_LIB` at the job's core lib: `packages/obsidian/tests` **59/59** (one new:
   an absolute link made before is `ok` and `link rm` takes it; the link texts asserted relative).
   `packages/op/tests`, `packages/tailscale/tests`, `packages/ssh/tests`: 64 passed, **5 failed —
@@ -254,18 +277,13 @@ HOME=<copy> PATH=<copy>/.local/bin:/opt/homebrew/bin:/usr/bin:/bin TMPDIR=<job's
 
 ## Open questions
 
-1. **`wsm ls` 185 → 215 ms on this Mac's copy.** The manifest reader covers every space of the
-   checked sources (what each links depends on it), not only installed ones. Acceptable, or should
-   a space with no `links:`/`files:` key skip the read (a grep per `space.yml` first)?
-2. **An unset variable in a `src` invalidates the whole space or package** (decision above). On a
-   machine where the variable is legitimately unset (a vault path set only on one Mac), the space
-   would not install at all. Keep it, or let an unset variable be a per-entry `missing src`
-   instead?
-3. **`copies` instead of `files`** in `wsm ls <id> --json` (decision above): fine?
-4. **`{path: x}` without platforms refused** (decision above): fine?
-5. **The five stack test failures** in `op/tests/ssh-hook.bats` and `tailscale/tests/tsm.bats`
+Answered before merge: `wsm ls` at 215 ms is fine; `copies` and refusing `{path}` without
+platforms are fine; an unset variable (any `{src}` problem that is not a syntax error) invalidates
+only that entry (fixed, `ea62700`). Left:
+
+1. **The five stack test failures** in `op/tests/ssh-hook.bats` and `tailscale/tests/tsm.bats`
    exist on the base commit too; nobody's plan touches them.
-6. `ppm` and `anfs` still source `bash.sh` "only if it exists", a leftover of per-file linking;
+2. `ppm` and `anfs` still source `bash.sh` "only if it exists", a leftover of per-file linking;
    AGENTS.md says so. Make it unconditional now that `lib/anfs` is one link?
 
 ## By hand, for the person after merge (in this order)
