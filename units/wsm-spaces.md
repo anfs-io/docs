@@ -201,6 +201,7 @@ source/ws/space"; plan 01 rewords them (stack is in its job). On this Mac ovm's 
 | 01 | `01-spaces` | Spaces by `space.yml` at any depth, path ids, prefix specs, nearest-space ownership, `depends:` by id, the repository-id rule (not inside, not containing a child space); no tracker: `anfs_link_check`, the leftover walk, `wsm list` STATUS and per-file detail; one root, several specs per install, `-f` moves aside; `wsm status` removed; the readers (stacks.sh, `anfs src install`, anfs-ui, `anfs work` and `work.bats`, the acme fixture, ovm's help) | core, anfs-dev, stack |
 | 02 | `02-repo-lib` | `lib/anfs/repo.sh` under `anfs src` and `wsm repo`; one clone, one URL parser; `wsm repo ssh` | core |
 | 03 | `03-skills-and-links` | `lib/anfs/skill.sh`, psm on it (`ANFS_SKILLS_CLI_VERSION`); `wsm skill install\|list\|remove`; `skills:` and `links:` in `space.yml`; agent installs re-sync spaces' skills | core |
+| 04 | `04-repo-push` | `anfs_repo_push` and one CLI helper in `repo.sh`: `anfs src push` and `wsm repo push` (names or `--all`, `-n`, a list of outcomes) | core |
 
 01 comes first: 02 and 03 build on its ids and computed state. 02 and 03 do not depend on each
 other and can run side by side (both edit wsm and core `AGENTS.md`, in different places;
