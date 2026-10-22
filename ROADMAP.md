@@ -55,6 +55,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         definition (image, env, network, mounts, labels), removed on exit unless `--keep`;
         `pcm-containers` says plain `podman run --rm` is right for a stock image; also fixes
         `pcm show`'s mounts format on podman 6 (from Last)
+- [x] `wsm-spaces/04-repo-push` — merged 2026-10-22 (see `log.md`) — `anfs src push` and `wsm repo push` on `repo.sh` (asked 2026-10-22)
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
       `ppm move` (and its tests) to be discussed first
 - [ ] `linker/06-move-more` — `move` for pcm, pmm and psm (after their suites are back on)
