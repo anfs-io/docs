@@ -67,17 +67,21 @@ loader already refuses `ANFS_WORK`, `ANFS_WORK_HOME`, `ANFS_WORK_TMP` in a file.
 
 ## Commits (branch config-03, not pushed)
 
-core:
-- `3e975e7` ANFS_WORK: work.sh, the preamble, paths.sh, the tools, tests
-- `4e0a12a` docs (AGENTS.md)
-- `47fc72a` tests: iso.bats runs pmm with `PMM_LIB_DIR`; settings.bats allow-list
+Hashes after the rebase on main (config/02 and 04 merged; see "Rebase" below).
 
-stack: `0d662d6` the preamble, headers, tsm, rpi-imager, tests (firstmate 0.1.3, git 0.1.4, ruby
+core:
+- `84aafbb` ANFS_WORK: work.sh, the preamble, paths.sh, the tools, tests
+- `cb7bb47` docs (AGENTS.md)
+- `e45856f` tests: iso.bats runs pmm with `PMM_LIB_DIR`; settings.bats allow-list
+- `427a9bf` tests after the rebase: config.bats's `ANFS_WORK` case; config.bats and
+  pcm-local-env.bats unset `ANFS_WORK`
+
+stack: `5f62b41` the preamble, headers, tsm, rpi-imager, tests (firstmate 0.1.3, git 0.1.4, ruby
 0.1.2 bumped by the hook; the others already carry an unpushed bump)
 
 anfs-dev: `c6fa934` anfs work run/env/show, the preamble, README, tests (dev already 0.1.15)
 
-user: `0a74c6a` pjm: the preamble (pjm already 0.1.1 unpushed). Nothing else of user's repo.
+user: `0a74c6a` pjm: the preamble (not rebased: left as is for the person, on the coordinator's word) (pjm already 0.1.1 unpushed). Nothing else of user's repo.
 
 core's anfs, pcm, pmm, ppm, psm, wsm already carry an unpushed bump (config-01's): the hook left
 them. `WSM_VERSION`, `OVM_VERSION` unchanged (no command changed).
@@ -182,6 +186,37 @@ them. `WSM_VERSION`, `OVM_VERSION` unchanged (no command changed).
 - anfs-dev: `anfs-work` (header, `env`/`run`/`show`, epilogue), README, `work.bats`, `helper.bash`.
 - user: `pjm`'s two lines.
 
+## Rebase on main (config/02 and config/04 merged), 2026-10-22
+
+`git rebase main` in core, stack, anfs-dev (already on main: nothing to do) and docs (clean). user
+not rebased.
+
+- **Conflicts, core**: `pcm`, `pmm`, `wsm`: main added `source "$ANFS_LIB/config.sh"` after
+  `table.sh`, where this branch had rewritten `$ANFS_LIB` to `$ANFS_LIB_DIR`. Kept both: both
+  lines from `$ANFS_LIB_DIR`. `AGENTS.md` Lib Structure: main's `ANFS_CONF_LOADED` and `config.sh`
+  entries kept, this branch's `paths.sh` lines added between them.
+- **Not conflicts, fixed by hand**: `anfs` sourced `"$ANFS_LIB/config.sh"` (main's line, auto-merged
+  into a script that no longer sets `ANFS_LIB`) and `ppm` sourced
+  `"$HOME/.local/lib/anfs/config.sh"`: both now `$ANFS_LIB_DIR/config.sh`.
+- **Conflicts, stack**: ovm, opm, pikvm, remotefs, tsm, ventoy: main's optional `config.sh` line
+  after `table.sh`; kept, from `$ANFS_LIB_DIR`. No `$ANFS_LIB` left anywhere in stack's packages.
+- So `config.sh` comes through the lib root in every tool that loads it (anfs, ppm, pcm, pmm, wsm;
+  ovm, opm, pikvm, remotefs, tsm, ventoy). `paths.sh`'s `ANFS_CONF_LOADED` needs nothing: the
+  installed `paths.sh` hands over before its loader runs, so the loader (and `ANFS_CONF_LOADED`)
+  is the job's, once.
+- **Tests that the rebase broke** (core `427a9bf`): config.bats's "ANFS_WORK from the environment
+  only" ran the installed `anfs` with `ANFS_WORK=j` and no job j: now exit 64 by design. The test
+  makes j a job (no copy of anfs there, so the installed one runs, says the line) and reads the
+  value past it. config.bats and pcm-local-env.bats (new on main, both set `HOME`) unset
+  `ANFS_WORK` (isolation.bats's rule caught them).
+- **Checked by hand**: a temp install from this branch, a temp job `t` whose `config.sh` prints its
+  own path when sourced: `ANFS_WORK=t pcm config list`, and the same for anfs, ppm, wsm, pmm, print
+  the job's `config.sh` path after `anfs: running job t`; without `ANFS_WORK`, nothing.
+- **Tests after the rebase**: core `packages/anfs/tests/all` **572 passed, 0 failed**, 40 files
+  (pmm and pcm off), 61 s; anfs-dev `work.bats` **23/23**; stack (git, obsidian, op, pikvm,
+  remotefs, ruby, ssh, tailscale, ventoy, `ANFS_TEST_LIB` the job's core lib) **222/227**, the 5
+  known failures (ssh-hook 4, tsm 1).
+
 ## Open questions (for the person)
 
 1. **user's `pjm` test helper** sets a temp `HOME` and does not unset `ANFS_WORK` (decision 12
@@ -190,9 +225,7 @@ them. `WSM_VERSION`, `OVM_VERSION` unchanged (no command changed).
    since it keeps `ANFS_LIB=` (the plan's choice). Move pjm's header to `$ANFS_LIB_DIR` too (four
    lines in the user repo)?
 3. **pjm.bats test 12 fails on main** (dispatch, `status` 1 expected): not this plan's; worth a look.
-4. Suggested bullet for ROADMAP "For an agent running this list" (yours to add): "**`ANFS_WORK`
-   never in a test.** `ANFS_WORK=<job> <tool>` runs a job's code on live data, for a person trying a
-   branch by hand. Agents do not use it (it changes real state); `anfs work run` unsets it."
+4. ~~A ROADMAP bullet "ANFS_WORK never in a test"~~: main has it now (`a4dcb68`).
 
 ## By hand, for the person after merge
 
