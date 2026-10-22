@@ -171,7 +171,7 @@ Installed packages:
 
 ## r-20261022-2 pcm provision/deprovision: run a service's provision hooks for a consumer that isn't a pcm definition
 
-Status: open
+Status: fixed in core b7be10b (2026-10-22)
 
 Package: `core/pcm`
 
