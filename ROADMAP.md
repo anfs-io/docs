@@ -47,7 +47,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
 - [x] `linker/05-move` — merged 2026-10-22 (see `log.md`) — `lib/anfs/move.sh` (checks, the move with its history, one cli helper);
       `ppm move` and `wsm move` written in each tool; anfs-dev's `move.sh` goes (2026-10-22; after the config unit)
 - [ ] Next (asked 2026-10-22 from the cnfs session, which is working through its tickets):
-  - [ ] `report/01-anfs-report` — `anfs report`: diagnostics plus the issue, filed where
+  - [x] `report/01-anfs-report` — merged 2026-10-22 (see `log.md`; by-hand steps run) — `anfs report`: diagnostics plus the issue, filed where
         `ANFS_REPORT_TO` says (`github`, the shipped default, or a file: here
         `~/spaces/anfs-dev/docs/BACKLOG.md` in `anfs.local.env`); an `anfs-bug-report` skill in core
         that only runs it

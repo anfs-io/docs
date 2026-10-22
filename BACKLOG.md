@@ -58,3 +58,9 @@ gets a unit.
   uses a shell function as the compose runner, which pcm can't `exec`. One-line fixes each.
 - `units/container-images.md` plan 01 still proposes `pcm run <image>`; decided against
   2026-10-22 (`units/pcm.md`): edit that draft when the unit is refreshed.
+
+- psm: every skill is `partial`: none reaches the antigravity and antigravity-cli agents (Claude
+  Code, OpenCode and Pi have them). So `anfs report check`'s skill row fails here, accurately.
+  Find out whether the skills CLI supports those agent ids or psm should stop listing them.
+- `anfs report status` for a GitHub issue closed without a `Fixed in` comment says `fixed`;
+  `closed` may be truer (not planned is not fixed). Decide on first real GitHub use.
