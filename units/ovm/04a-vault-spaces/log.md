@@ -228,7 +228,7 @@ apex's `ovm.yml` today (read 2026-10-22): `id: fl24qptnnh`, `name: "apex"`, `pro
 5. `ovm space apply`, then `ovm space list --problems` (exit 0, "no problems"); `ovm space list
    apex` shows each folder of `spaces/`, and `anfs/product`, and where each is linked.
 6. `ovm validate` in apex: fix the documents, or extend the vocabulary (`kinds:`, `fields:`,
-   `tags:` — list `go` if `#go` is used).
+   `tags:`; `go` is built in since 02-tasks).
 
 ## Open questions
 

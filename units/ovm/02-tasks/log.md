@@ -7,7 +7,8 @@ date: 2026-10-22
 # Log: ovm/02-tasks
 
 Branch `ovm-02`, cut from `ovm-04b` (stack `e2612d2`, on `ovm-04a` `b4739e7`; neither merged): if
-either changes, this rebases on it. The only shared lines are `OVM_VERSION`, the `cli_cmd` block
+either changes, this rebases on it. Rebased 2026-10-22 on 04b `0e6932c` (on 04a `d3a6630`); see
+"Revision" below. The only shared lines are `OVM_VERSION`, the `cli_cmd` block
 (one line added after `docs`) and the help epilogue (a paragraph appended). `cmd_docs`, the
 header comment, the `source` lines and the `ANFS_LIB` check are untouched.
 
@@ -44,10 +45,47 @@ header comment, the `source` lines and the `ANFS_LIB` check are untouched.
 - obsidian **0.6.0** (`OVM_VERSION`, `package.yml`), by hand: a new command (minor). The hook:
   "already 0.6.0 since 0.2.0 was pushed, not bumping".
 
+## Revision 2026-10-22: nested vault spaces, `go` built in
+
+**Rebase** onto `ovm-04b` (stack `0e6932c`, on 04a's nested spaces `d3a6630`): conflicts in
+`AGENTS.md`, `README.md` and `ovm` (the `cli_cmd` block and the help epilogue), resolved keeping
+both. docs: no conflict.
+
+- **`space` is `_space_of`'s**, the one function docs and show use: the deepest vault space
+  links.yml links (in that vault, any wsm space) holding the file, else the first folder under
+  `spaces_path`, none directly in it; as `<vault>/<path>` (`apex/anfs/product`). `TASKS_AWK` no
+  longer computes it: it leaves the field empty and `_tasks_scan` fills it in, once per file (a
+  bash loop over the rows, no subshell per row; the 500-file test still passes under 2 s).
+- **Scopes are 04a's `_scope`** (the follow-up this log promised): cmd_tasks' copy is gone. With
+  it: `--space VAULT-SPACE` (a path and below it, as docs), and what `--space SPEC` was is
+  `--to SPEC` (04a's revision). The `--to` warnings (no entry, a vault not here, a bad
+  `spaces_path`, a missing folder) moved into `_scope`, so `docs --to` says them too, and the bare
+  space name in a vault now works for `docs` as for `tasks`. Nested links into one wsm space list a
+  task once.
+- **`go` is a built-in tag** (the person, 2026-10-22): `ovm validate` always allows `go` (exactly;
+  `go/x` needs a listed ancestor), since `ovm tasks` and pjm give `#go` a meaning. Help (the tasks
+  paragraph), README (`vault.yml`'s example no longer lists `go`; what validate checks). The
+  by-hand step "list `go` in `tags:`" is gone here and from 04a's log.
+
+Tests: **101/101** (`ANFS_TEST_LIB=~/.local/lib/anfs anfs work run ovm-02 stack -- bats
+packages/obsidian/tests </dev/null`; 83 of 04b + 16 + 2). `tasks.bats`: the two `--space SPEC`
+tests are `--to`; a new one: the deepest linked space (nested `anfs` and `anfs/product` linked
+into one wsm space), the same value as docs' SPACE, `--to` over nested links lists each task once,
+`--space` by whole parts in a vault and across vaults, with `--to`, a bad path 64, `spaces_path:
+.`. `docs.bats`: `go` built in (and `go/x` not); `docs --to nowhere` now prints the warning. One
+full run had `init.bats`' sync test fail on `ovm sync a`'s status; it passed alone and in two
+more full runs (a load-dependent flake I could not reproduce; noted, not chased).
+
+The pjm contract, again against the live pjm (as below, read-only, a temp HOME; deleted after),
+now with the vault space nested and linked (`notes/anfs/product` linked into `anfs-dev` as
+`apex`): the same counts (`open items 3`, `tagged 2 (#go)`, `nested 1`), every field landing,
+`"space":"notes/anfs/product"`.
+
 ## Commits (branch ovm-02, not pushed)
 
 stack:
-- `d38f5a5` obsidian: ovm tasks lists the open `- [ ]` tasks ... (obsidian 0.6.0)
+- `370b9ee` (was `d38f5a5`, rebased; the scope code now 04a's `_scope`) obsidian: ovm tasks lists the open `- [ ]` tasks ... (obsidian 0.6.0)
+- `018c496` obsidian: ovm tasks' space is _space_of's ...; --space a path, --to SPEC; go a built-in tag (obsidian 0.6.0)
 
 docs:
 - this log
@@ -135,26 +173,26 @@ live checkout: make them in a worktree or clone, not there):
    # Where items come from: each entry is a command, one word per element, that prints items as
    # JSON. Start narrow; add more once the first report looks right. One task is pulled once per
    # source that reaches it, so two sources whose links overlap list it twice (dup counts both):
-   # one source per vault space, or one --space per wsm space, avoids it.
+   # one source per vault space, or one --to per wsm space, avoids it.
    sources:
-     - [ovm, tasks, --json, --space, anfs-dev]
-     # - [ovm, tasks, --json, apex/product]
+     - [ovm, tasks, --json, --to, anfs-dev]
+     # - [ovm, tasks, --json, apex/anfs/product]
      # A directory that is not linked to a space is named by its path (the vault-scan spike's
      # other candidates were spaces/cnfs/products, spaces/rws/products and spaces/lgat/product):
      # - [ovm, tasks, --json, "/Users/roberto/Library/Mobile Documents/iCloud~md~obsidian/Documents/apex/spaces/cnfs/products"]
    ```
 
    The line that changes: `  - [ovm, items, --json, --space, user/dev]` →
-   `  - [ovm, tasks, --json, --space, anfs-dev]`.
+   `  - [ovm, tasks, --json, --to, anfs-dev]`.
 2. Same file, `report:`'s comment, line 13: `# (the vault's vault.yml excludes _generated).`
 3. Same file, `projects:` (lines 33-35):
 
    ```yaml
    # Dispatch (a proof of concept). An item goes to the Firstmate project its space maps to
    # (firstmate project add); an item whose space is not here is not sent. A space is
-   # <vault>/<space>, as ovm tasks prints it.
+   # <vault>/<path>, as ovm tasks prints it (the deepest linked vault space holding the task).
    projects: {}
-   #  apex/product: anfs
+   #  apex/anfs/product: anfs
    ```
 4. `packages/pjm/home/.local/bin/pjm` line 5 and line 211: `` (`ovm items --json`) `` →
    `` (`ovm tasks --json`) ``. No code change.
@@ -169,17 +207,16 @@ live checkout: make them in a worktree or clone, not there):
 1. After 04a's and 04b's by-hand steps: pull stack, `ppm install obsidian`; `ovm --version` is
    0.6.0.
 2. Merge the user branch above; in `~/.config/pjm/config.yml` (the user repo's file, linked)
-   check the source is `[ovm, tasks, --json, --space, anfs-dev]` (or the scopes you want) and
-   `projects:` uses `<vault>/<space>` names.
-3. If you use `ovm validate`'s tag check: add `go` to apex's `vault.yml` `tags:` (decided: `#go` is
-   validated like any tag).
-4. `ovm tasks --space anfs-dev | head`, then `pjm pull`: it prints its counts, no "a source failed".
+   check the source is `[ovm, tasks, --json, --to, anfs-dev]` (or the scopes you want) and
+   `projects:` uses `<vault>/<path>` names (`apex/anfs/product`).
+3. `ovm tasks --to anfs-dev | head` (SPACE is `apex/anfs/product`), then `pjm pull`: it prints its
+   counts, no "a source failed".
 
 ## Open questions (for the person, before merge)
 
-1. **`--space anfs-dev` depends on 04a's choice for `spaces/anfs/product`** (option A links the
-   whole `anfs` space, so its tasks are `apex/anfs`; option B moves `product` up, so `apex/product`).
-   `projects:` keys follow from that.
+1. ~~`--space anfs-dev` and 04a's choice~~: answered by 04a's revision (nested spaces):
+   `apex/anfs/product` is linked as it is, its tasks' `space` is `apex/anfs/product`, and the
+   source is `--to anfs-dev` (`--space` now takes a vault space's path; confirm the rename).
 2. **Unclosed frontmatter read as body** and **a bare space name in a vault** (above): both beyond
    the plan's letter; keep?
 3. The unit's open question on extra keys (the wsm space a task came through, the checked state)
