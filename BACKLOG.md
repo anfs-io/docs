@@ -386,3 +386,114 @@ Recent failures in the log (~/.local/state/anfs/anfs.log):
 2026-10-22T17:15:19-0400 pcm[30329] start: 30329-1792703719 provision --as probe-check glitchtip org=admin project=x
 2026-10-22T17:15:22-0400 pcm[30329] end: 30329-1792703719 1
 ```
+
+## r-20261022-4 space setup: what partitia needs (fnox 1Password provider per space, non-interactive, shell activation)
+
+Status: open
+
+Package: `core/wsm`
+
+Input for the upcoming `anfs space setup` / `wsm setup`, from partitia (cnfs). It isn't a bug.
+
+partitia's `pt services` provisions pcm services for a Rails app. With `PARTITIA_SECRETS_STORE=fnox` it pipes secrets (a GlitchTip DSN now; OIDC client secrets later) to `fnox set` in the app's own `fnox.toml`. fnox then exports them as `PARTITIA_<ENGINE>_*`. For that to work in a space, space setup should provide:
+
+1. **Space-root `fnox.toml`:** at the space root, defining a 1Password provider authenticated by the space's service-account token (`OP_SERVICE_ACCOUNT_TOKEN`). The provider name must be stable and discoverable, so a tool can target it (partitia reads it from `PARTITIA_FNOX_PROVIDER`; a convention or an exported var naming it would be enough). One vault per space.
+2. **Inheritance:** app dirs below the space root inherit that provider. An app's own `fnox.toml` holds only its keys.
+3. **Shell activation:** fnox's shell activation on cd, so `rails console`, runners and jobs see the secrets, not only commands wrapped in `fnox exec`.
+4. **Non-interactive:** with the token set, no 1Password unlock prompt. Today, cd into a dir with a `fnox.toml` prompts for the 1Password password, which blocks agents.
+
+Recorded in partitia's ROADMAP ("Outside this repo"). The person will manually test the fnox → 1Password path once space setup exists.
+
+### What was expected
+
+anfs space setup / wsm setup provides a per-space fnox 1Password provider usable by tools like pt
+
+### What happened
+
+Not yet implemented (input for the upcoming feature)
+
+### Steps to reproduce
+
+n/a (requirements input)
+
+### Diagnostics
+
+- anfs: 0.2.16
+- platform: macos (Darwin 27.0.0, arm64; macOS 27.0.1)
+- bash: 5.3.15(1)-release
+- git: 2.55.0
+- podman: 6.1.1
+
+Sources:
+
+| Source | Commit | Status |
+| --- | --- | --- |
+| anfs-dev | 77ff15d | clean |
+| anfs-admin | 4413964 | clean |
+| lgat | e3ae6b4 | clean |
+| roteoh | a9ec35b | clean |
+| cnfs | 32e4bdf | unpushed |
+| rws | 43a125f | dirty |
+| user | 710b294 | dirty, unpushed |
+| stack | 29e13fb | unpushed |
+| core | b2656a8 | unpushed |
+
+Installed packages:
+
+| Package | Version |
+| --- | --- |
+| anfs-dev/dev | 0.1.15 |
+| cnfs/rails | 0.1.1 |
+| core/anfs | 0.2.16 |
+| core/node | 0.1.0 |
+| core/pcm | 0.3.1 |
+| core/pmm | 0.1.5 |
+| core/podman | 0.1.1 |
+| core/ppm | 0.2.8 |
+| core/psm | 0.1.6 |
+| core/qemu | 0.1.1 |
+| core/varlock | 0.1.2 |
+| core/wsm | 0.1.10 |
+| pdt/pcs | 0.1.0 |
+| pdt/python | 0.1.0 |
+| rws/git | 0.1.0 |
+| spaces/cnfs | 0.1.0 |
+| spaces/rjayroach | 0.1.0 |
+| spaces/rws | 0.1.0 |
+| stack/antigravity | 0.1.1 |
+| stack/bash | 0.1.1 |
+| stack/claude | 0.1.1 |
+| stack/cli | 0.1.0 |
+| stack/firstmate | 0.1.0 |
+| stack/fnox | 0.1.1 |
+| stack/ghostty | 0.1.1 |
+| stack/git | 0.1.2 |
+| stack/herdr | 0.1.1 |
+| stack/nvim | 0.1.1 |
+| stack/obsidian | 0.6.0 |
+| stack/op | 0.1.5 |
+| stack/opencode | 0.1.1 |
+| stack/pi | 0.1.1 |
+| stack/pikvm | 0.1.2 |
+| stack/python | 0.1.0 |
+| stack/rails | 0.1.0 |
+| stack/remotefs | 0.1.1 |
+| stack/ruby | 0.1.2 |
+| stack/ssh | 0.1.3 |
+| stack/tmux | 0.1.0 |
+| stack/ventoy | 0.1.3 |
+| stack/zsh | 0.1.4 |
+| user/anfs | 0.1.0 |
+| user/claude | 0.1.0 |
+| user/git | 0.1.0 |
+| user/pjm | 0.1.0 |
+| user/pvm | 0.1.0 |
+| user/ssh | 0.1.1 |
+| utils/ventoy | 0.1.0 |
+
+Recent failures in the log (~/.local/state/anfs/anfs.log):
+
+```
+2026-10-22T17:33:03-0400 partitia[29190] start: 29190-1792704783 engine check
+2026-10-22T17:33:03-0400 partitia[29190] end: 29190-1792704783 1
+```

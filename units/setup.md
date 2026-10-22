@@ -95,3 +95,11 @@ machine with no browser, and is what the dashboard's forms are made from.
 4. `04-spaces` — after the open questions: a space's setup
 5. `05-forms` — `<tool> __describe <command> --json` (the declarations); the dashboard renders a
    command as a form, and a stack's setup as a wizard
+
+## Input to the space-setup rewrite
+
+- r-20261022-4 (BACKLOG.md, from partitia/cnfs, 2026-10-22): a space's setup gives it a
+  space-root `fnox.toml` whose 1Password provider authenticates with the space's
+  `OP_SERVICE_ACCOUNT_TOKEN` (one vault per space), under a stable or discoverable provider name;
+  app dirs below inherit it (their own `fnox.toml` holds only their keys); fnox's shell
+  activation on cd; no unlock prompt when the token is set. The person asked that it be covered.

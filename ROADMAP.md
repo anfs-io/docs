@@ -98,6 +98,9 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
   - [ ] `setup/02-setup` — `setup:` in `stack.yml`, the runner, its record and reverse — plan to write
   - [ ] `setup/03-steps` — the onboard steps as `add` commands; `anfs onboard` goes — plan to write
   - [ ] open questions 1 and 2 (a space's setup), then `04-spaces`, `05-forms`
+  - input: r-20261022-4 in BACKLOG.md (partitia: a per-space fnox.toml with a 1Password
+    provider on the space's service-account token, a discoverable provider name, inheritance by
+    app dirs, activation on cd, no unlock prompt with the token set); the person wants it covered
 - [ ] `stacks/04-boxes` — a stack onto a container or VM; replaces `dev-source/03-boxes`
 - [ ] `stacks/05-roundtrips`
 
