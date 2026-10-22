@@ -133,6 +133,21 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
 - [ ] **One platform function:** `os()` (macos/linux) and `platform()` (macos/distro) are one
       question; merge them in `lib/anfs/platform.sh` and refactor the callers (moved there, unmerged,
       in linker/02)
+- [ ] **An `anfs-tools` skill in core** (beside `pcm-containers` and `pmm-images`; asked for
+      2026-10-22 from the cnfs session that built `partitia`): writing or changing an anfs tool
+      in `~/.local/bin`, as a short authoring checklist with `ventoy` as the model. What it
+      gathers from AGENTS.md, by link rather than copy: the bootstrap header and lib order, the
+      command line (`cli_cmd`/`cli_group`, kinds and `complete_<kind>`, `--passthrough`), lists
+      ("Lists and --json": first column the resource, `STATUS` second, never `NOTE`), messages
+      and the log, `<tool>.env` and the `config` group, the XDG rule, shell integration (the
+      `sh/` tier, the `cd` wrapper through `_anfs_cd`, `zcomp`), and bats isolation (temp
+      `HOME`, `ANFS_LOG=off`, stubs). Motivation: gem-local had drifted (`NOTE`, fixed in stack
+      764d5b3)
+- [ ] **`pcm show` fails on a created container** (podman 6.1.1): `inspect.sh:199`'s format uses
+      `{{$.Name}}` inside `range .Mounts`, and `$` is now the list of inspect results, so the
+      mounts section errors (`can't evaluate field Name in type []interface {}`). Fix, tested
+      by hand: `{{$n := .Name}}{{range .Mounts}}{{$n}}…`. ("Exited … 292 years ago" is podman's
+      own `ps`, not pcm's)
 
 - [ ] `audit`, in full
 - [ ] `tutorial` — "From dotfiles to deployment"
