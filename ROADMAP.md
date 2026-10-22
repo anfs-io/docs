@@ -120,6 +120,8 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
 - [ ] **ppm audit (after the dust settles):** what ppm still does that predates the anfs tool
       suite and belongs in the shared libraries (candidates: `core.sh`'s helpers, the legacy list
       name hook, the source hooks, anything `file`-like left after linker/03)
+- [ ] **The opt-in shell `mv` wrapper** (`ANFS_SHELL_MV=true`; linker 03 section 5 and
+      `units/linker.md` 3.2): moved here from linker/03 (2026-10-22)
 - [ ] **One platform function:** `os()` (macos/linux) and `platform()` (macos/distro) are one
       question; merge them in `lib/anfs/platform.sh` and refactor the callers (moved there, unmerged,
       in linker/02)
