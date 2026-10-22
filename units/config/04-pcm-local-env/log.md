@@ -49,6 +49,7 @@ core:
 
 stack:
 - `4a5fcaa` containers' docs and comments
+- `4c139e4` `containers/.gitignore` ignores `local.env` at any depth (answer 2 below)
 
 Versions (pre-commit hook): `containers/ui` 0.1.3; stack authentik, cloudflared, dockge, glitchtip,
 n8n, traefik 0.1.1. `packages/pcm` (0.1.10) and `packages/anfs` (0.2.15) already carry an unpushed
@@ -58,7 +59,8 @@ bump (linker/02, config-01), so the hook left them (one bump per unpushed series
 
 - **No `~` expansion in `local.env`**: values are a container's environment (compose's `.env`
   semantics), so `export_env_overrides` uses `anfs_conf_read` as written, not `anfs_load_conf`'s
-  `anfs_conf_expand`. Documented in AGENTS.md and the function's comment.
+  `anfs_conf_expand`. Documented in AGENTS.md and the function's comment. Agreed by the
+  coordinator, 2026-10-22.
 - **`complete_service` requires `compose.yml` in the sources too**, not only in the local
   directory: one rule, the catalogue's.
 - **`pcm validate` checks the local directories on every run**, named services or not (cheap; the
@@ -124,10 +126,12 @@ Everything else is pcm-only or a container's docs.
 
 ## Open questions
 
-1. **`~` in `local.env`** is kept literal (decision above). Say if it should expand like the
-   tools' `.env` files.
-2. **stack's `containers/.gitignore`** ignores `.env`, `.env.local`, `*.local.*`, but not
-   `local.env`; nothing reads a `local.env` inside a clone, so it was left. Add it?
+None left. Answered 2026-10-22 (the coordinator):
+
+1. **`~` in `local.env` stays literal**: agreed, nothing changed.
+2. **stack's `containers/.gitignore` ignores `local.env`** at any depth, with a one-line comment
+   why (a secret put in a clone by mistake is never committed): stack `4c139e4`; checked with
+   `git check-ignore` on `cloudflared/local.env` and a nested one.
 
 ## By hand, for the person after merge
 
