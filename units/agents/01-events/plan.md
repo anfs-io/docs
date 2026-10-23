@@ -2,7 +2,8 @@
 
 Written 2026-10-23 against core main `5bbabac`. Decided with the person 2026-10-23 (the unit,
 `AGENT-NATIVE.md` "Decided", and the six points of the job's brief); the event id became a
-UUIDv7 the same day, and the envelope's spec was asked for here, for other implementations.
+UUIDv7 the same day, and the envelope strict CloudEvents 1.0 (structured JSON, our profile), with its
+spec here for other implementations; NATS with JetStream is the bus from 02, these files its spool.
 
 ## Context — read these files first
 
@@ -18,26 +19,33 @@ The job is `anfs work new agents-01 core docs`. Paths are core's unless they nam
 - wsm: `_spaces_load`, `_spec_parse`/`_spec_match`/`_specs_expand`, `cmd_new`, `cmd_list`
 - `bin/anfs`'s `_rpc_events`/`_rpc_watch`: the toolkit API's watch, from `anfs.log`. Unchanged
 
-## The envelope, version 1 (language-neutral)
+## The envelope: our CloudEvents profile, version 1 (language-neutral)
 
-Every event is one JSON object on one line (JSON Lines, UTF-8, `\n`-terminated), at most 4096
-bytes with its newline. Field names follow CloudEvents where one exists. A writer emits the
-fields in this order (the bash reader relies on it; a reader in another language need not):
+Every event is one **CloudEvents 1.0** event in the **structured JSON format**, on one line (JSON
+Lines, UTF-8, `\n`-terminated), at most 4096 bytes with its newline. The file holds exactly one
+CloudEvent per line, so a shipper (02) sends each line as it is.
 
-| Field | Type | Meaning |
+| Attribute | CloudEvents | Value |
 | --- | --- | --- |
-| `id` | string | A UUIDv7 (RFC 9562), lower-case, hyphenated: 48 bits of Unix time in milliseconds, version `7`, 12 random bits, variant `10`, 62 random bits. Unique without coordination; ordering ids as strings orders events by time to the millisecond (ties in the same millisecond are in no order) |
-| `time` | string | When it happened, UTC, RFC 3339 with milliseconds and `Z`: `2026-10-23T16:55:23.533Z`; the same millisecond as `id` |
-| `space` | object | Where the event is filed. `id`: the space's id (below), or `null` for the host scope; `path`: the space's path as wsm names it (`anfs-dev`, `cnfs/apps`), informational only, or `null`. **`space.id` is the identity**: a path changes with `wsm move`, an id never does |
-| `type` | string | `<noun>.<verb>[.<more>]`, lower case: `report.filed`. Matches `^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$` |
-| `subject` | string or null | What it is about, in the type's own terms (`r-20261023-1`, `acme/core#42`) |
-| `by` | object | `actor`: who acted (`claude:2e9431a0`, `shell:rob`; never null); `as`: the role it acted as, `{"space": <space id or null>, "role": "<name>"}`, or `null` |
-| `data` | object | What changed: string keys (`^[A-Za-z_][A-Za-z0-9_]*$`), string values. `{}` when none |
-| `v` | number | `1`, this version. A reader skips a line whose `v` it does not know |
+| `specversion` | required | `"1.0"` |
+| `id` | required | A UUIDv7 (RFC 9562), lower case, hyphenated: 48 bits of Unix time in milliseconds, version `7`, 12 random bits, variant `10`, 62 random bits. Unique without coordination; ordering ids as strings orders events by time to the millisecond (ties within a millisecond are in no order) |
+| `source` | required | `/anfs/spaces/<space id>`, or `/anfs/host` for the host scope. The space id is the identity |
+| `type` | required | `io.anfs.<noun>.<verb>`, lower case: `io.anfs.report.filed`. The short form (`report.filed`) is what code emits and what `--type` takes; it matches `^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$` |
+| `subject` | optional | What it is about, in the type's own terms (`r-20261023-1`, `acme/core#42`) |
+| `time` | optional, always set | UTC, RFC 3339 with milliseconds and `Z`: `2026-10-23T16:55:23.533Z`; the same millisecond as `id` |
+| `datacontenttype` | optional, always set | `"application/json"` |
+| `actor` | extension, always set | Who acted: `claude:2e9431a0`, `shell:rob` |
+| `actorspace` | extension | The space id of the role it acted as |
+| `actorrole` | extension | The role it acted as (`maintainer`) |
+| `spacepath` | extension | The space's path as wsm named it when written (`anfs-dev`, `cnfs/apps`): informational only; it changes with `wsm move`, the id never does |
+| `anfsv` | extension, always set | `1`, this profile's version. A reader skips an event whose `anfsv` it does not know |
+| `data` | | An object: string keys (`^[A-Za-z_][A-Za-z0-9_]*$`), string values; `{}` when none |
 
-Rules: nothing in the envelope depends on the host or on a file path (no host name, no
-directory); a reader ignores fields it does not know and lines that are not JSON objects; an
-event is never rewritten or deleted by a tool.
+Rules: an optional attribute with no value is left out (never `null`); extensions are scalars with
+lower-case alphanumeric names, as CloudEvents requires; nothing depends on the host or a file
+path; a reader ignores attributes it does not know and lines that are not events of this profile;
+no tool rewrites or deletes an event. The bash writer puts the attributes in the order above with
+`data` last, and the bash reader relies on that; a reader in another language need not.
 
 **A space id** is 10 characters from `a-z0-9` (the generator uses `a-z2-7`, as ovm's vault ids),
 written once as `id:` in the space's `space.yml`, never changed, kept by `wsm move` (it travels
@@ -46,7 +54,7 @@ with the file).
 Example:
 
 ```json
-{"id":"019a1234-5678-7abc-9def-0123456789ab","time":"2026-10-23T16:55:23.533Z","space":{"id":"k3x7q2mbzp","path":"anfs-dev"},"type":"report.filed","subject":"r-20261023-1","by":{"actor":"claude:2e9431a0","as":null},"data":{"package":"core/pcm","title":"pcm run drops env","to":"file"},"v":1}
+{"specversion":"1.0","id":"01a169b7-85e8-74aa-8809-456f41f40289","source":"/anfs/spaces/k3x7q2mbzp","type":"io.anfs.report.filed","subject":"r-20261023-1","time":"2026-10-23T17:03:17.480Z","datacontenttype":"application/json","actor":"claude:2e9431a0","spacepath":"anfs-dev","anfsv":1,"data":{"package":"core/pcm","title":"pcm run drops env","to":"file"}}
 ```
 
 ## Space ids
@@ -67,21 +75,24 @@ Example:
 
 Functions only, the bash floor, no tool's code (like `repo.sh`). anfs and wsm source it.
 
-`anfs_emit [--at DIR|--host] <type> <subject> [key=value...]` appends one envelope line.
+`anfs_emit [--at DIR|--host] <type> <subject> [key=value...]` appends one event line (the short
+type). The envelope is built in one function (`_anfs_ev_envelope`) and read through one accessor
+(`_anfs_ev_parse`), so a change to the profile is made in one place.
 
 - **The space**: `--host` is the host scope; `--at DIR` the nearest `space.yml` at or above DIR
   (what `anfs report` uses, so the owner space wins over the caller's); else `ANFS_SPACE` (a space
   path: `$WSM_SPACES_HOME/<path>/space.yml`, else `<sources>/<source>/spaces/<rest>/space.yml`);
   else the nearest `space.yml` at or above the current directory; else the host scope. A space
-  whose path cannot be named (outside the tree and the sources) has `path: null`. A space with no
-  valid id: a warning (`wsm id --new <path>`), and the event goes to the host scope with its path.
+  whose path cannot be named (outside the tree and the sources) has no `spacepath`. A space with no
+  valid id: a warning (`wsm id --new <path>`), and the event goes to the host scope with its
+  `spacepath`.
   `WSM_SPACES_HOME` is read from the environment, else wsm's two settings files, else `~/spaces`.
-- **`by.actor`**: `ANFS_ACTOR`; else detected: Claude Code (`CLAUDECODE=1`) is `claude:<the first
+- **`actor`**: `ANFS_ACTOR`; else detected: Claude Code (`CLAUDECODE=1`) is `claude:<the first
   8 characters of CLAUDE_CODE_SESSION_ID>` (`claude` without one); else `AI_AGENT` (a harness that
   sets it, e.g. `claude-code_2-1-296_agent`) is its part before the first `_`; else `shell:$USER`.
   Only Claude Code was seen here; other harnesses set `ANFS_ACTOR` until dispatch (02) does it.
-- **`by.as`**: `ANFS_AS=<space path>/<role>`, stored as `{"space": <that space's id>, "role":
-  <role>}`; a role that is not `^[a-z0-9][a-z0-9._-]*$` is a warning and `as: null`.
+- **`actorspace`, `actorrole`**: from `ANFS_AS=<space path>/<role>` (the space's id, the role); a
+  role that is not `^[a-z0-9][a-z0-9._-]*$` is a warning and both are left out.
 - **The file**: `${XDG_STATE_HOME:-~/.local/state}/anfs/events/<space id>/<YYYY-MM>.jsonl` (UTC
   month), `events/host/` for the host scope. The directory is made when missing.
 - **Atomic, no locks**: the line is written by one `write(2)` with `O_APPEND` (`cat >> file <<<
@@ -105,7 +116,7 @@ caller fills).
 | `wsm events ls [SPEC...]` | the space around `.` when none; a SPEC as wsm resolves it (`_specs_expand`: an id is that space, `x/` the subtree); a space without an id is a warning |
 | `anfs events ls [SPEC...] [--all]` | none, or `--all`: every scope under `events/`, the host's included; with SPECs, `wsm __event_spaces SPEC...` (plumbing) resolves them; SPECs and `--all` together are 64 |
 
-Options: `--type GLOB` (a shell glob: `report.*`), `--subject S` (exact), `--since DUR|TIME`
+Options: `--type GLOB` (a shell glob, short or full: `report.*`, `io.anfs.report.*`), `--subject S` (exact), `--since DUR|TIME`
 (`30s`, `10m`, `2h`, `7d`; or `YYYY-MM-DD[THH:MM[:SS]][Z]`, UTC), `--by GLOB` (the actor),
 `--after ID` (ids greater than it, so later in time), `-f|--follow`, `--once` (with `-f` only:
 print the first match and exit 0, the backlog included, which is how an agent waits), `--json`
@@ -130,6 +141,14 @@ print the first match and exit 0, the backlog included, which is how an agent wa
 - `close`: `report.closed <id> commit=<sha> source=<source>`, into the same scope.
 - `wait` stays as it is; its help, the skill and AGENTS.md name the event way: `wsm events ls -f
   --once --type report.closed --subject <id>`.
+
+## What comes next (02)
+
+The bus is NATS with JetStream (`core/nats`, native on the host), and `core/anfsd` ships these
+files to it. So the files are the **spool** (emitting writes a file and never waits on the bus,
+never fails because of it) and stay a **greppable mirror**. Nothing in 01 may make a line anything
+but one CloudEvent ready to send as is: no framing, no local-only fields, no rewriting. The
+reader `events ls` stays for a host without the daemon and for a person's shell.
 
 ## Files
 
