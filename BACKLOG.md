@@ -936,10 +936,6 @@ Recent failures in the log (~/.local/state/anfs/anfs.log):
   a bats test, so that watch assertion checks nothing (found in toolkit-api/06-watch-loop; the
   new test there counts instead). Grep the suites for other bare `! cmd` lines.
 
-- `anfs report` ids (`r-YYYYMMDD-N`) are counted per sink file, so two sinks give the same id;
-  as event subjects they collide (2026-10-23: a smoke test to a scratch file emitted
-  `report.filed r-20261023-1`, the id of a real report in BACKLOG.md). Make report ids unique per
-  space (or UUIDv7) in agents/02, when BACKLOG.md becomes a view.
 - Space ids (agents/01): only anfs-dev has one. To do by hand: `wsm id --new` for anfs-admin,
   lgat/*, roteoh, rws, user/evals (each commits in its own source repo; user and rws are the
   person's); cnfs/* asked of the cnfs session.
