@@ -190,3 +190,15 @@ anfsd` (the row says `off`, which is not a failure).
    sees, or the ui can list once on `podman.connected`, which it does anyway.
 3. Podman's `health_status` arrives every check (here about 30,000 a day). anfsd reads and drops
    them in a few microseconds each, but it is the one steady input with podman connected.
+
+## Follow-up: away does not fail status
+
+Open question 1, settled (job `bus-podman-away`, core `acc1ea8`): the `podman` row's `away` is
+soft, like `off`. The row still reads `podman  away  <podman's error>; next try <time> (on macOS:
+podman machine start)`, but `anfs bus status` exits 0 for it. Decision 5's "`away` makes the exit
+1" and by-hand step 5's "(exit 1)" no longer hold. Real faults still exit 1: NATS or anfsd down,
+the shipper lagging, an invalid dispatch rule, no `podman.json` from an older anfsd, and the row's
+`stopped` when anfsd is not running. Only core changed (`anfs-bus`, AGENTS.md, anfsd's README,
+bus.bats: away now asserts exit 0); runtime's `podman.json` is unchanged. anfsd stays 0.3.0 (the
+hook: not pushed since it was new). Tests: bus.bats 13 passing; `packages/anfs/tests/all` 741
+passed, 0 failed.
