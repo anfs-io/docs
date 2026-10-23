@@ -92,10 +92,10 @@ They are A2A 1.0's task states (submitted, working, completed, failed, canceled,
 
 | Harness | Command |
 | --- | --- |
-| claude | `claude -p <prompt> --output-format stream-json --verbose --permission-mode dontAsk --settings <run dir>/claude.json --add-dir <each access path> [--model M] [--max-budget-usd N] --name <rule>:<run>`. `claude.json`: `permissions.allow` (`Read`/`Edit`/`Write` for the job and the job's TMPDIR, `Read` for read paths, `Edit`/`Write` for write paths, `Bash`), `permissions.deny` (the list below, as `Bash(<cmd>:*)`), `sandbox.enabled: true` with the same write paths. The summary is the stream's `result` |
+| claude | `claude -p --output-format stream-json --verbose --permission-mode dontAsk --settings <run dir>/claude.json --add-dir <each path beyond the cwd> [--model M] [--max-budget-usd N] --name <rule>:<run> -- <prompt>` (corrected at 02b's start against 2.1.296's `--help`: `-p` takes no value and `--add-dir` takes several, so the prompt goes last, after `--`). `claude.json`: `permissions.defaultMode: dontAsk`, `permissions.allow` (`Read` for every path, `Edit`/`Write` for the job, its TMPDIR and the write paths, `Bash`), `permissions.deny` (the list below, as `Bash(<cmd>)` and `Bash(<cmd>:*)`), `sandbox` with `enabled: true`, `failIfUnavailable: true` (a missing backend fails, not an unconfined shell), `allowUnsandboxedCommands: false`, `filesystem.allowWrite` the write paths (keys from 2.1.296's binary). Under `-p` a settings file that fails validation is silently ignored (its `--help`): anfsd writes it from a struct and its tests hold its shape; that 2.1.296 loads it was not run here (no harness is started in this job): the person's first run shows it. The summary is the stream's `result` |
 | opencode | `opencode run --format json --dir <cwd> [--model M] <prompt>` with `OPENCODE_CONFIG_CONTENT`: `permission.external_directory` (each access path `allow`, `*` `deny`), `permission.bash` (the denials `deny`, `*` `allow`). The summary is the last text event |
 | pi | `pi -p --mode json [--model M] <prompt>`; a rule whose access is only `read` adds `--tools read,grep,find,ls,bash`. Not enforced (plan.md, 5): `anfs agents rules` marks pi rules `unenforced` |
-| antigravity | `agy -p <prompt> --sandbox --add-dir <each access path> --print-timeout <timeout>` (macOS). No read/write split: marked `partial` |
+| antigravity | `agy -p <prompt> --sandbox --add-dir <each access path> --print-timeout <timeout>` (macOS). No read/write split: marked `partial`. At 02b's start `agy --help`, `-h` and `--version` (1.3.3) all hung with no output (10 s each, stdin `/dev/null`): the flags are from its binary's strings and changelog, not verified by its help; an expired `--print-timeout` exits 0 with the partial answer, so anfsd's own timeout is what fails the run. `anfs bus status` never asks agy's version |
 
 **What a dispatched agent may not do before 04** (denied to every harness that can deny, and said
 in every footer): `git push`; `ppm install|remove`; `anfs install|remove|implode|src update`;
@@ -105,7 +105,9 @@ push and close are the person's, or this session's acting for them.
 
 The first task of the job: check the claude and agy rows against the installed versions (a
 `--settings` file with `sandbox` and `permissions` loads under `-p`; `agy -p` runs headless
-without hanging); what does not hold is a finding in the log, and the table is corrected.
+without hanging); what does not hold is a finding in the log, and the table is corrected. (Done
+with `--help` only, no harness started: the person's instruction for the job. The rows above are
+the corrected ones; `02b-log.md` has the findings.)
 
 ## Supervision and `anfs agents` (core/anfsd's `anfs-agents`)
 

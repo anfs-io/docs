@@ -76,10 +76,13 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         per layer (`io.anfs.*`, `io.cnfs.*`, `io.lgat.*`) and the spool as a way in for any language; what cnfs's
         Rails component (on cnfs's roadmap) builds against
   - Retiring today's improvisations (in the plans named): the BACKLOG grep watcher → a dispatch
-    rule on `report.filed` (02); "cnfs must SendMessage anfs-dev" → the role's inbox (02/04, the
-    rule withdrawn then); `anfs report wait`'s git polling → `wsm events ls -f --once` (event route
-    in 01, polling removed in 02); BACKLOG.md stays as a view the bus writes, `ANFS_REPORT_TO`
-    naming the sink (02)
+    rule on `report.filed` (done in 02b: anfs-dev's `fix-core-report` and `fix-stack-report`,
+    committed `enabled: false` until the person turns them on; then the grep session ends);
+    "cnfs must SendMessage anfs-dev" → the role's inbox (02/04, the rule withdrawn then); `anfs
+    report wait`'s git polling → `wsm events ls -f --once` (event route in 01, polling removed in
+    02a); BACKLOG.md stays as a view the bus writes, `ANFS_REPORT_TO` naming the sink (done in
+    02b: the records in STATE, anfsd's sink renders them; report ids unique per space, which ends
+    the r-YYYYMMDD-N collision)
 - [x] `stack/go` — merged 2026-10-23 (`units/agents/00-stack-go/log.md`; go1.27.3 here) — Go through mise, like `stack/ruby`; pulled in by `anfs-dev/dev` (for agents/02)
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
       `ppm move` (and its tests) to be discussed first
