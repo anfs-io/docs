@@ -170,22 +170,49 @@ End to end, replacing today's improvisation and nothing more:
 Done when: cnfs files a report, nobody is watching, and the fix's availability reaches cnfs's
 inbox with no human or session in the middle except where an approval is declared.
 
+## Decided (the person, 2026-10-23)
+
+- **A space is where agents work together; a human is invited in.** The direction of travel of
+  chorus ("inviting agents into the space"), now in anfs. The space is the unit of everything
+  above: identity, topics, inbox, grants, dispatch, approvals.
+- **Identity is `<space>/<role>`**: `anfs-dev/maintainer` (or `developer`), an operator role in
+  `anfs-admin` for deploy and infrastructure. Sessions attach to a role; the role persists, has the
+  inbox and holds the grants. The person is an identity too, invited into spaces, with an inbox;
+  approvals are events addressed to them.
+- **Approvals are per-space policy, in `space.yml`, and evolve as trust grows**:
+
+  ```yaml
+  approvals:          # who must approve: person, or auto
+    merge: person
+    install: person
+    push: person
+  ```
+
+  anfs-dev starts with all three `person`. A space that needs less hand-holding moves steps to
+  `auto` over time. **No agent can change its own space's `approvals:`**: editing the policy always
+  needs the person, whatever the policy says.
+
+## Recommended, pending the person
+
+- **The daemon's language: Go** (Rust the alternative). The daemon is a network and process
+  supervisor (sockets, fan-out, tailing JSONL, file watches, `podman events`, starting and
+  supervising agents, launchd/systemd), which is Go's home ground (podman, Docker, NATS and Consul
+  are Go): goroutines for fan-out, one static binary per platform, podman's client libraries. Rust
+  fits as well at runtime but iterates slower; sharing a language with LGAT's Solana programs is a
+  small gain (Anchor/BPF is its own world). Ruby would put a runtime on every host. Whatever the
+  language, **the daemon stays thin**: tools stay bash and emit events through one `lib/anfs`
+  function; the daemon tails, fans out, enforces grants and rate limits, and dispatches. How ppm
+  installs a compiled binary (build through mise, or prebuilt releases) is for the plan.
+
 ## Open questions
 
-1. **The daemon's language.** Bash is a poor fit for a long-lived fan-out process. Ruby (as the
-   ui), a small Go binary, or bash with FIFOs (simplest, fragile). Affects install, the bats
-   suites, and macOS/Linux parity.
-2. **The event schema**: the minimal fields, ids, versioning, and how tools emit (a `lib/anfs`
-   function beside the log call?).
-3. **What an agent's identity is**: a role (`anfs-dev/maintainer`) that many sessions can fill, or
-   a session? Probably the role, with sessions attaching to it.
-4. **Where the log lives** (STATE per the XDG rule: `~/.local/state/anfs/events/<space>/...`?),
+1. **The event schema**: the minimal fields, ids, versioning, and the `lib/anfs` emit function.
+2. **Where the log lives** (STATE per the XDG rule: `~/.local/state/anfs/events/<space>/...`?),
    retention and rotation.
-5. **Approvals**: which steps need the person (merge? host installs? push?), expressed as events,
-   and how the person sees and answers them (the ui, a CLI, a notification).
-6. **Grants across spaces**: declared where, by whom, and how cnfs's agents authenticate (the
-   token model of the toolkit API extended per agent?).
-7. **How this orders against setup and deploy**: spaces as agent homes ties it to setup; deploy's
+3. **How the person sees and answers approvals**: the ui, a CLI (`anfs inbox`?), a notification.
+4. **Grants across spaces**: declared where, by whom, and how a role authenticates (the toolkit
+   API's token model, per role?).
+5. **How this orders against setup and deploy**: spaces as agent homes ties it to setup; deploy's
    own events (r-20261022-7) would be the bus's third client.
 
 ## Roadmap impact (proposal)
