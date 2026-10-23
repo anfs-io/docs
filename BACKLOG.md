@@ -944,3 +944,8 @@ Recent failures in the log (~/.local/state/anfs/anfs.log):
   the agents unit (beads vs work items/records, firstmate vs dispatch/supervision/approvals,
   treehouse worktrees vs `anfs work` jobs), as a learning exercise first. Not before the original
   agents plan is done.
+
+- core `rpc.bats` "a group's list is a read" failed once in the full suite during agents/03 (passed
+  12 reruns, 8 in parallel): flaky, not tracked down.
+- ppm, pmm, wsm and psm emit no events yet, so anfs-ui shows their changes made in a terminal
+  only at its 5-minute reconcile (agents/03). A follow-up plan: emitters in those tools.

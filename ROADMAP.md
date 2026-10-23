@@ -66,7 +66,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         --user); `core/anfsd` (Go, `anfs-io/runtime` `go/`, prebuilt and pinned) ships the JSONL
         spool into it, runs dispatch rules and supervises agents (not a broker); `access:` in
         `space.yml` given to the harness at dispatch
-  - [ ] `agents/03-ui` — anfs-ui on events and `podman events`, its polling a slow reconcile; the
+  - [ ] `agents/03-ui` — merged and running here 2026-10-23 (bus connected, events page live; the person's acceptance test pending) — anfs-ui on events and `podman events`, its polling a slow reconcile; the
         person's first acceptance test of the bus
   - [ ] `agents/04-inbox` — approvals as events; `anfs inbox`; per-space `approvals:` (the ui shows
         them)
