@@ -817,3 +817,117 @@ Installed packages:
 | user/pvm | 0.1.0 |
 | user/ssh | 0.1.1 |
 | utils/ventoy | 0.1.0 |
+
+## r-20261023-1 wsm repo push: accept a space spec (cnfs/) like repo list; hint for a bare id with no repositories
+
+Status: fixed in core 589bacf (2026-10-23)
+
+Package: `core/wsm`
+
+Feature request (wsm 0.10.0): `wsm repo push` should take a space spec, as `wsm repo list` already does.
+
+**Today:**
+- `wsm repo list cnfs/` lists every repository under the cnfs spaces.
+- `wsm repo push -n cnfs/` fails with `wsm: no repository 'cnfs/' (wsm repo ls)`. push accepts only exact repository names (`cnfs/partitia/partitia`) or `--all`.
+- `--all` spans every space: on this machine `wsm repo push -n --all` would also push 80 commits in anfs-dev's `docs`. Pushing "everything in this project" has no safe scoped form.
+
+**Requested:**
+1. `wsm repo push [--all] [-n] [spec|repository]...`. Each argument is an exact repository name (as `repo list` prints it) or a space spec resolved exactly as `repo list` resolves it: an id like `cnfs/partitia` (that space), or a prefix ending in `/` like `cnfs/` (every space below it). Push the repositories that are ahead of their upstream; `-n` shows what would be pushed, as today.
+2. Keep the existing spec semantics (bare id = that space, trailing `/` = the subtree), consistent with `install` and `list`. Add a hint for the common mistake: a bare id naming a space with no repositories of its own, whose children have some (`wsm repo list cnfs` prints nothing today), should say `no repositories in space 'cnfs'; did you mean cnfs/?` rather than nothing or an error.
+
+Use case: after a working session across cnfs/partitia, cnfs/appwork and cnfs/apps (testbed, showcase), `wsm repo push cnfs/` pushes exactly that project's repositories.
+
+### What was expected
+
+wsm repo push -n cnfs/ pushes the repositories under the cnfs spaces that are ahead of upstream
+
+### What happened
+
+wsm: no repository 'cnfs/' (push accepts only exact repository names or --all, which spans every space)
+
+### Steps to reproduce
+
+wsm repo list cnfs/   # works; wsm repo push -n cnfs/   # fails
+
+### Diagnostics
+
+- anfs: 0.2.16
+- platform: macos (Darwin 27.0.0, arm64; macOS 27.0.1)
+- bash: 5.3.15(1)-release
+- git: 2.55.0
+- podman: 6.1.1
+
+Sources:
+
+| Source | Commit | Status |
+| --- | --- | --- |
+| anfs-dev | 77ff15d | clean |
+| anfs-admin | 4413964 | clean |
+| lgat | e3ae6b4 | clean |
+| roteoh | a9ec35b | clean |
+| cnfs | 076e5b0 | dirty |
+| rws | 43a125f | dirty |
+| user | 710b294 | dirty |
+| stack | 4cdcf1b | clean |
+| core | f54fb97 | clean |
+
+Installed packages:
+
+| Package | Version |
+| --- | --- |
+| anfs-dev/dev | 0.1.15 |
+| cnfs/rails | 0.1.2 |
+| core/anfs | 0.2.16 |
+| core/node | 0.1.0 |
+| core/pcm | 0.4.0 |
+| core/pmm | 0.1.5 |
+| core/podman | 0.1.1 |
+| core/ppm | 0.2.8 |
+| core/psm | 0.1.6 |
+| core/qemu | 0.1.1 |
+| core/varlock | 0.1.2 |
+| core/wsm | 0.1.10 |
+| pdt/pcs | 0.1.0 |
+| pdt/python | 0.1.0 |
+| rws/git | 0.1.0 |
+| spaces/cnfs | 0.1.0 |
+| spaces/rjayroach | 0.1.0 |
+| spaces/rws | 0.1.0 |
+| stack/antigravity | 0.1.1 |
+| stack/bash | 0.1.1 |
+| stack/claude | 0.1.1 |
+| stack/cli | 0.1.0 |
+| stack/firstmate | 0.1.0 |
+| stack/fnox | 0.1.1 |
+| stack/ghostty | 0.1.1 |
+| stack/git | 0.1.2 |
+| stack/herdr | 0.1.1 |
+| stack/nvim | 0.1.1 |
+| stack/obsidian | 0.6.0 |
+| stack/op | 0.1.5 |
+| stack/opencode | 0.1.1 |
+| stack/pi | 0.1.1 |
+| stack/pikvm | 0.1.2 |
+| stack/python | 0.1.0 |
+| stack/rails | 0.1.1 |
+| stack/remotefs | 0.1.1 |
+| stack/ruby | 0.1.2 |
+| stack/ssh | 0.1.3 |
+| stack/tmux | 0.1.0 |
+| stack/ventoy | 0.1.3 |
+| stack/zsh | 0.1.4 |
+| user/anfs | 0.1.0 |
+| user/claude | 0.1.0 |
+| user/git | 0.1.0 |
+| user/pjm | 0.1.0 |
+| user/pvm | 0.1.0 |
+| user/ssh | 0.1.1 |
+| utils/ventoy | 0.1.0 |
+
+Recent failures in the log (~/.local/state/anfs/anfs.log):
+
+```
+2026-10-23T00:13:11-0400 wsm[74868] error: no repository 'cnfs/' (wsm repo ls) (exit 1)
+2026-10-23T00:13:11-0400 wsm[74868] start: 74868-1792728791 repo push -n cnfs/
+2026-10-23T00:13:11-0400 wsm[74868] end: 74868-1792728791 1
+```
