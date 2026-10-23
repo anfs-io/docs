@@ -709,3 +709,111 @@ Recent failures in the log (~/.local/state/anfs/anfs.log):
 2026-10-22T18:09:47-0400 pcm[7230] start: 7230-1792706987 down valkey
 2026-10-22T18:09:53-0400 pcm[7230] end: 7230-1792706987 1
 ```
+
+## r-20261022-7 infra tooling: what cnfs apps need for production deploy (provision parity with pcm, one app def across footprints, wildcard subdomains, per-tenant migrations)
+
+Status: open
+
+Package: `user/anfs`
+
+Requirements input from cnfs (partitia + appwork apps) for anfs's generic infrastructure tooling (production deploy to EC2, local Proxmox VM, containers, later k3s). It isn't a bug. The user asked for our considered view of what would make deployment easy, in priority order:
+
+1. **The same provisioning interface in production as pcm has in dev.** `cnfs services` (formerly `pt services`) calls `pcm provision <service> --as cnfs/<app> key=value…` and reads KEY=VALUE (e.g. authentik → ISSUER, CLIENT_ID; glitchtip → DSN). Engines declare what they need in gemspec metadata (`partitia.services`: authentik, telemetry, glitchtip). If production provisioning took the same args and returned the same keys for a given target, the app tooling would need no deploy-specific code. anfs maps a service name to its provider per footprint: the pcm container in dev; managed Postgres, a shared Authentik or a hosted error tracker in prod.
+2. **One app definition, many footprints.** The app ships a Dockerfile (Rails 8 generates one) plus one small declaration: processes (web, jobs), health check (`/up`), release command (migrations), and the services it needs. Each footprint is a target with a profile (EC2, Proxmox VM, local containers, k3s); no per-footprint config in the app. Kamal under the hood for VM footprints, or Helm for k3s, is anfs's call; just no hand-written config per footprint.
+3. **pcm-style commands, scriptable.** deploy, status, logs, exec (a production `rails console`), run (one-off), snapshot, rollback. Non-interactive, safe to rerun, `--json`. That lets agents operate it.
+4. **Secrets from the space.** Values from the space's 1Password through fnox, delivered to the running app as environment variables, never baked into images. A rotation story would be nice. This extends r-20261022-4 to production.
+5. **Wildcard subdomains.** partitia-tenanted resolves tenants from subdomains, so every footprint needs wildcard DNS and wildcard TLS (DNS-01) for `*.app.example.com`. Custom domains per tenant come later. Without this, multi-tenant apps can't deploy.
+6. **Releases that know about data.** Snapshot, migrate, deploy behind the health check, roll back on failure. With one database per tenant, "migrate" is N migrations: a tracked job with progress and per-tenant failure handling. Backups per tenant, ideally continuous (e.g. Litestream if SQLite stays in production).
+7. **Observability in every footprint.** An OTel collector, an error tracker and a log sink, with endpoints handed to the app as in #1, so partitia-telemetry works unchanged.
+8. **A skill and a report path,** like pcm-containers and `anfs report`, so agents can use it from day one.
+
+Open design question on our side that interacts with footprints: SQLite per tenant fits VM footprints with persistent disks, but is awkward on k3s (single writer, RWO volumes). Footprint choices may push production to Postgres. We'll settle that early in our D7 (production deploy).
+
+Recorded in partitia's ROADMAP under D7.
+
+### What was expected
+
+anfs infrastructure tooling covers these app needs
+
+### What happened
+
+Requirements input; infra tooling under development
+
+### Steps to reproduce
+
+n/a (requirements input)
+
+### Diagnostics
+
+- anfs: 0.2.16
+- platform: macos (Darwin 27.0.0, arm64; macOS 27.0.1)
+- bash: 5.3.15(1)-release
+- git: 2.55.0
+- podman: 6.1.1
+
+Sources:
+
+| Source | Commit | Status |
+| --- | --- | --- |
+| anfs-dev | 77ff15d | clean |
+| anfs-admin | 4413964 | clean |
+| lgat | e3ae6b4 | clean |
+| roteoh | a9ec35b | clean |
+| cnfs | 9f39e64 | clean |
+| rws | 43a125f | dirty |
+| user | 710b294 | dirty |
+| stack | eb4dce1 | clean |
+| core | f54fb97 | clean |
+
+Installed packages:
+
+| Package | Version |
+| --- | --- |
+| anfs-dev/dev | 0.1.15 |
+| cnfs/rails | 0.1.2 |
+| core/anfs | 0.2.16 |
+| core/node | 0.1.0 |
+| core/pcm | 0.4.0 |
+| core/pmm | 0.1.5 |
+| core/podman | 0.1.1 |
+| core/ppm | 0.2.8 |
+| core/psm | 0.1.6 |
+| core/qemu | 0.1.1 |
+| core/varlock | 0.1.2 |
+| core/wsm | 0.1.10 |
+| pdt/pcs | 0.1.0 |
+| pdt/python | 0.1.0 |
+| rws/git | 0.1.0 |
+| spaces/cnfs | 0.1.0 |
+| spaces/rjayroach | 0.1.0 |
+| spaces/rws | 0.1.0 |
+| stack/antigravity | 0.1.1 |
+| stack/bash | 0.1.1 |
+| stack/claude | 0.1.1 |
+| stack/cli | 0.1.0 |
+| stack/firstmate | 0.1.0 |
+| stack/fnox | 0.1.1 |
+| stack/ghostty | 0.1.1 |
+| stack/git | 0.1.2 |
+| stack/herdr | 0.1.1 |
+| stack/nvim | 0.1.1 |
+| stack/obsidian | 0.6.0 |
+| stack/op | 0.1.5 |
+| stack/opencode | 0.1.1 |
+| stack/pi | 0.1.1 |
+| stack/pikvm | 0.1.2 |
+| stack/python | 0.1.0 |
+| stack/rails | 0.1.1 |
+| stack/remotefs | 0.1.1 |
+| stack/ruby | 0.1.2 |
+| stack/ssh | 0.1.3 |
+| stack/tmux | 0.1.0 |
+| stack/ventoy | 0.1.3 |
+| stack/zsh | 0.1.4 |
+| user/anfs | 0.1.0 |
+| user/claude | 0.1.0 |
+| user/git | 0.1.0 |
+| user/pjm | 0.1.0 |
+| user/pvm | 0.1.0 |
+| user/ssh | 0.1.1 |
+| utils/ventoy | 0.1.0 |

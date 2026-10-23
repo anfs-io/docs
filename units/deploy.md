@@ -88,3 +88,12 @@ deployments/web/
 - `anfs install <source>` installs a source's targets and deployments in dependency order
   (`PDM_INSTALL=validate` for the round trips), and `anfs implode` leaves nothing of pdm's.
 - CLAUDE.md documents both kinds, the contract and the `--json` keys.
+
+## Input from consumers
+
+- r-20261022-7 (BACKLOG.md, from cnfs, 2026-10-22, at the person's request): production
+  provisioning with the same interface as `pcm provision` (same args, same KEY=VALUE per
+  service); one app definition (Dockerfile plus a small declaration) across footprints;
+  pcm-style scriptable commands; secrets from the space via fnox (see r-20261022-4 in
+  `units/setup.md`); wildcard DNS/TLS for tenant subdomains; per-tenant migration and backup as
+  part of a release.

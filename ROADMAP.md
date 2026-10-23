@@ -110,6 +110,9 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
 - [ ] `container-images/02-pcm-image` — plan to write
 - [ ] `toolkit-api` — first settle its questions 2 and 3; plans to write
 - [ ] `deploy` — moved to `ROADMAP-apps.md` section 2 (2026-10-19), as `pim`
+  - input: r-20261022-7 in BACKLOG.md (cnfs: production provisioning with `pcm provision`'s
+    interface, one app definition across footprints, pcm-style commands, secrets from the space
+    via fnox, wildcard DNS/TLS for tenant subdomains, per-tenant migration and backup in releases)
 - [ ] `metal` — plans to write
 
 ### Last
