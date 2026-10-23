@@ -61,12 +61,14 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
   - [ ] `agents/01-events` — space ids; `lib/anfs/events.sh` (`anfs_emit`, the JSONL log in
         STATE by space id); `wsm events ls` and `anfs events ls` (`-f`, `--once`); `anfs report`
         emits `report.*`
-  - [ ] `agents/02-daemon` — `anfsd` in Go (`anfs-io/runtime`, `go/`; prebuilt binaries, pinned):
-        subscriptions and push, dispatch rules, rate limits; `access:` in `space.yml` given to the
-        harness at dispatch
+  - [ ] `agents/02-daemon` — the bus is NATS + JetStream (a `stack/nats` package, launchd /
+        systemd); `anfsd` in Go (`anfs-io/runtime`, `go/`; prebuilt binaries, pinned) ships the
+        JSONL spool into it, runs dispatch rules and supervises agents (not a broker); `access:`
+        in `space.yml` given to the harness at dispatch
   - [ ] `agents/03-inbox` — approvals as events; `anfs inbox`; per-space `approvals:`
   - [ ] `agents/04-ui` — anfs-ui on events and `podman events`, its polling a slow reconcile
-  - [ ] `agents/05-spec` — the envelope as a standalone, language-neutral spec (`v: 1`) with
+  - [ ] `agents/05-spec` — our CloudEvents 1.0 profile (types, extensions, NATS subjects) as a
+        standalone, language-neutral spec (`anfsv: 1`) with
         conformance examples (event files any implementation must accept and produce); what cnfs's
         Rails component (on cnfs's roadmap) builds against
   - Retiring today's improvisations (in the plans named): the BACKLOG grep watcher → a dispatch

@@ -131,8 +131,10 @@ was stuck on.
    are sinks.
 3. **Harness-agnostic.** Nothing depends on one agent CLI. Dispatch launches any harness the space
    allows; inboxes are anfs's, not the harness's.
-4. **Local first, one host.** No external broker (NATS, Redis). Topic names leave room for a bridge
-   between hosts later (RWS), but none is built now.
+4. **Local first, standard parts.** One host first, on mature standards rather than our own wheels:
+   CloudEvents for the envelope, NATS + JetStream for the bus (from 02; superseding this draft's
+   first "no external broker"). Bridges between hosts (RWS) use NATS leaf nodes when needed; none
+   is built now.
 5. **Events say what changed.** A subscriber updates from the event, or reads one item (`show`),
    never "refresh everything".
 6. **Things outside anfs come in through real event sources**, not polling: `podman events` for
@@ -176,7 +178,8 @@ inbox with no human or session in the middle except where an approval is declare
   chorus ("inviting agents into the space"), now in anfs. The space is the unit of everything
   above: identity, topics, inbox, grants, dispatch, approvals.
 - **Actor and role are separate, but only in the event log for now.** Every event records who
-  acted and as what as two fields, `by: {actor: claude:5a52, as: anfs-dev/maintainer}`, because
+  acted and as what in separate fields (CloudEvents extensions `actor`, `actorspace`, `actorrole`;
+  e.g. `claude:5a52` as `maintainer` of anfs-dev's id), because
   history can't be fixed by hand later and config can. Everything else waits (YAGNI): addresses
   such as `anfs-dev/maintainer` are used by dispatch and inboxes and simply turn out to be roles
   later.
@@ -211,13 +214,24 @@ inbox with no human or session in the middle except where an approval is declare
   `stack/go` through mise. The daemon stays thin: tools stay bash and emit through
   `lib/anfs/events.sh`.
 
+- **Standards, not wheels (2026-10-23)**: the envelope is **strict CloudEvents 1.0** (structured
+  JSON; `id` UUIDv7, `source` `/anfs/spaces/<space-id>`, `type` `io.anfs.<noun>.<verb>`;
+  extensions `actor`, `actorspace`, `actorrole`, `spacepath`, `anfsv`), and from 02 the bus is
+  **NATS + JetStream** (subjects by space and type, durable consumers, accounts and permissions,
+  leaf nodes for bridges), on the dev host as in production. The JSONL files are the spool (an
+  emit never blocks or fails) and a greppable mirror; `anfsd` ships, dispatches and supervises,
+  and is not a broker. Production agent orchestration uses a durable workflow engine (Temporal,
+  Restate or Inngest) through a cnfs component; A2A's task states are the reference for work items
+  and inboxes (to be checked before 03). What stays ours: spaces as agent homes, identity and
+  roles, approvals policy, the layering rule, the toolkit integration.
+
 ## Beyond the dev host: the bus in production
 
 cnfs is a factory for business apps; in production those apps want to be agent native too, but
 they will not run the anfs tool suite. lgat builds on cnfs components. So what goes into the world
 is the **protocol**, not anfs:
 
-1. **The envelope is the contract**: the fields (CloudEvents names, `by: {actor, as}`, space ids),
+1. **The envelope is the contract**: strict CloudEvents 1.0 with our extensions (`actor`, `actorspace`, `actorrole`, space ids),
    type naming, and semantics (append-only, at-least-once), versioned (`v: 1`), written as a
    short language-neutral spec with conformance examples (`agents/05-spec`). Nothing in an event
    depends on a host or a filesystem: ids are UUIDv7, a space's identity is its id (its path is
