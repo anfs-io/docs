@@ -175,10 +175,11 @@ inbox with no human or session in the middle except where an approval is declare
 - **A space is where agents work together; a human is invited in.** The direction of travel of
   chorus ("inviting agents into the space"), now in anfs. The space is the unit of everything
   above: identity, topics, inbox, grants, dispatch, approvals.
-- **Identity is `<space>/<role>`**: `anfs-dev/maintainer` (or `developer`), an operator role in
-  `anfs-admin` for deploy and infrastructure. Sessions attach to a role; the role persists, has the
-  inbox and holds the grants. The person is an identity too, invited into spaces, with an inbox;
-  approvals are events addressed to them.
+- **Actor and role are separate, but only in the event log for now.** Every event records who
+  acted and as what as two fields, `by: {actor: claude:5a52, as: anfs-dev/maintainer}`, because
+  history can't be fixed by hand later and config can. Everything else waits (YAGNI): addresses
+  such as `anfs-dev/maintainer` are used by dispatch and inboxes and simply turn out to be roles
+  later.
 - **Approvals are per-space policy, in `space.yml`, and evolve as trust grows**:
 
   ```yaml
@@ -189,8 +190,25 @@ inbox with no human or session in the middle except where an approval is declare
   ```
 
   anfs-dev starts with all three `person`. A space that needs less hand-holding moves steps to
-  `auto` over time. **No agent can change its own space's `approvals:`**: editing the policy always
+  `auto` over time. (When roles arrive, the values become role names; a by-hand edit.) **No agent can change its own space's `approvals:`**: editing the policy always
   needs the person, whatever the policy says.
+
+## Later: roles, members, departments (on the roadmap, not built)
+
+The full model, for when a space has more than one person, or agents that need different
+authority:
+
+- **Actor**: a person (global, one identity across spaces) or an agent instance (a session, a
+  dispatched run).
+- **Role**: a bundle of skills, grants, the events it handles and the approvals it may give,
+  defined once by the layer that owns it (`anfs`: maintainer, operator, reviewer; `lgat`:
+  marketing, finance, ...).
+- **Assignment**: an actor holds roles in a space (`members:` in `space.yml`) and acts as one of
+  them at a time.
+- Approvals name a role and optionally an actor kind (`push: {role: lead, actor: person}`);
+  inboxes are addressed to a role (a queue) or an actor (a direct message); departments are
+  child spaces (`lgat/marketing`) with their own roles; no actor changes the membership or
+  approvals of a space it acts in unless a role allows it.
 
 ## Recommended, pending the person
 
