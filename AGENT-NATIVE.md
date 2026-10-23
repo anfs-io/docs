@@ -211,6 +211,36 @@ inbox with no human or session in the middle except where an approval is declare
   `stack/go` through mise. The daemon stays thin: tools stay bash and emit through
   `lib/anfs/events.sh`.
 
+## Beyond the dev host: the bus in production
+
+cnfs is a factory for business apps; in production those apps want to be agent native too, but
+they will not run the anfs tool suite. lgat builds on cnfs components. So what goes into the world
+is the **protocol**, not anfs:
+
+1. **The envelope is the contract**: the fields (CloudEvents names, `by: {actor, as}`, space ids),
+   type naming, and semantics (append-only, at-least-once), versioned (`v: 1`), written as a
+   short language-neutral spec with conformance examples (`agents/05-spec`). Nothing in an event
+   depends on a host or a filesystem: ids are UUIDv7, a space's identity is its id (its path is
+   informational).
+2. **Implementations per environment**: on a dev host, anfs (bash emitters, JSONL, `anfsd`), the
+   reference implementation. In a production Rails app, a **cnfs component** (a gem/engine) that
+   implements the same envelope on the app's own infrastructure (Postgres: an events table with
+   Solid Queue or `LISTEN/NOTIFY`; NATS at a larger scale, the contract unchanged). lgat includes
+   that component like any other; its Solana programs' on-chain logs become envelope events through
+   an indexer.
+3. **Bridges between buses**: an adapter subscribes on one bus and republishes on another, under
+   a grant (`accepts:`). A production error in an lgat app becomes `report.filed` in cnfs's dev
+   space, cnfs's dispatcher starts an agent, the fix flows back as a release; a toolkit fault goes
+   upstream to anfs-dev, as cnfs's reports did by hand on 2026-10-22. Every layer is an
+   agent-native factory for the layer above, joined by one event contract.
+
+Spaces carry over: a tenant or organization in a production app is a space, with a stable id,
+actors (its users and its agents), roles and approvals: the same model on a different store.
+
+Nothing in production is built now. What is done now is keeping it possible: the portable
+envelope in 01 and the spec in 05. The Rails component belongs on cnfs's roadmap, built against
+our spec: the first test of "each layer serves the one above".
+
 ## Later: roles, members, departments (on the roadmap, not built)
 
 The full model, for when a space has more than one person, or agents that need different

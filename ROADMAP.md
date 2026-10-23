@@ -66,6 +66,14 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         harness at dispatch
   - [ ] `agents/03-inbox` — approvals as events; `anfs inbox`; per-space `approvals:`
   - [ ] `agents/04-ui` — anfs-ui on events and `podman events`, its polling a slow reconcile
+  - [ ] `agents/05-spec` — the envelope as a standalone, language-neutral spec (`v: 1`) with
+        conformance examples (event files any implementation must accept and produce); what cnfs's
+        Rails component (on cnfs's roadmap) builds against
+  - Retiring today's improvisations (in the plans named): the BACKLOG grep watcher → a dispatch
+    rule on `report.filed` (02); "cnfs must SendMessage anfs-dev" → the role's inbox (02/03, the
+    rule withdrawn then); `anfs report wait`'s git polling → `wsm events ls -f --once` (event route
+    in 01, polling removed in 02); BACKLOG.md stays as a view the bus writes, `ANFS_REPORT_TO`
+    naming the sink (02)
 - [x] `stack/go` — merged 2026-10-23 (`units/agents/00-stack-go/log.md`; go1.27.3 here) — Go through mise, like `stack/ruby`; pulled in by `anfs-dev/dev` (for agents/02)
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
       `ppm move` (and its tests) to be discussed first
