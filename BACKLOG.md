@@ -931,3 +931,7 @@ Recent failures in the log (~/.local/state/anfs/anfs.log):
 2026-10-23T00:13:11-0400 wsm[74868] start: 74868-1792728791 repo push -n cnfs/
 2026-10-23T00:13:11-0400 wsm[74868] end: 74868-1792728791 1
 ```
+
+- core `packages/anfs/tests/rpc.bats` line 193: a bare `! grep -q '"tool":"anfs"'` can never fail
+  a bats test, so that watch assertion checks nothing (found in toolkit-api/06-watch-loop; the
+  new test there counts instead). Grep the suites for other bare `! cmd` lines.
