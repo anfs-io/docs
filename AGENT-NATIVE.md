@@ -193,6 +193,24 @@ inbox with no human or session in the middle except where an approval is declare
   `auto` over time. (When roles arrive, the values become role names; a by-hand edit.) **No agent can change its own space's `approvals:`**: editing the policy always
   needs the person, whatever the policy says.
 
+- **Spaces have stable ids** (`id:` in `space.yml`, never changed, kept by `wsm move`). The event
+  log is stored by id (`~/.local/state/anfs/events/<space-id>/YYYY-MM.jsonl`) so history survives
+  renames; events record the id and the path at the time, and `by.as` records `{space: <id>, role}`.
+- **Events: one lib, two commands**, like `repo.sh`: `wsm events ls [spec]` (the space you are in;
+  `x/` for a subtree) and `anfs events ls` (everything, plus host-level events); `-f`, and
+  `--once` for an agent waiting on an event.
+- **Approvals are answered** first by the CLI (`anfs inbox`), then anfs-ui, then OS notifications
+  (the in-house, cross-platform path first).
+- **`access:` in `space.yml`** declares what actors in the space may reach beyond it (`{path, mode:
+  read|write}`); dispatch hands it to the harness (`--add-dir`, allow/deny rules). `links:` stays,
+  for people. In agents/02.
+- **Cross-space permissions (`accepts:`) are on the roadmap**: config and enforcement, no history
+  change; events already record the origin (`by`) and the destination (`space`). Until then, open.
+- **The daemon is Go** (`anfsd`), in `anfs-io/runtime` under `go/` (one module, `cmd/<program>`,
+  room for more programs). Users get prebuilt binaries pinned by sha256; developers get Go from
+  `stack/go` through mise. The daemon stays thin: tools stay bash and emit through
+  `lib/anfs/events.sh`.
+
 ## Later: roles, members, departments (on the roadmap, not built)
 
 The full model, for when a space has more than one person, or agents that need different
@@ -210,28 +228,10 @@ authority:
   child spaces (`lgat/marketing`) with their own roles; no actor changes the membership or
   approvals of a space it acts in unless a role allows it.
 
-## Recommended, pending the person
-
-- **The daemon's language: Go** (Rust the alternative). The daemon is a network and process
-  supervisor (sockets, fan-out, tailing JSONL, file watches, `podman events`, starting and
-  supervising agents, launchd/systemd), which is Go's home ground (podman, Docker, NATS and Consul
-  are Go): goroutines for fan-out, one static binary per platform, podman's client libraries. Rust
-  fits as well at runtime but iterates slower; sharing a language with LGAT's Solana programs is a
-  small gain (Anchor/BPF is its own world). Ruby would put a runtime on every host. Whatever the
-  language, **the daemon stays thin**: tools stay bash and emit events through one `lib/anfs`
-  function; the daemon tails, fans out, enforces grants and rate limits, and dispatches. How ppm
-  installs a compiled binary (build through mise, or prebuilt releases) is for the plan.
-
 ## Open questions
 
-1. **The event schema**: the minimal fields, ids, versioning, and the `lib/anfs` emit function.
-2. **Where the log lives** (STATE per the XDG rule: `~/.local/state/anfs/events/<space>/...`?),
-   retention and rotation.
-3. **How the person sees and answers approvals**: the ui, a CLI (`anfs inbox`?), a notification.
-4. **Grants across spaces**: declared where, by whom, and how a role authenticates (the toolkit
-   API's token model, per role?).
-5. **How this orders against setup and deploy**: spaces as agent homes ties it to setup; deploy's
-   own events (r-20261022-7) would be the bus's third client.
+1. **Retention** of the event log (kept by default; a cap later?).
+2. **How a role authenticates** once there is more than one host (tokens per role?).
 
 ## Roadmap impact (proposal)
 
