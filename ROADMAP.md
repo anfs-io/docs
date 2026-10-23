@@ -58,7 +58,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
 - [x] `wsm-spaces/04-repo-push` — merged 2026-10-22 (see `log.md`) — `anfs src push` and `wsm repo push` on `repo.sh` (asked 2026-10-22)
 - [ ] `agents` (`units/agents.md`, `AGENT-NATIVE.md`, decided 2026-10-23): the A in ANFS; ahead
       of setup and deploy, which are redesigned around spaces as agent homes
-  - [ ] `agents/01-events` — space ids; `lib/anfs/events.sh` (`anfs_emit`, the JSONL log in
+  - [x] `agents/01-events` — merged 2026-10-23 (see `log.md`; anfs-dev has its id, the others wait) — space ids; `lib/anfs/events.sh` (`anfs_emit`, the JSONL log in
         STATE by space id); `wsm events ls` and `anfs events ls` (`-f`, `--once`); `anfs report`
         emits `report.*`
   - [ ] `agents/02-daemon` — the bus is NATS + JetStream: `core/nats` (nats-server and the nats
