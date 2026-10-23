@@ -66,7 +66,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         harness at dispatch
   - [ ] `agents/03-inbox` — approvals as events; `anfs inbox`; per-space `approvals:`
   - [ ] `agents/04-ui` — anfs-ui on events and `podman events`, its polling a slow reconcile
-- [ ] `stack/go` — Go through mise, like `stack/ruby`; pulled in by `anfs-dev/dev` (for agents/02)
+- [x] `stack/go` — merged 2026-10-23 (`units/agents/00-stack-go/log.md`; go1.27.3 here) — Go through mise, like `stack/ruby`; pulled in by `anfs-dev/dev` (for agents/02)
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
       `ppm move` (and its tests) to be discussed first
 - [ ] `linker/06-move-more` — `move` for pcm, pmm and psm (after their suites are back on)
