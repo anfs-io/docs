@@ -72,7 +72,8 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         them)
   - [ ] `agents/05-spec` — our CloudEvents 1.0 profile (types, extensions, NATS subjects) as a
         standalone, language-neutral spec (`anfsv: 1`) with
-        conformance examples (event files any implementation must accept and produce); what cnfs's
+        conformance examples (event files any implementation must accept and produce), type namespaces
+        per layer (`io.anfs.*`, `io.cnfs.*`, `io.lgat.*`) and the spool as a way in for any language; what cnfs's
         Rails component (on cnfs's roadmap) builds against
   - Retiring today's improvisations (in the plans named): the BACKLOG grep watcher → a dispatch
     rule on `report.filed` (02); "cnfs must SendMessage anfs-dev" → the role's inbox (02/04, the

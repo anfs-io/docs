@@ -255,6 +255,31 @@ Nothing in production is built now. What is done now is keeping it possible: the
 envelope in 01 and the spec in 05. The Rails component belongs on cnfs's roadmap, built against
 our spec: the first test of "each layer serves the one above".
 
+### Plugging in: Rails apps (cnfs) and Solana programs (lgat)
+
+Each side gets a small adapter that turns its native events into our CloudEvents. On a dev host
+the adapter appends to the anfs spool (`anfsd` ships it to NATS); in production the same adapter
+publishes to NATS (or Postgres). Nothing else changes: the envelope is the contract.
+
+- **Rails (cnfs), a gem on cnfs's roadmap, built against 05's spec.** Outbound: a subscriber to
+  ActiveSupport::Notifications (or Rails 8.1's structured `Rails.event`, to be compared first)
+  forwards an allow-list of the app's domain events, never the firehose (`sql.active_record`),
+  e.g. `filed.report.partitia` → `io.cnfs.partitia.report.filed`, payload reduced to allow-listed
+  keys; cheap in the request (one spool append in dev, a background job in prod). Inbound: a
+  consumer process (a worker, or Solid Queue) subscribes on NATS and turns events into jobs or
+  local notifications. The app's directory is in a space, so its events carry that space's id.
+- **Solana (lgat), an indexer on lgat's roadmap.** In development `solana-test-validator` (or
+  surfpool) and the indexer run as pcm services; the indexer follows program logs, decodes Anchor
+  `emit!` events with the IDL, and publishes `io.lgat.<program>.<event>` with the transaction
+  signature as subject and the commitment level as an extension (`confirmed` / `finalized`;
+  money moves only on `finalized`, since unfinalized events can roll back). Rails does not send
+  events to the chain, it sends transactions: `payment.requested` → a signer (later an agent role
+  under an approval policy) submits → the program emits → the indexer publishes
+  `payment.settled` → Rails consumes it.
+- **What anfs provides**: the spec (05) with type namespaces per layer (`io.anfs.*`,
+  `io.cnfs.*`, `io.lgat.*`, each owned by its layer), the spool format as a supported way in for
+  any language without a NATS client, the bus, and pcm definitions (e.g. the validator).
+
 ## Later: roles, members, departments (on the roadmap, not built)
 
 The full model, for when a space has more than one person, or agents that need different
