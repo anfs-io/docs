@@ -48,7 +48,7 @@ own test surface, and keeping it out of 02a lets 02a merge first.
   one thing to test. NATS is for programs: anfsd's consumers, the ui in its container (03), bridges
   later. The person looks at the bus itself with `anfs bus nats -- sub 'anfs.>'` or `-- stream info
   ANFS`. *Alternative:* read NATS when up and fall back to the files (push instead of a 1 s tick,
-  but two paths that can disagree for the same command; open question 1).
+  but two paths that can disagree for the same command; decided 1).
 
 ### 2. The shipper (02a)
 
@@ -123,7 +123,7 @@ the job's branch, and end with a summary (carried by `run.completed`). It may no
 `anfs install`, `wsm install`), close the report, call `gh`, or write outside the job and its
 `access:` (the denials are passed to the harness, 5). Merge, install, push and `anfs report close`
 stay with the person, or with this session acting for them. *Alternatives:* triage only (reproduce
-and write a plan, no fix: safer, half the value; open question 2); a rule that only posts to an
+and write a plan, no fix: safer, half the value; decided 2); a rule that only posts to an
 inbox for a running session (that is 04's inbox).
 
 ### 4. Supervision (02b)
@@ -232,23 +232,20 @@ shipper lag; 02b adds dispatch and the harnesses, 02c podman; exit 1 when one is
 
 As the table at the top. Each plan's job and its by-hand steps are in its file.
 
-### 10. By hand, and the open questions
+### 10. By hand, and the decisions
 
 By-hand steps are listed per plan (02a: the first release and its pins, install, check the
 backlog shipped; 02b: install, the rule live, the grep-watching session ended; 02c: a container
 started shows as an event). Old reports in BACKLOG.md are not migrated (no migration code): they
 stay as text, and are closed by hand.
 
-**Open questions for the person:**
+**Decided (the person, 2026-10-23, at 02a's start; each the recommendation):**
 
-1. `events ls` reads the files even when NATS is up (recommended), or NATS first with the files as
-   fallback?
-2. Before 04, does the dispatched maintainer fix and commit in its job (recommended), or only
-   reproduce and write a plan?
-3. Stream bounds: 90 days and 1 GiB, the files kept forever (recommended), or other numbers?
-4. `job:` needs `anfs work`, which is anfs-dev's: fine for anfs-dev; cnfs's rules can use `job:
-   none` until `anfs work` moves to core (a later plan)?
-5. NATS on `127.0.0.1:47222` (recommended) rather than the default 4222?
+1. `events ls` (wsm and anfs) keeps reading the files, `-f` included, even when NATS is up.
+2. Before 04, the dispatched maintainer fixes with tests and commits in its job (not triage only).
+3. Stream bounds: `max_age` 90 days and `max_bytes` 1 GiB; the JSONL files are kept forever.
+4. `job: none` is allowed (cnfs's rules) until `anfs work` moves to core (a later plan).
+5. NATS listens on `127.0.0.1:47222` (monitoring `47223`), not the default 4222.
 
 ## What 03 (the ui) gets from 02
 
