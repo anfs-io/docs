@@ -943,3 +943,8 @@ Recent failures in the log (~/.local/state/anfs/anfs.log):
 - Space ids (agents/01): only anfs-dev has one. To do by hand: `wsm id --new` for anfs-admin,
   lgat/*, roteoh, rws, user/evals (each commits in its own source repo; user and rws are the
   person's); cnfs/* asked of the cnfs session.
+
+- If beads + firstmate + herdr are adopted (a big if, 2026-10-23): compare and contrast them with
+  the agents unit (beads vs work items/records, firstmate vs dispatch/supervision/approvals,
+  treehouse worktrees vs `anfs work` jobs), as a learning exercise first. Not before the original
+  agents plan is done.
