@@ -61,18 +61,21 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
   - [ ] `agents/01-events` — space ids; `lib/anfs/events.sh` (`anfs_emit`, the JSONL log in
         STATE by space id); `wsm events ls` and `anfs events ls` (`-f`, `--once`); `anfs report`
         emits `report.*`
-  - [ ] `agents/02-daemon` — the bus is NATS + JetStream (a `stack/nats` package, launchd /
-        systemd); `anfsd` in Go (`anfs-io/runtime`, `go/`; prebuilt binaries, pinned) ships the
-        JSONL spool into it, runs dispatch rules and supervises agents (not a broker); `access:`
-        in `space.yml` given to the harness at dispatch
-  - [ ] `agents/03-inbox` — approvals as events; `anfs inbox`; per-space `approvals:`
-  - [ ] `agents/04-ui` — anfs-ui on events and `podman events`, its polling a slow reconcile
+  - [ ] `agents/02-daemon` — the bus is NATS + JetStream: `core/nats` (nats-server and the nats
+        CLI as pinned release binaries, localhost, JetStream store in STATE, launchd / systemd
+        --user); `core/anfsd` (Go, `anfs-io/runtime` `go/`, prebuilt and pinned) ships the JSONL
+        spool into it, runs dispatch rules and supervises agents (not a broker); `access:` in
+        `space.yml` given to the harness at dispatch
+  - [ ] `agents/03-ui` — anfs-ui on events and `podman events`, its polling a slow reconcile; the
+        person's first acceptance test of the bus
+  - [ ] `agents/04-inbox` — approvals as events; `anfs inbox`; per-space `approvals:` (the ui shows
+        them)
   - [ ] `agents/05-spec` — our CloudEvents 1.0 profile (types, extensions, NATS subjects) as a
         standalone, language-neutral spec (`anfsv: 1`) with
         conformance examples (event files any implementation must accept and produce); what cnfs's
         Rails component (on cnfs's roadmap) builds against
   - Retiring today's improvisations (in the plans named): the BACKLOG grep watcher → a dispatch
-    rule on `report.filed` (02); "cnfs must SendMessage anfs-dev" → the role's inbox (02/03, the
+    rule on `report.filed` (02); "cnfs must SendMessage anfs-dev" → the role's inbox (02/04, the
     rule withdrawn then); `anfs report wait`'s git polling → `wsm events ls -f --once` (event route
     in 01, polling removed in 02); BACKLOG.md stays as a view the bus writes, `ANFS_REPORT_TO`
     naming the sink (02)
