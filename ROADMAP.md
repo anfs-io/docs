@@ -56,6 +56,17 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         `pcm-containers` says plain `podman run --rm` is right for a stock image; also fixes
         `pcm show`'s mounts format on podman 6 (from Last)
 - [x] `wsm-spaces/04-repo-push` — merged 2026-10-22 (see `log.md`) — `anfs src push` and `wsm repo push` on `repo.sh` (asked 2026-10-22)
+- [ ] `agents` (`units/agents.md`, `AGENT-NATIVE.md`, decided 2026-10-23): the A in ANFS; ahead
+      of setup and deploy, which are redesigned around spaces as agent homes
+  - [ ] `agents/01-events` — space ids; `lib/anfs/events.sh` (`anfs_emit`, the JSONL log in
+        STATE by space id); `wsm events ls` and `anfs events ls` (`-f`, `--once`); `anfs report`
+        emits `report.*`
+  - [ ] `agents/02-daemon` — `anfsd` in Go (`anfs-io/runtime`, `go/`; prebuilt binaries, pinned):
+        subscriptions and push, dispatch rules, rate limits; `access:` in `space.yml` given to the
+        harness at dispatch
+  - [ ] `agents/03-inbox` — approvals as events; `anfs inbox`; per-space `approvals:`
+  - [ ] `agents/04-ui` — anfs-ui on events and `podman events`, its polling a slow reconcile
+- [ ] `stack/go` — Go through mise, like `stack/ruby`; pulled in by `anfs-dev/dev` (for agents/02)
 - [ ] `linker/03-owned-files` — `anfs mv`, `anfs owner`, `anfs status`; what becomes of
       `ppm move` (and its tests) to be discussed first
 - [ ] `linker/06-move-more` — `move` for pcm, pmm and psm (after their suites are back on)
