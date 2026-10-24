@@ -61,7 +61,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
   - [x] `agents/01-events` — merged 2026-10-23 (see `log.md`; anfs-dev has its id, the others wait) — space ids; `lib/anfs/events.sh` (`anfs_emit`, the JSONL log in
         STATE by space id); `wsm events ls` and `anfs events ls` (`-f`, `--once`); `anfs report`
         emits `report.*`
-  - [x] `agents/02-daemon` — 02a, 02b, 02c merged 2026-10-23 (the bus and podman events live here; anfsd from source until runtime v0.3.0 is pushed and pinned; anfs-dev's dispatch rules committed disabled; 02d "safe to turn on dispatch" planned 2026-10-24, rules stay off until it merges) — the bus is NATS + JetStream: `core/nats` (nats-server and the nats
+  - [x] `agents/02-daemon` — 02a, 02b, 02c merged 2026-10-23 (the bus and podman events live here; anfsd from source until runtime v0.3.0 is pushed and pinned; anfs-dev's dispatch rules committed disabled; 02d "safe to turn on dispatch" merged and installed 2026-10-24; the rules stay off until the person turns them on) — the bus is NATS + JetStream: `core/nats` (nats-server and the nats
         CLI as pinned release binaries, localhost, JetStream store in STATE, launchd / systemd
         --user); `core/anfsd` (Go, `anfs-io/runtime` `go/`, prebuilt and pinned) ships the JSONL
         spool into it, runs dispatch rules and supervises agents (not a broker); `access:` in
@@ -70,7 +70,7 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         person's first acceptance test of the bus
   - [ ] `agents/04-inbox` — approvals as events; `anfs inbox`; per-space `approvals:` (the ui shows
         them)
-  - [ ] `agents/05-spec` — our CloudEvents 1.0 profile (types, extensions, NATS subjects) as a
+  - [ ] `agents/05-spec` — 05a and 05b merged and installed 2026-10-24 (anfs-io/events to be created, pushed and tagged v1.0.0 by the person; examples vendored at the untagged commit) — our CloudEvents 1.0 profile (types, extensions, NATS subjects) as a
         standalone, language-neutral spec (`anfsv: 1`) with
         conformance examples (event files any implementation must accept and produce), type namespaces
         per layer (`io.anfs.*`, `io.cnfs.*`, `io.lgat.*`) and the spool as a way in for any language; what cnfs's
