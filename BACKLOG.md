@@ -972,4 +972,3 @@ Recent failures in the log (~/.local/state/anfs/anfs.log):
 - The flexibility acceptance test (review §4.1, AGENT-NATIVE principle 9): a second, non-anfsd
   consumer (Pi Durable or Firstmate) handling one space end to end, with 02d's dispatcher-off
   switch and no core change. Roadmap, not the next slice.
-- **agy (antigravity) is slow, not hung** (2026-10-24): `agy --help`/`--version` finish (1.3.3) well past 2 min. 02b-log L70, 02-daemon/plan L163 and 02b-dispatch L98 say it hangs. agy has `--output-format stream-json` (anfsd could read its summary like claudes) and `--mode accept-edits|plan`; still no read/write split, so `partial` stands. `anfs bus status`'s version check needs a long timeout or a background call.
