@@ -6,7 +6,7 @@ Written 2026-10-23 against core main `870eece`, stack main, anfs-dev main and an
 JetStream native on the host, `core/nats` and `core/anfsd`, anfsd not a broker, strict CloudEvents,
 `access:`, what 02 retires, identity, the principles). Nothing below reopens them.
 
-02 is three plans, each merged and tested on its own, in this order:
+02 is four plans, each merged and tested on its own, in this order:
 
 | Plan | What | Repos |
 | --- | --- | --- |
