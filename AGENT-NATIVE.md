@@ -51,8 +51,16 @@ A request for work with an id, an owner space, a state (`open` → `fixed` → `
 
 - **Today:** `anfs report` ids (`r-YYYYMMDD-N`), status lines in a markdown file, or GitHub
   issues. pjm and `ovm tasks` hold the person's own tasks in Obsidian.
-- **Gap:** the record lives in its rendering (a markdown section). Work items should be records
-  on the bus; BACKLOG.md, GitHub issues and Obsidian are views of them.
+- **Gap:** work items have no shared vocabulary on the bus, and anfs report's record lives in its
+  rendering (a markdown section).
+- **The bus carries facts, the tracker owns the record** (revised 2026-10-24 after
+  `AGENT-NATIVE-REVIEW.md` §4.2). The bus carries work-item **facts** in a shared vocabulary
+  (`filed`, `assigned`, `closed`, `available`, ...). The **record** lives in the tracker the space
+  chose: `anfs report`, beads, Linear, ...; BACKLOG.md, GitHub issues and Obsidian stay views.
+  The bus is never the source of truth for a tool's own state (beads' git-backed data, a Pi
+  Durable store, Firstmate's model alike). Where anfs owns the tracker (`anfs report`), a consumer
+  may keep a small projection (SQLite, say) so `show` and `wait` read state without folding the
+  log.
 
 ### 2. Events and subscriptions (the bus)
 
@@ -143,6 +151,40 @@ was stuck on.
    a subscription is filtered. (The 2026-10-23 loop must be impossible by construction.)
 8. **Small and boring, from real cases.** Generalize only when a second client fits the first
    design: the report pipeline first, the ui second.
+9. **anfs ships mechanisms; workflows are tenants** (2026-10-24, `AGENT-NATIVE-REVIEW.md` §4.1).
+   The bus core is the envelope, the spool, the shipper, the subject and consumer conventions
+   (`anfs.<scope>.<type>`, durable consumers named `<tool>-<purpose>`) and the event catalog.
+   Everything else is a tenant that uses only those public conventions: anfsd's own dispatcher,
+   report sink and podman follower included, with no more privilege than Firstmate, beads or a Pi
+   Durable worker would have. The risk this guards against is anfsd accreting workflow opinions
+   until it is chorus again. **Acceptance test:** turn off anfsd's dispatcher for one space and
+   let another tool handle that space end to end, with no change to core.
+
+## How tools join
+
+Most tools will never know anfs exists. A tool joins the bus at one of three levels:
+
+1. **Wrapped**: the tool is unaware of the bus; its package adds hooks (git hooks, pcm hooks,
+   file watches) that emit events on its behalf.
+2. **Emitter**: the tool appends to the spool or publishes to NATS.
+3. **Participant**: the tool runs a durable consumer.
+
+A **ppm package bundles the tool, its bus adapter and its skill**: install it, and the tool
+arrives connected to the bus and teachable to agents. The review's table places Jev, beads,
+Firstmate, Pi Durable and cnfs's gem (§4.4).
+
+**Slots, a direction only.** A space may one day say which tool fills which role:
+
+```yaml
+tools:                    # direction, not config: nothing reads this key
+  tracker: anfs-report    # or beads, linear
+  dispatcher: anfsd       # or firstmate
+  runner: claude          # or pi-durable, opencode, pi
+  notes: jev
+```
+
+Not built and not a `space.yml` key. Today there is one switch: a per-space "built-in dispatcher
+off" (agents/02d), which is what the acceptance test of principle 9 needs.
 
 ## What exists, placed in this picture
 
@@ -299,8 +341,16 @@ authority:
 
 ## Open questions
 
-1. **Retention** of the event log (kept by default; a cap later?).
+1. **Retention** of the event log (kept by default; a cap later?), and of `runs/` and anfsd's
+   own records, which grow without limit too (review §5.2 F8).
 2. **How a role authenticates** once there is more than one host (tokens per role?).
+3. **beads vs `anfs report`**: is beads a work-item store for the spaces that choose it, or a
+   sink of `anfs report`'s facts? (Review §11.)
+4. **Space ids and production tenant ids**: one rule for both, or a mapping? (Review §11; 05
+   keeps `^[a-z0-9]{10}$` for spaces.)
+
+The review's other new questions are taken up in agents/05: the subject mapping for other
+layers and where the spec lives and is versioned.
 
 ## Roadmap impact (proposal)
 
