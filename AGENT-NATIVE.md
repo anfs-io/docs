@@ -74,6 +74,7 @@ Facts that happened, with what changed: `{space, kind, id, change, at, by}`, e.g
   *what* changed.
 - **Gap:** typed events, emitted where the tools already log; subscriptions with filters; a
   durable log so a subscriber that was asleep catches up.
+- **The spec:** [anfs-io/events](https://github.com/anfs-io/events) (SPEC.md, REGISTRY.md, the schema and the conformance examples) is the event contract for every layer (agents/05).
 
 ### 3. Agents: identity, presence, inbox
 

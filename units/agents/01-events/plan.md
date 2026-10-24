@@ -21,6 +21,8 @@ The job is `anfs work new agents-01 core docs`. Paths are core's unless they nam
 
 ## The envelope: our CloudEvents profile, version 1 (language-neutral)
 
+> The spec is now [anfs-io/events](https://github.com/anfs-io/events) (SPEC.md, v1.0.0; agents/05): this section is kept as its first version, for history.
+
 Every event is one **CloudEvents 1.0** event in the **structured JSON format**, on one line (JSON
 Lines, UTF-8, `\n`-terminated), at most 4096 bytes with its newline. The file holds exactly one
 CloudEvent per line, so a shipper (02) sends each line as it is.
