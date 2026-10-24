@@ -1,6 +1,6 @@
 ---
 objective: Agents are first-class actors in anfs, not only its callers. A space is where they work; every space gets an identity, a durable event log, and later dispatch, inboxes and approvals, offered to every layer built on anfs
-status: decided 2026-10-23 (AGENT-NATIVE.md, "Decided"); 01 merged 2026-10-23; 02 and 03 merged 2026-10-23; plan 04 written 2026-10-23 for review; plan 05 written 2026-10-23 for review; review 2026-10-24 (AGENT-NATIVE-REVIEW.md): 02d planned, 04 amended, 05 revised; 02d merged and installed 2026-10-24; 05a (events repo, local, untagged) and 05b merged and installed 2026-10-24, stream recreated in the new subject shape
+status: decided 2026-10-23 (AGENT-NATIVE.md, "Decided"); 01 merged 2026-10-23; 02 and 03 merged 2026-10-23; 03 accepted 2026-10-24; plan 04 written 2026-10-23 for review; plan 05 written 2026-10-23 for review; review 2026-10-24 (AGENT-NATIVE-REVIEW.md): 02d planned, 04 amended, 05 revised; 02d merged and installed 2026-10-24; 05a (events repo, local, untagged) and 05b merged and installed 2026-10-24, stream recreated in the new subject shape
 ---
 
 The direction, the decisions and the principles are in [AGENT-NATIVE.md](../AGENT-NATIVE.md),
