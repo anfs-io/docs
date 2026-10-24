@@ -4,6 +4,8 @@ Draft for discussion, 2026-10-23. Nothing here is decided until the person says 
 of a day when the first consumer of anfs (cnfs, building partitia) filed seven reports and every
 one of them went through a pipeline that was improvised by hand.
 
+At a glance (what, how, who): [AGENT-NATIVE-OVERVIEW.md](AGENT-NATIVE-OVERVIEW.md).
+
 ## The claim
 
 anfs today is a **human-native toolkit that agents can use**: CLIs with `--json`, `-y` and `-n`,
