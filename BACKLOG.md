@@ -949,3 +949,20 @@ Recent failures in the log (~/.local/state/anfs/anfs.log):
   12 reruns, 8 in parallel): flaky, not tracked down.
 - ppm, pmm, wsm and psm emit no events yet, so anfs-ui shows their changes made in a terminal
   only at its 5-minute reconcile (agents/03). A follow-up plan: emitters in those tools.
+
+- anfsd, smaller findings from `AGENT-NATIVE-REVIEW.md` (F8, 2026-10-24), to fix when they bite:
+  per-scope token buckets don't isolate scopes (`limiter.Wait` runs inside one batch, so a
+  flooding scope stalls shipping for all); the report sink's `MaxAckPending: 1` with nak delays
+  up to 5 minutes lets one failing event hold up all rendering for about 12 minutes; a consumer
+  deleted and recreated with `DeliverNewPolicy` skips the gap (deliver from the last-known time
+  instead, the `stale` guard makes it safe); `runs/`, the supervisor's in-memory indexes and the
+  month files grow without limit (retention, AGENT-NATIVE's open question 1).
+- An event catalog, `anfs events types [space]` (review §4.5): the types packages declare plus
+  those seen in the log, each with its last-seen time and an example, so an agent landing in a
+  space knows what is on the bus.
+- Harness definitions as package YAML (review §4.6: argv template, permission mapping, summary
+  extraction), so a new harness is a ppm package, not an anfsd release. Revisit when a harness
+  changes its command line.
+- The flexibility acceptance test (review §4.1, AGENT-NATIVE principle 9): a second, non-anfsd
+  consumer (Pi Durable or Firstmate) handling one space end to end, with 02d's dispatcher-off
+  switch and no core change. Roadmap, not the next slice.
