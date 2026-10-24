@@ -20,7 +20,8 @@ queue and rate overflow delay by default up to a per-rule cap; `anfs agents redi
 per-space switch turns the built-in dispatcher off. 04 builds on all of these and redefines none.
 
 **For the person's review.** Each section is a decision: the recommendation first, the
-alternatives in a line. The open questions are at the end.
+alternatives in a line. The open questions are at the end. **Answered 2026-10-24:** yes to
+all the recommendations.
 
 ## Context — read these files first
 
@@ -431,17 +432,24 @@ No test starts a real harness, touches the running bus or merges a real repo.
 1. **May a session acting for you answer** (recorded as its actor), or should every answer need
    a terminal like `policy`? Recommended: a session may answer merge and install; push stays at
    your terminal, like `policy`.
+   **Decided 2026-10-24:** as recommended.
 2. **anfs-dev's `land:`**: recommended `[merge, install]`; push by hand.
+   **Decided 2026-10-24:** `[merge, install]`.
 3. **`verify:`**: recommended required for any `land:` (a rule with `land:` and no `verify:` is
    invalid), which also settles `merge: auto` needing one.
+   **Decided 2026-10-24:** required.
 4. **When the report closes**: recommended after `install` (after merge only when install is
    skipped or not in `land:`), so "closed" means installed.
+   **Decided 2026-10-24:** after `install`.
 5. **What the inbox holds**: approvals **plus rejected-but-unhandled work** (dispatch overflow
    beyond 02d's cap, `stale` and `loop` rejects, delayed events) with `redispatch` and `dismiss`
    (section 3a). This replaces the first version's "approvals only" (review F5). Still out: failed
    runs and reports no rule took, until roles bring notices.
+   **Decided 2026-10-24:** approvals plus unhandled work, as section 3a.
 6. 02b's open question 1 (`--setting-sources`/`--bare` for dispatched claude): goes with 02d's
    settings isolation now, not 04a.
+   **Decided 2026-10-24:** with 02d (decided there: `--setting-sources local --strict-mcp-config`,
+   `--bare` opt-in).
 
 ## Sources checked (2026-10-23, read-only)
 

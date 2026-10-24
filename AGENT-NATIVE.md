@@ -155,7 +155,9 @@ was stuck on.
    design: the report pipeline first, the ui second.
 9. **anfs ships mechanisms; workflows are tenants** (2026-10-24, `AGENT-NATIVE-REVIEW.md` §4.1).
    The bus core is the envelope, the spool, the shipper, the subject and consumer conventions
-   (`anfs.<scope>.<type>`, durable consumers named `<tool>-<purpose>`) and the event catalog.
+   (`anfs.<scope>.<layer>.<noun>.<verb>`, the type without `io.`, one shape for every layer:
+   decided 2026-10-24 in agents/05; durable consumers named `<tool>-<purpose>`) and the event
+   catalog.
    Everything else is a tenant that uses only those public conventions: anfsd's own dispatcher,
    report sink and podman follower included, with no more privilege than Firstmate, beads or a Pi
    Durable worker would have. The risk this guards against is anfsd accreting workflow opinions

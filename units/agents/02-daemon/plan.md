@@ -31,6 +31,9 @@ own test surface, and keeping it out of 02a lets 02a merge first.
   keeps them. Filters: `anfs.<id>.>` (a space), `anfs.*.report.>` (a kind everywhere).
   *Alternatives:* `anfs.<type>.<space>` (type first: worse for per-space permissions later, which is
   what `accepts:` will want); a stream per space (more streams, no gain on one host).
+  **Replaced 2026-10-24** by agents/05 (2.5): `anfs.<scope>.<layer>.<noun>.<verb>`, the type
+  without `io.`, for every layer, anfs included (`anfs.tkj76y3nfx.anfs.report.filed`); 05b changes
+  the code, the dev stream is recreated by hand.
 - **One stream, `ANFS`**, subjects `anfs.>`, file storage in `~/.local/state/nats/jetstream/`,
   retention `limits`, discard `old`, `max_age` 90 days and `max_bytes` 1 GiB (both in `nats.env`),
   duplicate window **24 h** (not the 2 min default: see 2). The JSONL files stay the complete,

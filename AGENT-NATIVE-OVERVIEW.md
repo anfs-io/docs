@@ -17,7 +17,8 @@ processes get files and pipes: events, identity, dispatch, an inbox, approvals.
 - **the spool**: JSONL files, one per space id and month; emitting is "append one line", from any
   language, and never blocks or fails;
 - **the shipper**: `anfsd` tails the spool and publishes each line to NATS JetStream (stream
-  `ANFS`, subjects `anfs.<scope>.<noun>.<verb>`), exactly once per event id;
+  `ANFS`, subjects `anfs.<scope>.<layer>.<noun>.<verb>`, decided 2026-10-24 in 05: today
+  `anfs.<scope>.<noun>.<verb>` until 05b), exactly once per event id;
 - **conventions**: subject naming, durable consumers named `<tool>-<purpose>`, an event catalog.
 
 **anfs ships mechanisms; workflows are tenants.** Everything that *does* something with events
@@ -141,7 +142,9 @@ One line of the spool, as shipped:
 - `source`: the space where it happened, by id (renames do not break history); `spacepath` is
   the path at the time, informational.
 - `type`: `io.<layer>.<noun>.<verb>`, past tense. The short type (`report.filed`) is what
-  filters, rules and subjects use: this one lands on `anfs.tkj76y3nfx.report.filed`.
+  `--type` filters and rules use. The NATS subject is `anfs.<scope>.` plus the type without
+  `io.`, one shape for every layer: this one lands on `anfs.tkj76y3nfx.anfs.report.filed` (05,
+  decided 2026-10-24; `anfs.tkj76y3nfx.report.filed` until 05b).
 - `actor` / `actorspace` / `actorrole`: who acted, and as what, in which space. Here cnfs's agent
   files into anfs-dev.
 - Thin: at most 4096 bytes. An event says what changed; detail is read from the item.
@@ -344,7 +347,7 @@ polling) applied to the person's notes.
 | space id | stable 10-char id (`id:` in `space.yml`), never changes, survives `wsm move`; events are stored and addressed by it |
 | actor | who acted: `<kind>[:<name>]`, e.g. `claude:2e9431a0`, `shell:rob`, `anfsd`, `podman` |
 | role | what the actor acted as (`maintainer`); separate from the actor, recorded in `actorrole` |
-| scope | the first subject token: a space id, or `host` for host-level events |
+| scope | the second subject token (`anfs.<scope>.…`): a space id, or `host` for host-level events |
 | spool | the JSONL files under `~/.local/state/anfs/events/<scope>/`; the way in and the permanent record |
 | tenant | anything that acts on the bus using only public conventions, anfsd's own dispatcher included |
 | run | one dispatched agent execution, with a record under anfsd's state and `run.*` events |

@@ -7,12 +7,16 @@ the other layers (any `io.<layer>`, per-layer sources, a documented space-id rul
 object), direct NATS publishing becomes a first-class way in beside the spool (a recorder keeps the
 files complete; a publisher user per layer), production attests the actor (`actorclaimed`),
 `traceparent`/`tracestate` and run usage are reserved, and the conformance fixtures live in the
-spec repo. Code and spool re-checked at the same commits.
+spec repo. Code and spool re-checked at the same commits. **Open questions answered
+2026-10-24** (all as recommended, with three changes): subjects take one shape for every layer,
+anfs included, `anfs.<scope>.<layer>.<noun>.<verb>` (2.5, gaps 23–24, by hand step 6); the
+leftover test event stays (by hand step 5); a re-derived event's id MUST be derived from a stable
+source key (2.9).
 
 Binding: `AGENT-NATIVE.md` ("Standards, not wheels", "Beyond the dev host", "Plugging in"),
 `units/agents.md`, 01's profile table (the first version of this spec), 02's decisions 1 and 2
-(subjects, `Nats-Msg-Id`, the shipper), 02c's mapping, and the decisions above. Nothing below
-reopens them. The plan decides where the spec lives, what it says, how conformance is checked,
+(`Nats-Msg-Id`, the shipper; 02's subject mapping is replaced by the person's decision of
+2026-10-24, 2.5), 02c's mapping, and the decisions above. Nothing below reopens them. The plan decides where the spec lives, what it says, how conformance is checked,
 what the two implementations must change, and what cnfs and lgat get from it.
 
 ## Context — read these files first
@@ -124,9 +128,10 @@ every consumer would parse them back; decided otherwise (F2). CloudEvents' `auth
   lgat `<program>.<event>` (`io.lgat.escrow.payment.settled`, mapped from Anchor's
   `PaymentSettled` by a table, not mechanically). Verbs are past tense: an event is a fact.
 - **The short type** drops `io.anfs.` for anfs's types and `io.` for every other namespace:
-  `report.filed`, `cnfs.partitia.report.filed`. It is what `--type` filters, dispatch rules'
-  `on.type` and NATS subjects (2.5) use. To keep it unambiguous, **no `io.anfs` type's first
-  segment may be a registered namespace** (no `io.anfs.cnfs.*`).
+  `report.filed`, `cnfs.partitia.report.filed`. It is what people and rules type: `--type`
+  filters and dispatch rules' `on.type`. NATS subjects do not use it: they carry the type without
+  `io.`, the layer always present (2.5). To keep the short type unambiguous, **no `io.anfs`
+  type's first segment may be a registered namespace** (no `io.anfs.cnfs.*`).
 - A type's data may grow (new keys); removing a key or changing its meaning needs a new type.
 - **Run usage (review §5.3).** anfs's catalog gives `run.completed`, and `run.failed` when known,
   these data keys (strings, as every `io.anfs` value), each left out when the harness does not
@@ -196,29 +201,40 @@ every reader changes.
   mode (`ce-*` headers) is not published; a consumer that receives one may refuse it. The
   binding says nothing about subjects; the subject scheme is ours.
 - **Header `Nats-Msg-Id: <id>`** on every publish (JetStream's dedup).
-- **Subject: `anfs.<scope>.<short type>`** (02's, unchanged): `anfs.tkj76y3nfx.report.filed`,
-  `anfs.host.container.started`, `anfs.k3x7q2mbzp.cnfs.partitia.report.filed`. This is review
-  §11 q1's first option (`anfs.<scope>.<layer>.<noun>.<verb>` in one stream), with anfs's own
-  `anfs` token left out as the short type already does. `anfs.` names the bus and the protocol
-  (which every layer uses), not the type's owner. Filters: `anfs.<id>.>` a space,
-  `anfs.*.cnfs.>` a layer, `anfs.*.report.>` an anfs kind. **One stream** (`ANFS`, `anfs.>`)
-  holds every layer.
+- **Subject: `anfs.<scope>.` + the type without `io.`**, i.e. `anfs.<scope>.<layer>.<rest>`, one
+  shape for every layer, anfs included (decided 2026-10-24, open question 6):
+  `anfs.tkj76y3nfx.anfs.report.filed`, `anfs.host.anfs.container.started`,
+  `anfs.k3x7q2mbzp.cnfs.partitia.report.filed`, `anfs.k3x7q2mbzp.lgat.escrow.payment.settled`.
+  The first token `anfs.` names the bus and the protocol (which every layer uses); the third names
+  the type's owner. This replaces 02's `anfs.<scope>.<short type>` (no `anfs` token for anfs's own
+  types): a subject is read by position, and with types of more than one segment a mixed shape
+  is ambiguous (is `anfs.<id>.cnfs.report.filed` a cnfs type, or an anfs type whose first segment
+  is `cnfs`?), which 2.2's namespace rule could only forbid, not make readable. The short type
+  (2.2) stays what people type (`--type`, `on.type`); it is no longer a subject.
+- **Filters:** a space `anfs.<id>.>`; a layer `anfs.*.<layer>.>` (`anfs.*.cnfs.>`, and anfs's own
+  `anfs.*.anfs.>`); an anfs kind `anfs.*.anfs.report.>`; one type in a space
+  `anfs.<id>.anfs.report.filed`. **One stream** (`ANFS`, `anfs.>`) holds every layer.
 - **Why one stream and this mapping** (open question 6):
   - JetStream's dedup by `Nats-Msg-Id` is per stream: one stream is what makes "dedup by id"
     hold across layers and across both ways in (2.7) without a second mechanism.
   - The space is the unit of grants (AGENT-NATIVE, the layering rule): a space's permission
-    (`accepts:`) or filter stays one subject, `anfs.<id>.>`, covering every layer's events in it;
-    a per-layer root would make it `*.<id>.>`, which also matches any other root.
-  - A layer's publish permission is still one subject, `anfs.*.<layer>.>` (2.7): the namespace
-    rule of 2.2 keeps it from matching anfs's types.
-  - Nothing that exists changes: anfs's subjects, the ui's and dispatch's filters, the recorder's
-    one consumer, one set of limits and retention.
+    (`accepts:`) or filter stays one subject, `anfs.<id>.>`, covering every layer's events in it.
+  - A layer's publish permission is one subject, `anfs.*.<layer>.>` (2.7), by position alone: it
+    cannot match another layer's types, anfs's included.
+  - The uniform shape is mechanical both ways (subject = `anfs.<scope>.` + type without `io.`;
+    type = `io.` + the subject from its third token), so the recorder's subject check (2.7) and
+    the conformance manifest's `subject` (3) need no registry.
+  - It changes every existing subject (anfs's, dispatch's and the sink's filters): accepted, since
+    the dev stream can be recreated now and the spool files are the record (05b gap 23 and the
+    by-hand step 6). The ui's filter (`anfs.>`) and the stream's subjects do not change.
   - In production a layer runs its own NATS (or none); the same scheme carries over as is.
-- *Alternatives:* a root and stream per layer (`cnfs.<scope>.<rest>`, stream `CNFS`): symmetric
-  and separately sized, but dedup splits per stream, a space's filter becomes `*.<id>.>`, the
-  recorder and the ui follow several streams, and streams cannot overlap subjects, so nothing can
-  later span layers in one; `anfs.<scope>.<type without io.>` (`anfs.<id>.anfs.report.filed`):
-  uniform, but every existing subject, the ui's filter and dispatch's filters change.
+- *Alternatives:* `anfs.<scope>.<short type>` (02's mapping, this plan's recommendation until
+  2026-10-24: anfs's own `anfs` token left out, as the short type does): nothing existing would
+  change, but it mixes two shapes on one bus, ambiguous with multi-segment types; decided
+  otherwise. A root and stream per layer (`cnfs.<scope>.<rest>`, stream `CNFS`): symmetric and
+  separately sized, but dedup splits per stream, a space's filter becomes `*.<id>.>` (which also
+  matches any other root), the recorder and the ui follow several streams, and streams cannot
+  overlap subjects, so nothing can later span layers in one.
 
 ### 2.6 The first way in: the spool (any language, no client)
 
@@ -254,7 +270,7 @@ interface too (F3). Both ways are equal; a producer uses one per event (both for
 harmless, deduped, and pointless).
 
 **The publish contract** (the same on the dev bus and a production one):
-- Subject `anfs.<scope>.<short type>` (2.5), agreeing with the event's `source` and `type`.
+- Subject `anfs.<scope>.<type without io.>` (2.5), agreeing with the event's `source` and `type`.
 - Body: the event, valid, at most 4096 bytes; SHOULD be the canonical form (2.6).
 - Headers `Content-Type: application/cloudevents+json` and `Nats-Msg-Id: <id>`.
 - **A JetStream publish, awaiting its ack**, retried with the same body until acked: a core NATS
@@ -264,8 +280,8 @@ harmless, deduped, and pointless).
 **The publisher user, per layer (dev bus):** core/nats makes one NATS user per layer that
 publishes directly, named after its namespace (`cnfs`, `lgat`), its password in
 `~/.local/state/nats/users/<layer>` (0600, like the others), from a list of layers in nats's
-settings. Its permissions: **publish `anfs.*.<layer>.>`** only (never `io.anfs.*` or another
-layer's subjects), **subscribe `anfs.>`** and `_INBOX.>`, and the JetStream API a consumer needs on
+settings. Its permissions: **publish `anfs.*.<layer>.>`** only (never anfs's `anfs.*.anfs.>`
+or another layer's subjects), **subscribe `anfs.>`** and `_INBOX.>`, and the JetStream API a consumer needs on
 `ANFS` (as `reader` has: its own durable consumers, fetch, ack); never stream management. It is
 distinct from `anfsd` (ships the spool, manages the stream, publishes everything), `admin` (the
 person's) and `reader` (subscribe only: the ui). *Alternative:* one shared `tools` user: one
@@ -311,13 +327,29 @@ layer (2.4).
 
 ### 2.9 Derived ids (re-derived events)
 
-A producer that re-derives events from an external log (the indexer re-reading the chain after a
-crash, an outbox replay) must produce the **same id** for the same occurrence, or dedup fails. Two
-ways, both conformant: persist the id with the record (an outbox row), or **derive it**: a UUIDv7
-whose 48-bit timestamp is the occurrence's time (`time`'s milliseconds) and whose 74 other bits
-come from SHA-256 of a stable key (`io.lgat.escrow.payment.settled|<signature>|<ix>|<event
-index>|finalized`). It departs from RFC 9562's SHOULD that those bits be random, knowingly (open
-question 4). *Alternative:* UUIDv5/v8 for derived events: breaks "id is a UUIDv7, ordered by time".
+A producer that sends the same occurrence more than once must send the **same id**, or dedup
+fails. Two cases, and the rule for each is a MUST (tightened 2026-10-24, open question 4):
+
+- **Re-sending a stored event** (an outbox row, a retry): the event, id included, is stored with
+  its record when the record is made (the id may be a fresh random UUIDv7 then), and every send
+  uses the stored id. It is **never regenerated**: a relay that builds the event again from the
+  row reads the id from the row.
+- **Re-deriving an event from a source of truth that is not the event** (lgat's indexer
+  re-reading the chain after a crash or into a new database, a rebuild from an external log): the
+  id **MUST be derived from a stable source key**, deterministically, exactly as follows: a UUIDv7
+  whose 48-bit timestamp is the occurrence's time (`time`'s milliseconds) and whose 74 other bits
+  (`rand_a` and `rand_b`, version and variant set as RFC 9562 says) are the first 74 bits of
+  SHA-256 of the key, UTF-8, `|`-joined: the full type, then the fields that identify the
+  occurrence in the source, then anything that makes it a distinct fact
+  (`io.lgat.escrow.payment.settled|<signature>|<ix>|<event index>|finalized`). The type owner
+  documents the key per type in its registry entry. A producer may **store** a derived id (a
+  cache), but only ever the derived value: a fresh id stored in the producer's own database does
+  not meet this rule, since that database can be lost or rebuilt and the id would be made again.
+
+The derivation departs from RFC 9562's SHOULD that those bits be random, knowingly. The
+conformance examples include a derived id with its key, so every implementation checks its
+derivation against the same bytes (3). *Alternative:* UUIDv5/v8 for derived events: breaks "id is
+a UUIDv7, ordered by time".
 
 ### 2.10 Extensions: ours, tracing, and the layers'
 
@@ -372,7 +404,7 @@ tag's.
   `role-only`, `no-subject`, `unknown-extension`, `traceparent` (with `tracestate`),
   `actorclaimed`, `cnfs-partitia-report-filed` (source `/cnfs/spaces/<id>/partitia`, nested data),
   `cnfs-chatter-message-posted`, `cnfs-host` (`/cnfs/host`), `lgat-payment-confirmed` and
-  `-finalized` (derived ids, `commitment`, an amount as a string), `data-null-value` (a cnfs type),
+  `-finalized` (derived ids, their keys in the manifest, `commitment`, an amount as a string), `data-null-value` (a cnfs type),
   `max-size` (exactly 4096 bytes), `noncanonical` (valid event, whitespace: valid, flagged for the
   spool). Invalid, one rule each: missing `specversion`/`id`/`source`/`type`/`time`/`actor`/
   `anfsv`/`data`; `anfsv` 2; `specversion` "0.3"; UUIDv4 id; upper-case id; source `/x`, `/anfs/
@@ -382,10 +414,11 @@ tag's.
   data and with a numeric value (`anfs.data.flat`); bad extension name (`actor_role`);
   object-valued extension; bad actor; bad `actorclaimed`; actorspace without actorrole; bad
   `traceparent`; `tracestate` without `traceparent`; 4097 bytes; two lines.
-- **`examples/index.json`**: per file `{file, valid, rule, schema, subject}`: `rule` a stable code
+- **`examples/index.json`**: per file `{file, valid, rule, schema, subject, key}`: `rule` a stable code
   (`time.ms`, `size.max`, `anfs.data.flat`), `schema` whether the JSON Schema alone catches it
   (size, one line, time = id's milliseconds, big integers and canonical form it cannot), `subject`
-  the NATS subject of a valid example (2.5), so the subject mapping is conformance-tested too.
+  the NATS subject of a valid example (2.5), so the subject mapping is conformance-tested too,
+  `key` the source key of a derived id (2.9), so the derivation is too.
 - **`schema/event.v1.json`**: JSON Schema draft 2020-12, `$id` the raw GitHub URL of the tag (open
   question 1 has the name): the table of 2.1, `patternProperties` `^[a-z0-9]{1,20}$` with scalar
   values for extensions and `additionalProperties: false`, the UUIDv7 pattern
@@ -417,8 +450,8 @@ the real spool's 35 lines all conform.
 
 **runtime `internal/cloudevent` and its users**
 1. `typeRE` accepts only `io.anfs.*`: another layer's spool line is logged as not an event and
-   never shipped. Accept `io.<layer>.…` (2.2); `Short()` strips `io.anfs.` or `io.`, so
-   `NatsSubject()` follows 2.5 (today an `io.cnfs` type would give `anfs.<id>.io.cnfs.…`).
+   never shipped. Accept `io.<layer>.…` (2.2); `Short()` strips `io.anfs.` or `io.` (2.2). The
+   subject is gap 23.
 2. `source` must be `/anfs/spaces/<id>` or `/anfs/host`: accept 2.3's per-layer form, the scope
    from it.
 3. `data` must be a flat object of strings, held as `map[string]string`: accept any JSON object
@@ -479,16 +512,46 @@ the real spool's 35 lines all conform.
 **Not in 05b:** stamping a run's actor and keeping `actorclaimed` (02d); `traceparent` from anfs's
 emitters (later, 2.10).
 
+**The subject shape (2.5, decided 2026-10-24): every subject changes**
+23. runtime: `cloudevent.NatsSubject()` is `"anfs." + scope + "." + Short()`: make it `"anfs." +
+   scope + "." + strings.TrimPrefix(type, "io.")`, and add the inverse (subject → scope and type,
+   for the recorder's check, 13), both in `cloudevent` beside `Short()`, which stays the short type
+   of 2.2 and is no longer used for subjects. Its users: the shipper (`Publish(ev.NatsSubject(),
+   …)`, unchanged code, new subjects); `dispatch.SourceUpdated` (`anfs.host.source.updated` →
+   `anfs.host.anfs.source.updated`; the comparison with `NatsSubject()` holds); `space.Rule.
+   FilterSubject()` (`anfs.<scope>.` + `on.type`'s literal tokens: insert the layer, `anfs.` for an
+   anfs short type and none for another namespace's, whose short type already starts with it (a
+   first token that is a registered namespace, 2.2's rule; the same test as gap 12's), so
+   `report.*` gives `anfs.<id>.anfs.report.>`, `cnfs.*` `anfs.<id>.cnfs.>`, and a glob whose first
+   token is a wildcard `anfs.<id>.>`); `dispatch.Filters`' cover and collide logic (tokens shift
+   by one; its fallback `anfs.>` stays); `sink.Filter` (`anfs.*.report.>` → `anfs.*.anfs.report.>`).
+   Both consumers' filters change on the next start: `CreateOrUpdateConsumer` updates them in
+   place, but the stream is recreated anyway (by hand, step 6). Tests and fixtures that spell a
+   subject: `cloudevent_test.go`, `shipper_test.go`, `bus_test.go`, `dispatch_test.go`,
+   `space_test.go`, `cmd/anfsd/dispatch_test.go` (the log line "consumer anfsd-dispatch: filters
+   …"), and `go/test/e2e.bats` (`anfs.host.container.started`). README and AGENTS.md
+   ("subjects `anfs.<space id|host>.<noun>.<verb>`").
+24. core: no code builds a subject today (checked 2026-10-24: `bus.sh`'s permissions are `anfs.>`
+   for `anfsd` and `reader`; the ui's consumer `ui` filters `anfs.>` and reads the type from the
+   body, `containers/ui/lib/anfs/bus.rb`; `anfs report wait` follows the spool files, not NATS;
+   `anfs bus nats` passes its arguments through), so what changes is the layer users' permissions
+   (`anfs.*.<layer>.>`, 21, already in this shape) and text and tests: AGENTS.md (the bus table's
+   "Subjects" row, the sink's `anfs.*.report.>`, dispatch's filters, `-- sub 'anfs.>'` stays),
+   README.md (`anfs.<space id|host>.<type>`), nats's README, the ui's README and
+   `spec/anfs/bus_spec.rb`'s example subjects (`anfs.host.container.started`, `anfs.host.x.y`:
+   any `anfs.>` subject passes, so only for accuracy), `packages/anfsd/tests/bus.bats`' stream
+   fixture (`OTHER:anfs.host.>` stays valid). `anfs bus status` names no subject but the stream's.
+
 **Not gaps:** the envelope's order and compact form, UUIDv7 generation, the 4096 limit in the
 spool, one `O_APPEND` write, `Nats-Msg-Id`, the `Content-Type` header, the podman mapping's types,
-subjects, actor and string data, `run.*` from the supervisor, `_anfs_ev_parse` cutting at the first
+actor and string data, `run.*` from the supervisor, `_anfs_ev_parse` cutting at the first
 `,"data":` (data is last whatever it holds).
 
 ## 5. What cnfs and lgat need
 
 **cnfs, the events gem (S9; review §7.2): it starts as soon as 05a is tagged, in parallel with 02d
 and 05b.** Its four stages are `Rails.event` → map (an allow-list to `io.cnfs.<engine>.<noun>.<verb>`)
-→ outbox (a row in the same transaction, id persisted, 2.9) → transport. Emit, map, outbox, the
+→ outbox (a row in the same transaction, the id stored with it and never regenerated, 2.9) → transport. Emit, map, outbox, the
 inbound side (events → ActiveJob, idempotent by id in an inbox table, 2.8) and the actor and
 tenant context are tested against the tagged fixtures alone: they need neither anfsd nor NATS.
 **Only the dev transport needs anfsd changes (05b):**
@@ -516,7 +579,8 @@ What it gets from 05a:
 **lgat's indexer:**
 - `io.lgat` and the `commitment` extension registered; the type mapping from Anchor events is
   theirs (a table).
-- Derived ids (2.9) so a re-index dedups; `time` = block time (seconds, `.000`), `subject` = the
+- Derived ids (2.9: a MUST, from the stable source key, never a fresh id kept in its database)
+  so a re-index dedups; `time` = block time (seconds, `.000`), `subject` = the
   transaction signature, data a JSON object (amounts as decimal strings, being u64; keys base58;
   `slot`, `ix` as integers); `confirmed` and `finalized` as two events (2.8); actor names the
   producer (`lgat-indexer`), which as the publisher attests it (2.4), the signer in data. Large
@@ -532,7 +596,7 @@ What it gets from 05a:
   (namespaces, extensions, anfs's type catalog from `ANFS_EVENT_TYPES` with `run.*`'s usage
   keys), the schema, the examples (runtime's `bash.jsonl` promoted), the manifest, CI with a pinned
   `check-jsonschema`, README; 01's pointer. Not tagged until the person has read SPEC.md.
-- **05b — conformance** (job `agents-05b runtime core docs`, after 05a's tag): gaps 1–22,
+- **05b — conformance** (job `agents-05b runtime core docs`, after 05a's tag): gaps 1–24,
   `anfsd validate`, the recorder, the publisher users, the vendored examples in runtime and core,
   `anfs events validate`, docs. anfsd 0.4.0 and its pins. If the job runs long, the recorder and
   the users (13, 14, 20, 21) may land as a second commit series in the same job, never as a
@@ -542,12 +606,15 @@ What it gets from 05a:
 every file in `examples/` is in the manifest, every valid one has a `subject`. runtime: each
 example through `Parse` and the schema agrees with the manifest, and `NatsSubject()` with its
 `subject`; `Line` refuses each gap's case; the shipper ships an `io.cnfs` line with nested data on
-`anfs.<id>.cnfs.…` and logs a scope mismatch once; the recorder (embedded NATS): a direct publish
+`anfs.<id>.cnfs.…` and an `io.anfs` one on `anfs.<id>.anfs.…`, and logs a scope mismatch once;
+`FilterSubject()` for `report.filed`, `report.*`, `*`, `cnfs.*` and a rule with `on.space`;
+dispatch's and the sink's filters on the new subjects (an event on an old-shape subject matches
+neither); the recorder (embedded NATS): a direct publish
 lands once in `.bus.jsonl` in canonical form, a spool-shipped event is not recorded, a redelivery
 after a crash between append and ack writes nothing, an invalid or mismatched message is
 terminated and logged once, the shipper never reads `.bus.jsonl`; the stream refuses a 4097-byte
 body; a publisher-user config (from core's rendered conf, as a fixture) may publish
-`anfs.x.cnfs.y` and not `anfs.x.report.filed`; usage keys from claude's recorded `result` line;
+`anfs.x.cnfs.y` and not `anfs.x.anfs.report.filed`; usage keys from claude's recorded `result` line;
 `anfsd validate` output and exit codes; idle CPU unchanged. core: the emitter refuses a bad
 `ANFS_ACTOR`, DEL and non-UTF-8 input with a warning and exit 0; every emitted line passes a
 stub-free canonical-form check; `_anfs_ev_parse` over every valid example; `events ls --type
@@ -567,40 +634,83 @@ the end.
 4. Tell cnfs the tag, and that the gem can start on the fixtures now (an inbox message, or by hand
    until 04).
 5. The real spool holds a test line from 02a's fixture run (scope `abcde23456`, actor `shell:t`,
-   2026-10-23 17:46): valid, but not a real space. No tool deletes events; removing the directory
-   is the person's call.
+   2026-10-23 17:46): valid, but not a real space. **Decided 2026-10-24: leave it.** Editing the
+   spool is not harmless: a month file rewritten shorter than its cursor is read again from its
+   start (`spool.Read`), and its lines older than the 24 h duplicate window are shipped again as
+   new messages, which the deliver-new consumers (dispatch, the sink) act on. (Removing this file,
+   alone in its scope, would instead leave its cursor, 319 bytes, in `cursors.json`: a file made
+   there again whose first write is longer than that would have those bytes skipped.) One stray
+   valid line costs nothing; no tool deletes events.
+6. **Recreate the dev stream for the new subjects (2.5, gaps 23–24), right after step 3's
+   install.** No migration code: the old stream's messages are on old-shape subjects that no
+   filter matches any more, and the spool files are the record.
+   ```sh
+   anfs bus stop anfsd
+   anfs bus nats -- stream rm ANFS --force   # the stream, and with it every consumer on it:
+                                             # anfsd-dispatch, anfsd-sink-report, ui
+   anfs bus start anfsd
+   ```
+   - On start the shipper makes `ANFS` again (`EnsureStream`), and dispatch and the sink make
+     their consumers again (deliver new) with the new filters. The ui's bus loop fails, reconnects
+     with its backoff and makes `ui` again (deliver new); if its bus line stays failed, restart the
+     ui.
+   - **The cursors are kept** (`~/.local/state/anfsd/cursors.json`, a byte offset per month file,
+     not in the stream): the shipper goes on from them, so the new stream holds only what is
+     written from then on, plus what was written while anfsd was stopped (do it when no report is
+     being filed: those lines may ship before dispatch's consumer exists and not be dispatched).
+     Nothing old is re-shipped, which is what we want: the history is in the files (`anfs events
+     ls`), and re-shipped `report.*` and `source.updated` events would reach the new deliver-new
+     consumers and be dispatched or rendered again.
+   - Re-shipping the whole log into the new stream would mean also deleting `cursors.json` while
+     anfsd is stopped. Not recommended, for that reason.
+   - Check: `anfs bus status` (jetstream `ok`, no shipper lag, dispatch's rules loaded), and after
+     the next event `anfs bus nats -- stream subjects ANFS` shows `anfs.<id>.anfs.…` only.
 
 **Open questions for the person** (each with the recommendation):
 1. The repo: `anfs-io/events` (recommended) or `anfs-io/spec` (room for the inbox and work-item
    specs later)? **Public from the start** (recommended: cnfs and lgat vendor it, and nothing in it
    is private).
+   **Decided 2026-10-24:** `anfs-io/events`, public from the start.
 2. Namespaces `io.anfs`, `io.cnfs`, `io.lgat` read as reverse DNS: **keep them** whether or not we
    own those domains (recommended: CloudEvents only says SHOULD, `REGISTRY.md` is what makes them
    unique, and renaming later is a new type for every event).
+   **Decided 2026-10-24:** keep them.
 3. ~~`data` flat strings or any JSON?~~ **Answered (F2):** `data` is any JSON object within 4096
    bytes; flat strings stay anfs's convention for `io.anfs.*`, held by its catalog (2.1).
 4. Derived UUIDv7 ids (hash bits instead of random) for re-derived events: **accept**
    (recommended: they keep "id is a UUIDv7 ordered by time" and make re-indexing idempotent; the
    RFC's randomness is a SHOULD, and 74 hash bits do not collide in practice).
+   **Decided 2026-10-24:** accept, and tightened: a re-derived event's id MUST be derived from a
+   stable source key as 2.9 specifies; storing an id is fine only for a stored event re-sent (the
+   outbox: stored with its record, never regenerated) or as a cache of the derived value, never a
+   fresh id standing in for the derivation.
 5. The 4096-byte limit on the bus too, in production: **yes** (recommended), now enforced on the
    dev stream for direct publishes (gap 14); a larger payload is a reference in data.
+   **Decided 2026-10-24:** yes.
 6. (Review §11 q1) Subjects for other layers: **one stream, `anfs.<scope>.<short type>`**, i.e.
    `anfs.<scope>.<layer>.<noun>.<verb>` with anfs's own token left out (recommended, 2.5: dedup by
    id holds across layers only within one stream; a space stays one filter and one grant,
    `anfs.<id>.>`; a layer's publish permission is one subject; nothing existing changes), or a
    root and stream per layer.
+   **Decided 2026-10-24:** one stream, but **one subject shape for every layer, anfs included:
+   `anfs.<scope>.<layer>.<noun>.<verb>`** (`anfs.<id>.anfs.report.filed`,
+   `anfs.host.anfs.container.started`): the subject is `anfs.<scope>.` plus the type without
+   `io.`. Mixed shapes are ambiguous with multi-segment types, and the dev stream can be
+   recreated now (2.5 rewritten; gaps 23–24; by hand, step 6).
 7. (Review §11 q2) Who owns the spec's versioning: **anfs-io, as the anfs-dev space's** (the
    maintainer role drafts, the person approves and tags, as with any anfs release); layers own
    their namespaces' types and versions in their own repos without a spec release, and change
    the spec itself (a namespace, an extension) by a PR to `REGISTRY.md`, a minor version
    (recommended: the envelope is ANFS's, every layer consumes it, and a committee is premature
    with one person). Revisit if a layer outside the person's spaces adopts it.
+   **Decided 2026-10-24:** as recommended.
 8. (Review §11 q4) Space id vs production tenant id: **converge on the rule, not the key**
    (recommended): every id in `source`, `actorspace` and subjects follows 2.3 (10 characters,
    random, never changed), so a production tenant that is a space gets one, generated once and
    stored beside its own primary key, which stays the app's (a UUID, an integer). Mapping the
    app's key into events instead would leak integers that collide across apps into subjects, or
    UUIDs that make every subject and filter 36 characters, and two id grammars into every reader.
+   **Decided 2026-10-24:** converge on the rule, not the key.
 
 ## Sources checked (2026-10-23, read-only; re-checked 2026-10-24)
 

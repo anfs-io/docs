@@ -6,7 +6,7 @@ Mergeable alone. After it, a dispatched run's own events reach the bus under the
 a run gets no credential anfsd happens to hold, a dispatched Claude Code loads only what anfs hands
 it, a full queue or a spent rate delays a report instead of dropping it, and a space can turn
 anfsd's dispatcher off. That is the bar for turning on anfs-dev's two rules, which stay `enabled:
-false` until the person does it by hand.
+false` until the person does it by hand. Open questions answered 2026-10-24: all as recommended.
 
 The review's findings this builds, checked against the code (2026-10-24):
 
@@ -229,9 +229,10 @@ Golden files: `claude.golden` (argv: the two flags; `claude.json`: `claudeMdExcl
   ```
 
 - **Held** is not a new state. A held run is `submitted` (A2A's "received, not started"), and its
-  record has `held: rate|queue` and `held_since`. `run.submitted` is emitted once, with data
-  `held=rate|queue` and `detail` (e.g. "20 runs in the last 1h (rate: 20/h)"). Leaving hold emits
-  nothing; the next event is `run.working`, or a terminal state.
+  record has `held: rate|queue` and `held_since`. `run.submitted` is emitted once, and **its data
+  carries the hold**: `held` (`rate` or `queue`) and `detail`, the reason (e.g. "20 runs in the
+  last 1h (rate: 20/h)"); a run not held has neither key. Leaving hold emits nothing; the next
+  event is `run.working`, or a terminal state.
   - Why not `run.delayed`: the `run.*` types are A2A's task states (plan.md 3), and 04, 05 and the
     ui are built on that set. "Waiting" is `submitted` with a reason. A2A has no delayed state,
     and a type outside the set is one more thing every reader must learn.
@@ -528,26 +529,34 @@ No migration code:
    per token). Another alternative, a separate `CLAUDE_CONFIG_DIR` for dispatched runs with a
    `claude setup-token` token, was considered and not taken: a second login to keep alive, and a
    long-lived token in the service's environment.
+   **Decided 2026-10-24:** as recommended.
 2. **A forged actor: keep and mark (`actorclaimed`), or reject the line?** **Recommended:** keep
    and mark. Honest tools with their own actor logic would otherwise lose work, and the stamp is
    the identity either way.
+   **Decided 2026-10-24:** keep and mark.
 3. **`run.delayed` or `run.submitted` with `held`?** **Recommended:** `submitted` with `held`, which
    stays inside A2A's states (`input-required` and `auth-required` are 04's, and those are the
    only additions planned).
+   **Decided 2026-10-24:** `run.submitted` with `held` (and `detail`) in its data.
 4. **`dispatcher: none` or `dispatch: off`?** **Recommended:** `dispatcher:`, a single-typed key
    that becomes the slot later.
+   **Decided 2026-10-24:** `dispatcher:`.
 5. **May a run emit into another space's scope?** The stamp says who did it. **Recommended:** yes
    until `accepts:` (cross-space is open, AGENT-NATIVE "Decided"). `run.*` is the only type
    refused.
+   **Decided 2026-10-24:** yes, until `accepts:`.
 6. **Defaults: `hold: 20`, `ANFSD_RUN_EVENTS_MAX=1000`.** **Recommended** as written. A burst of 30
    reports in an hour is an incident the person should see (`run.rejected ... hold full`), not a
    backlog that grows quietly.
+   **Decided 2026-10-24:** as written.
 7. **A role `env:` key** (more names passed through, e.g. `GOFLAGS`). **Recommended:** not now. The
    job's variables come from `anfs work env`, and nothing needs it yet. Add it when a rule does,
    with the credential names refused.
+   **Decided 2026-10-24:** not now.
 8. **Network for claude's sandbox** (`sandbox.network.allowedDomains`, e.g. `proxy.golang.org`).
    **Recommended:** none in 02d. "No network" is what makes push impossible; a per-space
    `network:` list (never `github.com`) is a later plan when a fix needs downloads.
+   **Decided 2026-10-24:** none in 02d.
 
 ## Out of scope (later)
 
@@ -558,8 +567,10 @@ No migration code:
 - The general `tools:` slots schema (`dispatcher:` is its first key, nothing more); harness
   definitions as data (package YAML); the event catalog (`anfs events types`).
 - `anfs inbox` listing unhandled events (04).
-- A run filing a report (`anfs report new` writes its record in STATE, outside the sandbox). That
-  is better solved by records kept by a consumer from `report.filed` (the review's projection,
-  4.2) than by opening STATE.
+- **Follow-up, named: runs file reports by event.** A run files a report by emitting
+  `report.filed` into its own spool (section 1); anfsd ingests and stamps it like any run event,
+  and a consumer records it (the review's projection, 4.2), replacing `anfs report new`'s write of
+  the record in STATE, which is outside the sandbox, when it runs inside a run. Better than
+  opening STATE to runs. In `BACKLOG.md`.
 - Isolation for antigravity, and opencode's global config, beyond what section 3 finds.
 - Signing or attesting actors for spool writers that are not runs (F6: not on a dev host).

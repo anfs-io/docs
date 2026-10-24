@@ -79,6 +79,21 @@ carry in future, whose hooks would run untrusted.
 3. The allow-all in `settings.local.json`: did you mean it for every session? It applies only in
    `~` today.
 
+## Decided 2026-10-24
+
+1. **Superseded by 02d** (`units/agents/02-daemon/02d-safe.md`, section 3 and its open question
+   1): dispatched claude runs with `--setting-sources local --strict-mcp-config` plus
+   `claudeMdExcludes`, keeping the subscription login; `--bare` is opt-in
+   (`ANFSD_CLAUDE_BARE=on`, with an API key), since it drops that login. Not `--bare` always, as
+   proposed above.
+2. **Yes.** Personal preferences (vim, theme, fullscreen, effort, push notifications, plugins)
+   move into the user repo's `claude` package; integrations (herdr's `SessionStart` hook) are
+   owned by the packages that install them, so removing the package removes them. Moving the
+   preferences is the person's by-hand work in their own user repo: agents never edit the user
+   repo.
+3. **Keep the allow-all scoped to `~`**, as it is (`~/.claude/settings.local.json`, sessions
+   started in `~` only).
+
 ## Sources
 
 - https://code.claude.com/docs/en/permissions.md

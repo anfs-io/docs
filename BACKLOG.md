@@ -24,6 +24,12 @@ gets a unit.
   effect. Move the hooks to `~/.local/lib/anfs-dev/hooks`; set `hooksPath` only from `anfs hooks
   install` (and `anfs work new`). An anfs-dev job.
 
+- **Runs file reports by event** (from agents/02d's "Out of scope", 2026-10-24): inside a
+  dispatched run, `anfs report new` cannot write its record in STATE (outside the sandbox). The
+  run emits `report.filed` into its own spool instead; anfsd ingests and stamps it, and a consumer
+  records it (the review's projection, `AGENT-NATIVE-REVIEW.md` 4.2), replacing `anfs report
+  new`'s STATE write when it runs inside a run. A plan in `units/agents` after 02d.
+
 ## Now units
 
 - pmm out of the default install (pcm stays, for the dashboard): `machine-images` plan 05.
