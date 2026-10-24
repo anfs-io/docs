@@ -278,7 +278,7 @@ upgrade has no spool and the old environment, and ends as before.
 1. `anfs work env` unsets `ANFS_WORK`; should it also unset `ANFS_EVENTS_SPOOL`, so a run's
    `anfs work run <job> -- <tests>` does not put the tests' own emits into the run's spool (stamped
    as the run, counted against its 1000)? Core's test helpers set `ANFS_EVENTS=off`, so today it is
-   only a test that turns events on without `env -i`. It is anfs-dev's `anfs-work`, not in this job.
+   only a test that turns events on without `env -i`. It is anfs-dev's `anfs-work`, not in this job. **Done 2026-10-24** (job ppm-events, anfs-dev `d38c3c8`, dev 0.1.17): `anfs work env` and `run` unset it.
 2. The sandboxing docs give `dontAsk`'s "refused" for hosts outside `allowedDomains` for interactive
    sessions; `-p` is not mentioned. If a first run shows a network call going out, add
    `sandbox.network.allowedDomains: []` explicitly or a deny.
