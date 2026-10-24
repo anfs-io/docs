@@ -68,7 +68,9 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         `space.yml` given to the harness at dispatch
   - [x] `agents/03-ui` — merged and running here 2026-10-23; accepted by the person 2026-10-24 (installs and removes from the ui, live events, sortable tables 0.3.2) — anfs-ui on events and `podman events`, its polling a slow reconcile; the
         person's first acceptance test of the bus
-  - [ ] `agents/04-inbox` — approvals as events; `anfs inbox`; per-space `approvals:` (the ui shows
+  - [ ] `agents/04-inbox` — 04a built 2026-10-24 in the job `agents-04a` (not merged; see
+        `units/agents/04-inbox/04a-log.md`: landing, the policy in force, `anfs inbox`, anfs-dev's
+        rules `land: [merge, install]`); 04b (the ui's inbox) next — approvals as events; `anfs inbox`; per-space `approvals:` (the ui shows
         them)
   - [ ] `agents/05-spec` — 05a and 05b merged and installed 2026-10-24 (anfs-io/events to be created, pushed and tagged v1.0.0 by the person; examples vendored at the untagged commit) — our CloudEvents 1.0 profile (types, extensions, NATS subjects) as a
         standalone, language-neutral spec (`anfsv: 1`) with
