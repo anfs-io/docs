@@ -68,15 +68,13 @@ Moved ahead of the rest of stacks and setup (2026-10-21).
         `space.yml` given to the harness at dispatch
   - [x] `agents/03-ui` — merged and running here 2026-10-23; accepted by the person 2026-10-24 (installs and removes from the ui, live events, sortable tables 0.3.2) — anfs-ui on events and `podman events`, its polling a slow reconcile; the
         person's first acceptance test of the bus
-  - [ ] `agents/04-inbox` — 04a built 2026-10-24 in the job `agents-04a` (not merged; see
-        `units/agents/04-inbox/04a-log.md`: landing, the policy in force, `anfs inbox`, anfs-dev's
-        rules `land: [merge, install]`); 04b (the ui's inbox) next — approvals as events; `anfs inbox`; per-space `approvals:` (the ui shows
-        them)
-  - [ ] `agents/05-spec` — 05a and 05b merged and installed 2026-10-24 (anfs-io/events to be created, pushed and tagged v1.0.0 by the person; examples vendored at the untagged commit) — our CloudEvents 1.0 profile (types, extensions, NATS subjects) as a
+  - [ ] `agents/04-inbox` — 04a merged and installed 2026-10-24 (landing, the policy in force, `anfs inbox`, anfs-dev's rules `land: [merge, install]`; see `units/agents/04-inbox/04a-log.md`); 04b (the ui's inbox) next — approvals as events; `anfs inbox`; per-space `approvals:` (the ui shows them)
+  - [x] `agents/05-spec` — 05a and 05b merged and installed 2026-10-24 (anfs-io/events public, v1.0.0 tagged; v1.1.0 written, untagged) — our CloudEvents 1.0 profile (types, extensions, NATS subjects) as a
         standalone, language-neutral spec (`anfsv: 1`) with
         conformance examples (event files any implementation must accept and produce), type namespaces
         per layer (`io.anfs.*`, `io.cnfs.*`, `io.lgat.*`) and the spool as a way in for any language; what cnfs's
         Rails component (on cnfs's roadmap) builds against
+    - [ ] `agents/06-coordinator` — 06a, 06b, 06b2 (hooks in the user scope), 06c (notifications, the ui's coordinator column) and the status line merged and installed 2026-10-24; polish (root-only candidates, `anfs report ls`, inbox total) in progress — a lease per role and space, `wsm listen`, the Claude Code adapter
   - Retiring today's improvisations (in the plans named): the BACKLOG grep watcher → a dispatch
     rule on `report.filed` (done in 02b: anfs-dev's `fix-core-report` and `fix-stack-report`,
     committed `enabled: false` until the person turns them on; then the grep session ends);

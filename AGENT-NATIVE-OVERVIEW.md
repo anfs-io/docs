@@ -26,9 +26,10 @@ A one-page map of the agents work, written 2026-10-24. It summarizes [AGENT-NATI
 | 02b dispatch | `agents:`, `dispatch:`, `access:` in `space.yml`; runs in `anfs work` jobs; `run.*`; report sink | merged |
 | 02c podman | `podman events` → `container.*`, `pod.*` | merged |
 | 03 ui | anfs-ui reads the bus, polling becomes a slow reconcile | merged |
-| 02d safe dispatch | per-run spool, actor stamping, env allow-list, settings isolation, overflow delays, per-space dispatcher off | planned |
-| 04 inbox | approvals as events, `anfs inbox`, per-space `approvals:`, anfsd performs approved steps | planned |
-| 05 spec | `anfs-io/events`: the profile as a versioned, language-neutral spec with conformance examples | planned |
+| 02d safe dispatch | per-run spool, actor stamping, env allow-list, settings isolation, overflow delays, per-space dispatcher off | merged |
+| 04 inbox | approvals as events, `anfs inbox`, per-space `approvals:`, anfsd performs approved steps | 04a merged; 04b (ui) planned |
+| 06 coordinator | a lease per role and space, `wsm listen`, Claude Code hooks, OS notifications | merged |
+| 05 spec | `anfs-io/events`: the profile as a versioned, language-neutral spec with conformance examples | merged (v1.0.0) |
 
 ## 2. How it works
 
